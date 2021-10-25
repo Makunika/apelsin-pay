@@ -6,6 +6,7 @@
         <artifactId>maxbank</artifactId>
         <groupId>ru.pshiblo</groupId>
         <version>1.0</version>
+        <relativePath/>
     </parent>
     <artifactId>info-service</artifactId>
     <version>1.0</version>
@@ -59,6 +60,14 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
