@@ -12,9 +12,9 @@ import ru.pshiblo.auth.repository.UserPasswordRepository;
 import ru.pshiblo.auth.repository.UserRepository;
 import ru.pshiblo.auth.service.interfaces.AuthService;
 import ru.pshiblo.auth.service.interfaces.JwtService;
-import ru.pshiblo.exception.NotFoundException;
-import ru.pshiblo.exception.SecurityException;
-import ru.pshiblo.protocol.user.JwtUser;
+import ru.pshiblo.common.exception.NotFoundException;
+import ru.pshiblo.common.exception.SecurityException;
+import ru.pshiblo.common.user.JwtUser;
 
 /**
  * @author Maxim Pshiblo
@@ -44,6 +44,11 @@ public class AuthServiceImpl implements AuthService {
         token.setUser(userPassword.getUser());
         tokenRepository.save(token);
 
+        Token tokenJwt = new Token();
+        tokenJwt.setToken(authTokens.getJwt());
+        tokenJwt.setUser(userPassword.getUser());
+        tokenRepository.save(tokenJwt);
+
         return authTokens;
     }
 
@@ -64,6 +69,18 @@ public class AuthServiceImpl implements AuthService {
         newToken.setToken(authTokens.getRefresh());
         newToken.setUser(user);
         tokenRepository.save(newToken);
+
+        Token tokenJwt = new Token();
+        tokenJwt.setToken(authTokens.getJwt());
+        tokenJwt.setUser(user);
+        tokenRepository.save(tokenJwt);
+
         return authTokens;
     }
+
+    @Override
+    public boolean checkJwtTokenInDb(String token) {
+        return tokenRepository.findByToken(token).isPresent();
+    }
+
 }

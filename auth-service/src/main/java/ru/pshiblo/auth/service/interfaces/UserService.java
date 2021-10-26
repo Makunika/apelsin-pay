@@ -1,9 +1,9 @@
 package ru.pshiblo.auth.service.interfaces;
 
 import ru.pshiblo.auth.domain.User;
-import ru.pshiblo.protocol.user.LargeUserInfo;
-import ru.pshiblo.protocol.user.SmallUserInfo;
-import ru.pshiblo.protocol.user.UserInfo;
+import ru.pshiblo.common.user.LargeUserInfo;
+import ru.pshiblo.common.user.SmallUserInfo;
+import ru.pshiblo.common.user.UserInfo;
 
 /**
  * @author Maxim Pshiblo

@@ -9,9 +9,9 @@ import ru.pshiblo.auth.repository.TokenRepository;
 import ru.pshiblo.auth.repository.UserPasswordRepository;
 import ru.pshiblo.auth.repository.UserRepository;
 import ru.pshiblo.auth.service.interfaces.RegisterService;
-import ru.pshiblo.exception.AlreadyExistException;
-import ru.pshiblo.exception.NotFoundException;
-import ru.pshiblo.exception.SecurityException;
+import ru.pshiblo.common.exception.AlreadyExistException;
+import ru.pshiblo.common.exception.NotFoundException;
+import ru.pshiblo.common.exception.SecurityException;
 
 /**
  * @author Maxim Pshiblo

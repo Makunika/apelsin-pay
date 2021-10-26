@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/maxbank-personal
+    username: maxbank-personal
+    password: maxbank-personal
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+    hibernate:
+      ddl-auto: none
+
+  liquibase:
+    change-log: classpath:/changelog/db.changelog-master.xml
+
+  application:
+    name: personal-service
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+
+server:
+  port: 3900
+
+auth-service:
+  ribbon:
+    listOfServers: http://localhost:2270

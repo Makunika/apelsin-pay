@@ -13,7 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import ru.pshiblo.security.jwt.exception.JwtAuthenticationException;
 import ru.pshiblo.security.jwt.properties.SecurityProperties;
-import ru.pshiblo.protocol.user.JwtUser;
+import ru.pshiblo.common.user.JwtUser;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -29,10 +29,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final ObjectMapper objectMapper;
-    private final SecurityProperties securityProperties;
+    protected final ObjectMapper objectMapper;
+    protected final SecurityProperties securityProperties;
 
-    private String secret;
+    protected String secret;
 
     @PostConstruct
     protected void init() {

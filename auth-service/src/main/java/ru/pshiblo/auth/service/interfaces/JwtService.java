@@ -2,7 +2,7 @@ package ru.pshiblo.auth.service.interfaces;
 
 import ru.pshiblo.auth.domain.User;
 import ru.pshiblo.auth.model.AuthTokens;
-import ru.pshiblo.protocol.user.JwtUser;
+import ru.pshiblo.common.user.JwtUser;
 
 /**
  * @author Maxim Pshiblo

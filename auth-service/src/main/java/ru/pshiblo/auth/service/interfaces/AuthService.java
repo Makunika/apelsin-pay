@@ -8,4 +8,5 @@ import ru.pshiblo.auth.model.AuthTokens;
 public interface AuthService {
     AuthTokens loginWithPassword(String login, String password);
     AuthTokens loginWithRefreshToken(String token);
+    boolean checkJwtTokenInDb(String token);
 }

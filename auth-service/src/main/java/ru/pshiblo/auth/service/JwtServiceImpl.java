@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import liquibase.pro.packaged.D;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,16 +14,16 @@ import ru.pshiblo.auth.domain.User;
 import ru.pshiblo.auth.model.AuthTokens;
 import ru.pshiblo.auth.properties.JwtProperties;
 import ru.pshiblo.auth.service.interfaces.JwtService;
-import ru.pshiblo.exception.InternalException;
-import ru.pshiblo.protocol.user.JwtUser;
+import ru.pshiblo.common.exception.InternalException;
+import ru.pshiblo.common.user.JwtUser;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,7 +42,7 @@ public class JwtServiceImpl implements JwtService {
 
     @PostConstruct
     public void init() {
-
+        secret = Base64.getEncoder().encodeToString(jwtProperties.getSecret().getBytes());
     }
 
     @Override
