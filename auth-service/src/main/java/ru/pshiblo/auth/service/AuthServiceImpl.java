@@ -14,7 +14,7 @@ import ru.pshiblo.auth.service.interfaces.AuthService;
 import ru.pshiblo.auth.service.interfaces.JwtService;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.common.exception.SecurityException;
-import ru.pshiblo.common.user.JwtUser;
+import ru.pshiblo.common.protocol.user.JwtUser;
 
 /**
  * @author Maxim Pshiblo

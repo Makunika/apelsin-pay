@@ -6,9 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
-import ru.pshiblo.common.user.JwtUser;
+import ru.pshiblo.common.protocol.user.JwtUser;
 import ru.pshiblo.security.jwt.JwtTokenProvider;
 import ru.pshiblo.security.jwt.exception.JwtAuthenticationException;
 import ru.pshiblo.security.jwt.properties.SecurityProperties;
@@ -20,8 +18,6 @@ import java.util.List;
 /**
  * @author Maxim Pshiblo
  */
-@Primary
-@Component
 public class JwtTokenProviderAdditional extends JwtTokenProvider {
 
     private final AuthServiceClient authServiceClient;

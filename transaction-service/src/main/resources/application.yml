@@ -30,3 +30,13 @@ server:
 auth-service:
   ribbon:
     listOfServers: http://localhost:2270
+
+
+app:
+  security:
+    jwt-app-secret: ans
+    jwt-secret: anus
+    white-list-url:
+
+kafka:
+  bootstrap: localhost:9092

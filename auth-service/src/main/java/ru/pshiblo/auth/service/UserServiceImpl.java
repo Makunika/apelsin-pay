@@ -9,9 +9,9 @@ import ru.pshiblo.auth.repository.UserPasswordRepository;
 import ru.pshiblo.auth.repository.UserRepository;
 import ru.pshiblo.auth.service.interfaces.UserService;
 import ru.pshiblo.common.exception.NotFoundException;
-import ru.pshiblo.common.user.LargeUserInfo;
-import ru.pshiblo.common.user.SmallUserInfo;
-import ru.pshiblo.common.user.UserInfo;
+import ru.pshiblo.common.protocol.user.LargeUserInfo;
+import ru.pshiblo.common.protocol.user.SmallUserInfo;
+import ru.pshiblo.common.protocol.user.UserInfo;
 
 import java.util.stream.Collectors;
 

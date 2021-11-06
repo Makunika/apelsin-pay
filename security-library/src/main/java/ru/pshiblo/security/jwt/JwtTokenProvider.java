@@ -10,10 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
 import ru.pshiblo.security.jwt.exception.JwtAuthenticationException;
 import ru.pshiblo.security.jwt.properties.SecurityProperties;
-import ru.pshiblo.common.user.JwtUser;
+import ru.pshiblo.common.protocol.user.JwtUser;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 /**
  * @author Maxim Pshiblo
  */
-@Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 

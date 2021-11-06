@@ -15,7 +15,7 @@ import ru.pshiblo.auth.model.AuthTokens;
 import ru.pshiblo.auth.properties.JwtProperties;
 import ru.pshiblo.auth.service.interfaces.JwtService;
 import ru.pshiblo.common.exception.InternalException;
-import ru.pshiblo.common.user.JwtUser;
+import ru.pshiblo.common.protocol.user.JwtUser;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
