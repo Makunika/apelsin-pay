@@ -23,8 +23,11 @@ public class Account {
     @Column(name = "id", nullable = false)
     private Integer id;
 
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
+
     @Column(name = "number", nullable = false)
-    private Integer number;
+    private String number;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 50)

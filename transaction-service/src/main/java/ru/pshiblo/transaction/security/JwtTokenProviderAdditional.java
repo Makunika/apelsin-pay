@@ -34,10 +34,10 @@ public class JwtTokenProviderAdditional extends JwtTokenProvider {
             if (claims.getBody().getSubject().equals("app")) {
                 return new JwtUser(-10, "app", "email", List.of("list"));
             }
-            if (claims.getBody().getExpiration().before(new Date())) {
-                if (authServiceClient.checkToken(token)) {
+            if (claims.getBody().getExpiration().after(new Date())) {
+                //if (authServiceClient.checkToken(token)) {
                     return objectMapper.readValue(claims.getBody().get("context", String.class), JwtUser.class);
-                }
+                //}
             }
             throw new JwtAuthenticationException("JWT token is invalid");
         } catch (JwtException | IllegalArgumentException | JsonProcessingException e) {

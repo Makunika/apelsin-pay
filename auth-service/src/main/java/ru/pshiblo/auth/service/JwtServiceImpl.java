@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.pshiblo.auth.domain.Role;
 import ru.pshiblo.auth.domain.User;
@@ -20,6 +21,7 @@ import ru.pshiblo.common.protocol.user.JwtUser;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
@@ -61,25 +63,24 @@ public class JwtServiceImpl implements JwtService {
 
             String refresh = Jwts.builder()
                     .setExpiration(Date.from(
-                            LocalDate.now().plusDays(1)
+                            LocalDate.now().plusDays(10)
                                     .atStartOfDay()
                                     .atZone(ZoneId.systemDefault())
                                     .toInstant()))
                     .setIssuedAt(new Date())
                     .setSubject(String.valueOf(user.getId()))
-                    .setClaims(claims)
+                    .addClaims(claims)
                     .signWith(SignatureAlgorithm.HS512, secret)
                     .compact();
 
             String jwt = Jwts.builder()
                     .setExpiration(Date.from(
-                            LocalDate.now().plus(Duration.ofHours(jwtProperties.getExpiredHours()))
-                                    .atStartOfDay()
+                            LocalDateTime.now().plus(Duration.ofHours(jwtProperties.getExpiredHours().longValue()))
                                     .atZone(ZoneId.systemDefault())
                                     .toInstant()))
                     .setIssuedAt(new Date())
                     .setSubject(String.valueOf(user.getId()))
-                    .setClaims(claims)
+                    .addClaims(claims)
                     .signWith(SignatureAlgorithm.HS512, secret)
                     .compact();
 

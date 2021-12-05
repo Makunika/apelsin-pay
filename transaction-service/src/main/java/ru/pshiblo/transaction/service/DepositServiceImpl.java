@@ -1,5 +1,6 @@
 package ru.pshiblo.transaction.service;
 
+import ru.pshiblo.transaction.domain.Account;
 import ru.pshiblo.transaction.domain.Deposit;
 import ru.pshiblo.transaction.service.interfaces.DepositService;
 
@@ -11,6 +12,11 @@ import java.util.List;
 public class DepositServiceImpl implements DepositService {
     @Override
     public Deposit create(int userId) {
+        return null;
+    }
+
+    @Override
+    public Deposit create(int userId, Account account) {
         return null;
     }
 

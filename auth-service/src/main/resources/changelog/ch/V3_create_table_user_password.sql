@@ -2,7 +2,7 @@
 --changeset maxim:3
 CREATE TABLE passwords
 (
-    id              varchar(36)         PRIMARY KEY,
+    id              SERIAL              PRIMARY KEY,
     password_hash   varchar(200)        NOT NULL,
     login           varchar(100)        NOT NULL UNIQUE,
 

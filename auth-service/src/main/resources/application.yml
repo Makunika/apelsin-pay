@@ -20,8 +20,8 @@ server:
   port: 2270
 
 jwt:
-  secret: maxbank
-  expired-hours: 2
+  secret: anus
+  expired-hours: 10
 
 encoder:
   sha512:

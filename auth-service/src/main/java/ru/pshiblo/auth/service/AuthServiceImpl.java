@@ -44,11 +44,6 @@ public class AuthServiceImpl implements AuthService {
         token.setUser(userPassword.getUser());
         tokenRepository.save(token);
 
-        Token tokenJwt = new Token();
-        tokenJwt.setToken(authTokens.getJwt());
-        tokenJwt.setUser(userPassword.getUser());
-        tokenRepository.save(tokenJwt);
-
         return authTokens;
     }
 
@@ -57,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
         Token tokenFromDb = tokenRepository.findByToken(token).orElseThrow(SecurityException::new);
 
         if (!jwtService.validateToken(token)) {
+            tokenRepository.delete(tokenFromDb);
             throw new SecurityException();
         }
         tokenRepository.delete(tokenFromDb);

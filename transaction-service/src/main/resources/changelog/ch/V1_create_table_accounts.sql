@@ -3,7 +3,8 @@
 CREATE TABLE accounts
 (
     id          SERIAL      PRIMARY KEY,
-    number      INTEGER     NOT NULL UNIQUE,
+    user_id     INTEGER     NOT NULL,
+    number      varchar(20) NOT NULL UNIQUE,
     type        VARCHAR(50) NOT NULL,
     balance     DECIMAL     NOT NULL DEFAULT 0,
     lock        BOOLEAN     NOT NULL DEFAULT FALSE,

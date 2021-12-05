@@ -46,6 +46,9 @@ public class KafkaConfigMaxbank {
     @Value("${kafka.bootstrap}")
     private String kafkaBootstrapServers;
 
+    @Value("${spring.kafka.consumer.group-id}")
+    private String kafkaGroupId;
+
     @Bean
     public String kafkaBootstrapServers() {
         log.info("Using kafka brokers: {}", kafkaBootstrapServers);
@@ -99,6 +102,7 @@ public class KafkaConfigMaxbank {
     public ConsumerFactory<String, String> consumerFactory(String kafkaBootstrapServers) {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaGroupId);
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         configProps.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);

@@ -28,8 +28,8 @@ public class Card {
     @Column(name = "user_id", nullable = false)
     private Integer userId;
 
-    @Column(name = "number", nullable = false)
-    private Integer number;
+    @Column(name = "number", nullable = false, unique = true)
+    private String number;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 50)
@@ -51,4 +51,7 @@ public class Card {
 
     @Column(name = "lock", nullable = false)
     private Boolean lock = false;
+
+    @Column(name = "pin", nullable = false)
+    private String pin;
 }

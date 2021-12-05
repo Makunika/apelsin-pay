@@ -15,6 +15,9 @@ spring:
 
   application:
     name: transaction-service
+  kafka:
+    consumer:
+      group-id: transaction-service-1
 
 feign:
   client:
@@ -40,3 +43,7 @@ app:
 
 kafka:
   bootstrap: localhost:9092
+
+
+bank:
+  bik: 96754
