@@ -6,7 +6,7 @@
         <groupId>ru.pshiblo</groupId>
         <artifactId>maxbank</artifactId>
         <version>1.0</version>
-        <relativePath/>
+        <relativePath>..</relativePath>
     </parent>
 
     <artifactId>auth-service</artifactId>

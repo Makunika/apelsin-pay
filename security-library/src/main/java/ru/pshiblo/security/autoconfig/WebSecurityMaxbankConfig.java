@@ -37,8 +37,9 @@ public class WebSecurityMaxbankConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(securityProperties.getWhiteListUrl().toArray(String[]::new)).authenticated()
-                .anyRequest().permitAll()
+                .antMatchers(securityProperties.getWhiteListUrl().toArray(String[]::new)).permitAll()
+                .antMatchers("/app/**").permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .apply(new JwtConfigurer(jwtTokenProvider));
     }
