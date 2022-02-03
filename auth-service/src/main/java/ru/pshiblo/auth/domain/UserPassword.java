@@ -28,7 +28,7 @@ public class UserPassword {
     @Column(name = "login", nullable = false, length = 100)
     private String login;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

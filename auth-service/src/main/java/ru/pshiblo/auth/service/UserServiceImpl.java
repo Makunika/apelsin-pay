@@ -13,6 +13,8 @@ import ru.pshiblo.common.protocol.user.LargeUserInfo;
 import ru.pshiblo.common.protocol.user.SmallUserInfo;
 import ru.pshiblo.common.protocol.user.UserInfo;
 
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -68,5 +70,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(int userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException(userId, User.class));
+    }
+
+    @Override
+    public User getByUsername(String username) {
+        return userPasswordRepository.findByLogin(username).flatMap(UserPassword::getUser).orElseThrow(() -> new NotFoundException(username, User.class));
     }
 }
