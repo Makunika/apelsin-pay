@@ -1,5 +1,6 @@
 package ru.pshiblo.auth.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 @Table(name = "users")
 @Entity
 public class User implements UserDetails {
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -29,18 +31,23 @@ public class User implements UserDetails {
     @Column(name = "middle_name", length = 100)
     private String middleName;
 
+    @JsonIgnore
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
+    @JsonIgnore
     @Column(name = "phone", nullable = false, length = 100)
     private String phone;
 
+    @JsonIgnore
     @Column(name = "birthday", nullable = false)
     private LocalDate birthday;
 
+    @JsonIgnore
     @Column(name = "passport_series", nullable = false)
     private Integer passportSeries;
 
+    @JsonIgnore
     @Column(name = "passport_number", nullable = false)
     private Integer passportNumber;
 
@@ -87,4 +94,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
 }

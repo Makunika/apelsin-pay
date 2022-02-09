@@ -1,17 +1,21 @@
 package ru.pshiblo.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import ru.pshiblo.auth.domain.Role;
 import ru.pshiblo.auth.domain.User;
 import ru.pshiblo.auth.domain.UserPassword;
 import ru.pshiblo.auth.encoder.Hmac512PasswordEncoder;
-import ru.pshiblo.auth.repository.TokenRepository;
+import ru.pshiblo.auth.repository.RoleRepository;
 import ru.pshiblo.auth.repository.UserPasswordRepository;
 import ru.pshiblo.auth.repository.UserRepository;
 import ru.pshiblo.auth.service.interfaces.RegisterService;
 import ru.pshiblo.common.exception.AlreadyExistException;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.common.exception.SecurityException;
+
+import java.util.List;
 
 /**
  * @author Maxim Pshiblo
@@ -22,8 +26,8 @@ public class RegisterServiceImpl implements RegisterService {
 
     private final UserPasswordRepository userPasswordRepository;
     private final Hmac512PasswordEncoder passwordEncoder;
-    private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public User registerUser(User user, String login, String password) {
@@ -33,6 +37,7 @@ public class RegisterServiceImpl implements RegisterService {
             throw new AlreadyExistException("User already exist");
         }
         String passwordHash = passwordEncoder.encode(password);
+        user.setRoles(List.of(getUserRole()));
         user = userRepository.save(user);
         UserPassword userPassword = new UserPassword();
         userPassword.setUser(user);
@@ -40,6 +45,11 @@ public class RegisterServiceImpl implements RegisterService {
         userPassword.setLogin(login);
         userPasswordRepository.save(userPassword);
         return user;
+    }
+
+    @Cacheable(value = "user_role")
+    public Role getUserRole() {
+        return roleRepository.findByName("ROLE_USER");
     }
 
     @Override
@@ -51,6 +61,5 @@ public class RegisterServiceImpl implements RegisterService {
         String newPasswordHash = passwordEncoder.encode(newPassword);
         userPassword.setPasswordHash(newPasswordHash);
         userPasswordRepository.save(userPassword);
-        tokenRepository.deleteByUser_Id(userPassword.getUser().getId());
     }
 }

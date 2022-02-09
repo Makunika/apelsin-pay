@@ -15,6 +15,5 @@ public interface UserService {
     SmallUserInfo getSmallUserInfo(int userId);
     String getPassport(int userId);
     User getUserById(int userId);
-
     User getByUsername(String username);
 }

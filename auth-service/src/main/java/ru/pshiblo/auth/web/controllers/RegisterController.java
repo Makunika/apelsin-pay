@@ -1,6 +1,7 @@
 package ru.pshiblo.auth.web.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ public class RegisterController {
     private final RegisterService registerService;
     private final UserMapper userMapper;
 
+    @PreAuthorize("hasAuthority('server')")
     @PostMapping
     public RegisterResponseDto registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
         return userMapper.toDTO(
@@ -34,6 +36,7 @@ public class RegisterController {
         );
     }
 
+    @PreAuthorize("hasAuthority('server')")
     @PutMapping("change-password")
     public void changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
         registerService.changePassword(changePasswordDto.getLogin(), changePasswordDto.getPassword(), changePasswordDto.getNewPassword());

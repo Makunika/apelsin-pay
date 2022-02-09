@@ -74,6 +74,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByUsername(String username) {
-        return userPasswordRepository.findByLogin(username).flatMap(UserPassword::getUser).orElseThrow(() -> new NotFoundException(username, User.class));
+        UserPassword userPassword = userPasswordRepository.findByLogin(username)
+                .orElseThrow(() -> new NotFoundException(username, User.class));
+        return userPassword.getUser();
     }
 }
