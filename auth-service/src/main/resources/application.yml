@@ -12,7 +12,7 @@ spring:
 
   liquibase:
     change-log: classpath:/changelog/db.changelog-master.xml
-    enabled: false
+    enabled: true
 
   application:
     name: auth-service

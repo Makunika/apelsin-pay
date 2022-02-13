@@ -2,6 +2,7 @@ package ru.pshiblo.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.pshiblo.auth.domain.Role;
 import ru.pshiblo.auth.domain.User;
@@ -25,7 +26,7 @@ import java.util.List;
 public class RegisterServiceImpl implements RegisterService {
 
     private final UserPasswordRepository userPasswordRepository;
-    private final Hmac512PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 

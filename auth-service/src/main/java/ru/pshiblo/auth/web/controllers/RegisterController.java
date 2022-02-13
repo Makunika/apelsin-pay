@@ -2,11 +2,7 @@ package ru.pshiblo.auth.web.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.pshiblo.auth.mappings.UserMapper;
 import ru.pshiblo.auth.service.interfaces.RegisterService;
 import ru.pshiblo.auth.web.dto.request.ChangePasswordDto;
@@ -24,7 +20,13 @@ public class RegisterController {
     private final RegisterService registerService;
     private final UserMapper userMapper;
 
-    @PreAuthorize("hasAuthority('server')")
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @GetMapping()
+    public String ping() {
+        return "ping";
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_server')")
     @PostMapping
     public RegisterResponseDto registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
         return userMapper.toDTO(
@@ -36,7 +38,7 @@ public class RegisterController {
         );
     }
 
-    @PreAuthorize("hasAuthority('server')")
+    @PreAuthorize("hasAuthority('SCOPE_server')")
     @PutMapping("change-password")
     public void changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
         registerService.changePassword(changePasswordDto.getLogin(), changePasswordDto.getPassword(), changePasswordDto.getNewPassword());

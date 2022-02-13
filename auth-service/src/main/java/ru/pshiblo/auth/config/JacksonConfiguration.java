@@ -1,10 +1,15 @@
 package ru.pshiblo.auth.config;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.jackson2.CoreJackson2Module;
+
+import java.lang.reflect.Field;
 
 @Configuration
 public class JacksonConfiguration {
@@ -17,8 +22,6 @@ public class JacksonConfiguration {
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(coreJackson2Module());
-        return mapper;
+        return JsonMapper.builder().configure(MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS, false).build();
     }
 }
