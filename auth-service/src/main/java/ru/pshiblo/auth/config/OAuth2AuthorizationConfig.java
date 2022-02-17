@@ -12,9 +12,16 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OidcConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OidcUserInfoEndpointConfigurer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -23,6 +30,7 @@ import org.springframework.security.oauth2.server.authorization.JdbcOAuth2Author
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -36,21 +44,20 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
 @Configuration(proxyBeanMethods = false)
-@RequiredArgsConstructor
 public class OAuth2AuthorizationConfig {
-
-//    private final PasswordEncoder passwordEncoder;
-//    private final Environment env;
 
     @Bean
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
 
         RegisteredClient clientBrowser = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("browser_main")
-                .clientSecret(passwordEncoder.encode("server_main_secret"))
-//                .clientSecret("secret")
+                .clientSecret(passwordEncoder.encode("browser_secret"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.PASSWORD)
+                .authorizationGrantType(AuthorizationGrantType.IMPLICIT)
+                .authorizationGrantType(AuthorizationGrantType.JWT_BEARER)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .clientName("browser main")
@@ -59,6 +66,7 @@ public class OAuth2AuthorizationConfig {
                 .redirectUri("http://localhost:8080/autorized")
                 .redirectUri("https://oidcdebugger.com/debug")
                 .build();
+
 
         RegisteredClient serverClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("server_main")
@@ -97,6 +105,28 @@ public class OAuth2AuthorizationConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
+        http
+                .authenticationProvider(new AuthenticationProvider() {
+                    @Override
+                    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                        if (authentication instanceof OAuth2AuthorizationCodeRequestAuthenticationToken) {
+                            System.out.println("auth code");
+                        }
+
+                        System.out.println(authentication.getPrincipal().toString());
+
+                        return authentication;
+                    }
+
+                    @Override
+                    public boolean supports(Class<?> aClass) {
+                        return AbstractAuthenticationToken.class.isAssignableFrom(aClass);
+                    }
+        });
+
+        http.getConfigurer(OidcUserInfoEndpointConfigurer.class)
+
         return http.formLogin(Customizer.withDefaults()).build();
     }
 
@@ -132,6 +162,7 @@ public class OAuth2AuthorizationConfig {
     @Bean
     public ProviderSettings providerSettings() {
         return ProviderSettings.builder()
+                .oidcUserInfoEndpoint("/userinfo")
                 .issuer("http://auth-server:2270")
                 .build();
     }

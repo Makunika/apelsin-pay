@@ -20,12 +20,6 @@ spring:
 server:
   port: 2270
 
-
 encoder:
   sha512:
     salt: saltsalt
-
-logging:
-  level:
-    root: debug
-#    org.springframework.security: debug
