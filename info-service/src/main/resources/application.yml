@@ -1,0 +1,19 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: info-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+      fail-fast: true
+      password: ${CONFIG_SERVICE_PASSWORD}
+      username: user
+  config:
+    import: configserver:http://localhost:8888
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:key.pub

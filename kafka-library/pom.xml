@@ -12,12 +12,6 @@
 
     <artifactId>kafka-library</artifactId>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
