@@ -16,8 +16,8 @@ spring:
 security:
   oauth2:
     client:
-      client-id: info-service
-      client-secret: ${INFO_SERVICE_PASSWORD}
+      client-id: account-service
+      client-secret: ${ACCOUNT_SERVICE_PASSWORD}
       grant-type: client_credentials
       scope: server
       acess-token-uri: http://localhost:5000/auth/oauth/token

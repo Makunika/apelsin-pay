@@ -29,3 +29,6 @@ VALUES('ROLE_APP');
 
 INSERT INTO roles(name)
 VALUES('ROLE_USER');
+
+INSERT INTO public.user_roles (id, user_id, role_id) VALUES (1, 1, 3);
+

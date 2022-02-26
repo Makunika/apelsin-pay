@@ -6,6 +6,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.pshiblo.security.AuthUtils;
+import ru.pshiblo.security.model.AuthUser;
 
 import java.security.Principal;
 
@@ -14,9 +16,7 @@ public class PingController {
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @GetMapping("/ping")
-    public Principal get(@AuthenticationPrincipal Principal principal) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object principal1 = authentication.getPrincipal();
-        return principal;
+    public AuthUser get() {
+        return AuthUtils.getAuthUser();
     }
 }

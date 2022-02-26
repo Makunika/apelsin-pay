@@ -23,13 +23,6 @@ public class RegisterController {
 
     private final RegisterService registerService;
     private final UserMapper userMapper;
-    private final ObjectMapper objectMapper;
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @GetMapping()
-    public String ping() {
-        return "ping";
-    }
 
     @PreAuthorize("hasAuthority('SCOPE_server')")
     @PostMapping

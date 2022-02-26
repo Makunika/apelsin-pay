@@ -15,6 +15,7 @@
         <module>registry-service</module>
         <module>gateway-service</module>
         <module>monitoring-service</module>
+        <module>account-service</module>
     </modules>
 
     <parent>

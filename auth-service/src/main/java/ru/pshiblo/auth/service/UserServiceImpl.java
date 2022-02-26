@@ -2,6 +2,7 @@ package ru.pshiblo.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.pshiblo.auth.domain.Role;
 import ru.pshiblo.auth.domain.User;
 import ru.pshiblo.auth.domain.UserPassword;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;

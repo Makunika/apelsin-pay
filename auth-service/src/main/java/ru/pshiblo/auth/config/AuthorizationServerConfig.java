@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,8 +19,12 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
+import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import ru.pshiblo.auth.model.AuthUser;
 
 import javax.sql.DataSource;
 import java.security.KeyPair;
@@ -46,12 +51,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .tokenKeyAccess("permitAll()")
                 .checkTokenAccess("permitAll()")
                 .passwordEncoder(NoOpPasswordEncoder.getInstance());
+
     }
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-
-        String password = env.getProperty("INFO_SERVICE_PASSWORD");
 
         //clients.jdbc(dataSource)
         clients.inMemory()
@@ -62,7 +66,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .scopes("user")
                 .and()
                 .withClient("info-service")
-                .secret(passwordEncoder.encode(password))
+                .secret(passwordEncoder.encode(env.getProperty("INFO_SERVICE_PASSWORD")))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server")
+                .and()
+                .withClient("account-service-service")
+                .secret(passwordEncoder.encode(env.getProperty("ACCOUNT_SERVICE_PASSWORD")))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
                 .scopes("server");
 
@@ -77,16 +86,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .accessTokenConverter(accessTokenConverter());
     }
 
-    private static RSAKey generateRsa() {
-        KeyPair keyPair = generateRsaKey();
-        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        return new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString())
-                .build();
-    }
-
     @SneakyThrows
     private static KeyPair generateRsaKey() {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -94,10 +93,24 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         return keyPairGenerator.generateKeyPair();
     }
 
-
     @Bean
     public JwtAccessTokenConverter accessTokenConverter(){
         final JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+        DefaultAccessTokenConverter tokenConverter = new DefaultAccessTokenConverter();
+        tokenConverter.setUserTokenConverter(new DefaultUserAuthenticationConverter() {
+            @Override
+            public Map<String, ?> convertUserAuthentication(Authentication authentication) {
+                Map<String, Object> userMap = (Map<String, Object>) super.convertUserAuthentication(authentication);
+                if (authentication.getPrincipal() instanceof AuthUser) {
+                    AuthUser authUser = (AuthUser) authentication.getPrincipal();
+                    userMap.put("id", authUser.getId());
+                    userMap.put("email", authUser.getEmail());
+                    userMap.put("name", authUser.getName());
+                }
+                return userMap;
+            }
+        });
+        jwtAccessTokenConverter.setAccessTokenConverter(tokenConverter);
         jwtAccessTokenConverter.setKeyPair(generateRsaKey());
         return jwtAccessTokenConverter;
     }

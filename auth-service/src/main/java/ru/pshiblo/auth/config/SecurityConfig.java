@@ -32,6 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/actuator/**").permitAll()
+                .antMatchers("/oauth/token_key_new").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

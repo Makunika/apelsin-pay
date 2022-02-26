@@ -1,4 +1,4 @@
-package ru.pshiblo.auth.domain;
+package ru.pshiblo.account.domain;
 
 import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @Table(name = "users")
 @Entity
 public class User {
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -53,8 +54,4 @@ public class User {
 
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "user")
     private UserPassword userPassword;
-
-    public String getName() {
-        return lastName + " " + firstName;
-    }
 }
