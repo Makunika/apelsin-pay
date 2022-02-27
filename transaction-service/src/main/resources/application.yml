@@ -1,4 +1,7 @@
 spring:
+  application:
+    name: transaction-service
+
   datasource:
     url: jdbc:postgresql://192.168.1.102:5432/maxbank-transactions
     username: maxbank-transactions
@@ -8,42 +11,10 @@ spring:
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQL10Dialect
     hibernate:
-      ddl-auto: none
-
-  liquibase:
-    change-log: classpath:/changelog/db.changelog-master.xml
-
-  application:
-    name: transaction-service
-  kafka:
-    consumer:
-      group-id: transaction-service-1
-
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
-        loggerLevel: basic
+      ddl-auto: create
 
 server:
   port: 3900
-
-auth-service:
-  ribbon:
-    listOfServers: http://localhost:2270
-
-
-app:
-  security:
-    jwt-app-secret: ans
-    jwt-secret: anus
-    white-list-url:
-
-kafka:
-  bootstrap: localhost:9092
-
 
 bank:
   bik: 96754

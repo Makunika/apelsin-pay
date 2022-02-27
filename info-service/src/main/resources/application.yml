@@ -1,0 +1,23 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: info-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+      fail-fast: true
+      password: ${CONFIG_SERVICE_PASSWORD}
+      username: user
+  config:
+    import: configserver:http://localhost:8888
+
+
+security:
+  oauth2:
+    client:
+      client-id: info-service
+      client-secret: ${INFO_SERVICE_PASSWORD}
+      grant-type: client_credentials
+      scope: server
+      acess-token-uri: http://localhost:5000/auth/oauth/token

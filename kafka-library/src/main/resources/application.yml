@@ -1,2 +1,0 @@
-kafka:
-    bootstrap: "localhost:9092"

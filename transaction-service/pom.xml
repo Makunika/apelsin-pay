@@ -6,41 +6,16 @@
         <artifactId>maxbank</artifactId>
         <groupId>ru.pshiblo</groupId>
         <version>1.0</version>
-        <relativePath>..</relativePath>
     </parent>
     <artifactId>transaction-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>transaction-service</name>
     <description>transaction-service</description>
-    <properties>
-        <java.version>17</java.version>
-        <spring-cloud.version>2020.0.4</spring-cloud.version>
-    </properties>
+
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
-            <version>2.2.9.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -49,18 +24,39 @@
         </dependency>
         <dependency>
             <groupId>ru.pshiblo</groupId>
+            <artifactId>security-library</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-sleuth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ru.pshiblo</groupId>
             <artifactId>common-library</artifactId>
             <version>1.0</version>
         </dependency>
+
         <dependency>
-            <groupId>ru.pshiblo</groupId>
-            <artifactId>kafka-library</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.pshiblo</groupId>
-            <artifactId>security-library</artifactId>
-            <version>1.0</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
