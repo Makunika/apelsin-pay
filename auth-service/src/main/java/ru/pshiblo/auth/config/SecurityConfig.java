@@ -36,10 +36,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated()
                 .and()
-                .csrf().disable()
+                .csrf().disable();
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 //.and()
-                .formLogin(withDefaults());
+                //.formLogin(withDefaults());
     }
 
     @Override

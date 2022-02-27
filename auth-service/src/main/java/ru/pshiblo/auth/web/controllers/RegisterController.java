@@ -24,7 +24,7 @@ public class RegisterController {
     private final RegisterService registerService;
     private final UserMapper userMapper;
 
-    @PreAuthorize("hasAuthority('SCOPE_server')")
+    @PreAuthorize("#oauth2.hasScope('server')")
     @PostMapping
     public RegisterResponseDto registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
         return userMapper.toDTO(
@@ -36,7 +36,7 @@ public class RegisterController {
         );
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_server')")
+    @PreAuthorize("#oauth2.hasScope('server')")
     @PutMapping("change-password")
     public void changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
         registerService.changePassword(changePasswordDto.getLogin(), changePasswordDto.getPassword(), changePasswordDto.getNewPassword());

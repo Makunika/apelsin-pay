@@ -4,7 +4,7 @@ spring:
 
   liquibase:
     change-log: classpath:/changelog/db.changelog-master.xml
-    enabled: true
+    enabled: false
 
   cloud:
     config:
