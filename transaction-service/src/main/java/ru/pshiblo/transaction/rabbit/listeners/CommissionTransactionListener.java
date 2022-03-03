@@ -1,15 +1,18 @@
-package ru.pshiblo.transaction.kafka.listeners;
+package ru.pshiblo.transaction.rabbit.listeners;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
-import ru.pshiblo.transaction.kafka.KafkaTopics;
+import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.AccountRepository;
 import ru.pshiblo.transaction.repository.CardRepository;
 import ru.pshiblo.transaction.repository.TransactionRepository;
@@ -26,9 +29,16 @@ public class CommissionTransactionListener {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final CardRepository cardRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
-    @KafkaListener(topics = KafkaTopics.COMMISSION)
+    @RabbitListener(
+            bindings = @QueueBinding(
+                    key = RabbitConsts.COMMISSION_ROUTE,
+                    value = @Queue(RabbitConsts.COMMISSION_QUEUE),
+                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+            ),
+            errorHandler = "errorTransactionHandler"
+    )
     @Transactional
     public void commissionTransaction(@Payload Transaction transaction) {
         transaction = transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
@@ -44,7 +54,7 @@ public class CommissionTransactionListener {
             transaction.setStatus(TransactionStatus.COMMISSION);
             if (transactionRepository.existsByStatusAndId(TransactionStatus.APPROVED, transaction.getId())) {
                 transaction = transactionRepository.save(transaction);
-                kafkaTemplate.send(KafkaTopics.SEND, transaction);
+                rabbitTemplate.convertAndSend(RabbitConsts.SEND_ROUTE, transaction);
             }
         }
     }

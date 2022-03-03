@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Account;
 import ru.pshiblo.transaction.enums.Currency;
-import ru.pshiblo.transaction.feign.AuthServiceClient;
 import ru.pshiblo.transaction.repository.AccountRepository;
 import ru.pshiblo.transaction.service.interfaces.AccountService;
 import ru.pshiblo.transaction.utils.RandomGenerator;
@@ -24,7 +23,6 @@ import java.util.List;
 class AccountServiceImpl implements AccountService {
 
     private final AccountRepository repository;
-    private final AuthServiceClient authServiceClient;
 
     @Override
     public Account create(int userId, Currency currency) {

@@ -19,27 +19,26 @@ import java.math.BigDecimal;
 @Entity
 public class Account {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     private Integer userId;
 
     @Column(name = "number", nullable = false)
     private String number;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 50)
+    @Column(name = "type", nullable = false)
     private AccountType type;
 
-    @Column(name = "balance", nullable = false, precision = 131089)
+    @Column(name = "balance", nullable = false)
     private BigDecimal balance;
 
     @Column(name = "lock", nullable = false)
     private Boolean lock = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "currency", nullable = false, length = 3)
+    @Column(name = "currency", nullable = false)
     private Currency currency;
 }

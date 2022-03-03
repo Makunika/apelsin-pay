@@ -7,7 +7,6 @@
     <modules>
         <module>common-library</module>
         <module>auth-service</module>
-        <module>kafka-library</module>
         <module>security-library</module>
         <module>info-service</module>
         <module>transaction-service</module>

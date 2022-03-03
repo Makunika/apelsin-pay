@@ -6,16 +6,14 @@ import org.springframework.stereotype.Service;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Account;
 import ru.pshiblo.transaction.domain.Card;
-import ru.pshiblo.transaction.domain.User;
 import ru.pshiblo.transaction.enums.Currency;
 import ru.pshiblo.transaction.repository.CardRepository;
-import ru.pshiblo.transaction.repository.UserRepository;
 import ru.pshiblo.transaction.service.interfaces.AccountService;
 import ru.pshiblo.transaction.service.interfaces.CardService;
+import ru.pshiblo.transaction.utils.RandomGenerator;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.random.RandomGenerator;
 
 /**
  * @author Maxim Pshiblo
@@ -25,11 +23,10 @@ import java.util.random.RandomGenerator;
 public class CardServiceImpl implements CardService {
 
     private final AccountService accountService;
-    private final UserRepository userRepository;
     private final CardRepository cardRepository;
 
     @Value("bank.bik")
-    private final String bankBik;
+    private String bankBik;
 
     @Override
     public Card createCard(Card card, Currency currency) {
@@ -39,26 +36,23 @@ public class CardServiceImpl implements CardService {
     @Override
     public Card createCard(Card card, Account account) {
 
-        User user = userRepository.findById(card.getUserId())
-                .orElseThrow(() -> new NotFoundException(card.getUserId(), User.class));
-
         //send notify to email maybe
 
         Card newCard = new Card();
         newCard.setAccount(account);
         newCard.setExpired(LocalDate.now().plusYears(4));
-        newCard.setCvc(RandomGenerator.getDefault().nextInt(0, 1000));
-        newCard.setPin(String.valueOf(RandomGenerator.getDefault().nextLong(0, 10000)));
+        newCard.setCvc(Integer.parseInt(RandomGenerator.randomNumber(4)));
+        newCard.setPin(RandomGenerator.randomNumber(5));
         newCard.setTypePay(card.getTypePay());
         newCard.setType(card.getType());
-        newCard.setUserId(user.getId());
+        newCard.setUserId(card.getUserId());
         newCard.setLock(false);
         
         String currentBik = card.getTypePay().getNumber() + bankBik;
         StringBuilder number;
         do {
             number = new StringBuilder(currentBik);
-            number.append(ru.pshiblo.transaction.utils.RandomGenerator.randomNumber(9));
+            number.append(RandomGenerator.randomNumber(9));
             number.append(8);
         } while (cardRepository.existsByNumber(number.toString()));
         newCard.setNumber(number.toString());
