@@ -1,4 +1,4 @@
-package ru.pshiblo.transaction.service;
+package ru.pshiblo.transaction.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -7,7 +7,8 @@ import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
-import ru.pshiblo.transaction.service.interfaces.TransactionService;
+import ru.pshiblo.transaction.service.CardService;
+import ru.pshiblo.transaction.service.TransactionService;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +18,12 @@ import java.util.Optional;
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository repository;
+    private final CardService cardService;
     private final RabbitTemplate rabbitTemplate;
 
     @Override
     public Transaction create(Transaction transaction) {
-        transaction.setStatus(TransactionStatus.OPENED);
+        transaction.setStatus(TransactionStatus.START_OPEN);
         Transaction savedTransaction = repository.save(transaction);
         rabbitTemplate.convertAndSend(RabbitConsts.OPEN_ROUTE, savedTransaction);
         return savedTransaction;

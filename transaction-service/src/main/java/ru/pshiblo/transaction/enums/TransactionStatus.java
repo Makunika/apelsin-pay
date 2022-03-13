@@ -4,11 +4,12 @@ package ru.pshiblo.transaction.enums;
  * @author Maxim Pshiblo
  */
 public enum TransactionStatus {
-    OPENED,
+    START_OPEN,
+    END_OPEN,
+    START_COMMISSION,
+    END_COMMISSION,
+    START_SEND,
+    END_SEND,
     CLOSED,
-    CANCELED,
-    ON_APPROVE,
-    SENT,
-    APPROVED,
-    COMMISSION;
+    CANCELED;
 }

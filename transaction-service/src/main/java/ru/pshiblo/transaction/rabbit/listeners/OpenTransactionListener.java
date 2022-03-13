@@ -16,8 +16,9 @@ import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
-import ru.pshiblo.transaction.service.interfaces.AccountService;
-import ru.pshiblo.transaction.service.interfaces.CardService;
+import ru.pshiblo.transaction.service.AccountService;
+import ru.pshiblo.transaction.service.CardService;
+import ru.pshiblo.transaction.service.CurrencyService;
 
 /**
  * @author Maxim Pshiblo
@@ -30,6 +31,7 @@ public class OpenTransactionListener {
     private final RabbitTemplate rabbitTemplate;
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
+    private final CurrencyService currencyService;
     private final CardService cardService;
 
 
@@ -43,29 +45,40 @@ public class OpenTransactionListener {
     )
     @Transactional
     public void openTransaction(@Payload Transaction transaction) {
-        log.info("trans open!");
-        log.info(transaction.toString());
-        transaction.setStatus(TransactionStatus.OPENED);
 
         Account account = accountService.getByNumber(transaction.getFromNumber());
+        Account toAccount = transaction.isToCard() ?
+                cardService.getByNumber(transaction.getToNumber()).getAccount() :
+                accountService.getByNumber(transaction.getToNumber());
+
+        if (account.getId().equals(toAccount.getId())) {
+            throw new TransactionNotAllowedException("Account equals");
+        }
 
         if (account.getLock()) {
             throw new TransactionNotAllowedException("Account is lock");
         }
+        if (toAccount.getLock()) {
+            throw new TransactionNotAllowedException("To account is lock");
+        }
 
-        if (account.getBalance().compareTo(transaction.getMoney()) > 0) {
+        if (account.getBalance().compareTo(
+                currencyService.convertMoney(transaction.getCurrency(), account.getCurrency(), transaction.getMoney())
+        ) < 0) {
             throw new TransactionNotAllowedException("Balance small");
         }
+
+        transaction.setCurrencyFrom(account.getCurrency());
+        transaction.setCurrencyTo(toAccount.getCurrency());
 
         transaction = transactionRepository.save(transaction);
 
         //if may be ban - on approve!!!!
 
-        transaction.setStatus(TransactionStatus.APPROVED);
-
         if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
-            //TODO: save to history
+            transaction.setStatus(TransactionStatus.END_OPEN);
             transactionRepository.save(transaction);
+            transaction.setStatus(TransactionStatus.START_COMMISSION);
             rabbitTemplate.convertAndSend(RabbitConsts.COMMISSION_ROUTE, transaction);
         }
     }

@@ -1,5 +1,6 @@
-package ru.pshiblo.transaction.service.interfaces;
+package ru.pshiblo.transaction.service;
 
+import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.domain.Account;
 import ru.pshiblo.transaction.domain.Card;
 import ru.pshiblo.transaction.enums.Currency;
@@ -17,4 +18,8 @@ public interface CardService {
     Card getByNumber(String number);
     boolean checkByPin(String number, int pin);
     boolean checkByCvc(String number, int cvc);
+    void changePin(String numberCard, String newPin, AuthUser authUser);
+    String getCvcByNumber(String number, AuthUser authUser);
+    void blockCard(Integer id, AuthUser authUser);
+    void blockAccountCard(Integer id, AuthUser authUser);
 }

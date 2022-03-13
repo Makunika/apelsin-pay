@@ -1,6 +1,7 @@
-package ru.pshiblo.transaction.web.dto;
+package ru.pshiblo.transaction.web.dto.request;
 
 import lombok.Data;
+import ru.pshiblo.transaction.enums.Currency;
 
 import java.math.BigDecimal;
 
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 public class OpenToAccountTransactionDto {
     private String toAccountNumber;
     private BigDecimal money;
-    private String fromCardNumber;
+    private String fromAccountNumber;
+    private Currency currency;
     private int cvc;
 }

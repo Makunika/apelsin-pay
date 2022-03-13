@@ -1,15 +1,18 @@
-package ru.pshiblo.transaction.service;
+package ru.pshiblo.transaction.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.pshiblo.common.exception.NotAllowedOperationException;
 import ru.pshiblo.common.exception.NotFoundException;
+import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.domain.Account;
 import ru.pshiblo.transaction.domain.Card;
+import ru.pshiblo.transaction.enums.AccountType;
 import ru.pshiblo.transaction.enums.Currency;
 import ru.pshiblo.transaction.repository.CardRepository;
-import ru.pshiblo.transaction.service.interfaces.AccountService;
-import ru.pshiblo.transaction.service.interfaces.CardService;
+import ru.pshiblo.transaction.service.AccountService;
+import ru.pshiblo.transaction.service.CardService;
 import ru.pshiblo.transaction.utils.RandomGenerator;
 
 import java.time.LocalDate;
@@ -25,12 +28,12 @@ public class CardServiceImpl implements CardService {
     private final AccountService accountService;
     private final CardRepository cardRepository;
 
-    @Value("bank.bik")
+    @Value("${bank.bik}")
     private String bankBik;
 
     @Override
     public Card createCard(Card card, Currency currency) {
-        return createCard(card, accountService.create(card.getUserId(), currency));
+        return createCard(card, accountService.create(card.getUserId(), currency, AccountType.CARD));
     }
 
     @Override
@@ -41,19 +44,17 @@ public class CardServiceImpl implements CardService {
         Card newCard = new Card();
         newCard.setAccount(account);
         newCard.setExpired(LocalDate.now().plusYears(4));
-        newCard.setCvc(Integer.parseInt(RandomGenerator.randomNumber(4)));
-        newCard.setPin(RandomGenerator.randomNumber(5));
+        newCard.setCvc(Integer.parseInt(RandomGenerator.randomNumber(3)));
+        newCard.setPin(RandomGenerator.randomNumber(4));
         newCard.setTypePay(card.getTypePay());
         newCard.setType(card.getType());
         newCard.setUserId(card.getUserId());
-        newCard.setLock(false);
-        
+        newCard.setLockCard(false);
         String currentBik = card.getTypePay().getNumber() + bankBik;
         StringBuilder number;
         do {
             number = new StringBuilder(currentBik);
-            number.append(RandomGenerator.randomNumber(9));
-            number.append(8);
+            number.append(RandomGenerator.randomNumber(6));
         } while (cardRepository.existsByNumber(number.toString()));
         newCard.setNumber(number.toString());
 
@@ -85,5 +86,53 @@ public class CardServiceImpl implements CardService {
     public boolean checkByCvc(String number, int cvc) {
         Card card = getByNumber(number);
         return card.getCvc() == cvc;
+    }
+
+    @Override
+    public void changePin(String numberCard, String newPin, AuthUser authUser) {
+        Card card = getByNumber(numberCard);
+
+        if (!card.getUserId().equals(((int) authUser.getId())) || newPin.length() != 4) {
+            throw new NotAllowedOperationException("Forbidden");
+        }
+
+        card.setPin(newPin);
+        cardRepository.save(card);
+    }
+
+    @Override
+    public String getCvcByNumber(String number, AuthUser authUser) {
+        Card card = getByNumber(number);
+
+        if (!card.getUserId().equals(((int) authUser.getId()))) {
+            throw new NotAllowedOperationException("Forbidden");
+        }
+
+        return card.getCvc().toString();
+    }
+
+    @Override
+    public void blockCard(Integer id, AuthUser authUser) {
+        Card card = getById(id);
+
+        if (!card.getUserId().equals(((int) authUser.getId()))) {
+            throw new NotAllowedOperationException("Forbidden");
+        }
+
+        card.setLockCard(true);
+        cardRepository.save(card);
+    }
+
+    @Override
+    public void blockAccountCard(Integer id, AuthUser authUser) {
+        Card card = getById(id);
+
+        if (!card.getUserId().equals(((int) authUser.getId()))) {
+            throw new NotAllowedOperationException("Forbidden");
+        }
+
+        card.setLockCard(true);
+        card.getAccount().setLock(true);
+        cardRepository.save(card);
     }
 }

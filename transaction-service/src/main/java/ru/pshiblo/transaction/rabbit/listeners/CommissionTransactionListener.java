@@ -43,19 +43,23 @@ public class CommissionTransactionListener {
     public void commissionTransaction(@Payload Transaction transaction) {
         transaction = transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
 
-        if (transaction.getStatus() == TransactionStatus.APPROVED) {
+        transaction.setCommissionRate(
+                transaction.isInner() ?
+                        new BigDecimal("0.05") :
+                        new BigDecimal("0.1")
+        );
 
-            transaction.setCommission(
-                    transaction.isInner() ?
-                            new BigDecimal(0) :
-                            transaction.getMoney().multiply(new BigDecimal("0.05"))
-            );
+        BigDecimal commissionValue = transaction.getMoney().multiply(transaction.getCommissionRate());
+        transaction.setCommissionValue(commissionValue);
 
-            transaction.setStatus(TransactionStatus.COMMISSION);
-            if (transactionRepository.existsByStatusAndId(TransactionStatus.APPROVED, transaction.getId())) {
-                transaction = transactionRepository.save(transaction);
-                rabbitTemplate.convertAndSend(RabbitConsts.SEND_ROUTE, transaction);
-            }
+        BigDecimal moneyWithCommission = transaction.getMoney().add(commissionValue);
+        transaction.setMoneyWithCommission(moneyWithCommission);
+
+        if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
+            transaction.setStatus(TransactionStatus.END_COMMISSION);
+            transaction = transactionRepository.save(transaction);
+            transaction.setStatus(TransactionStatus.START_SEND);
+            rabbitTemplate.convertAndSend(RabbitConsts.SEND_ROUTE, transaction);
         }
     }
 }

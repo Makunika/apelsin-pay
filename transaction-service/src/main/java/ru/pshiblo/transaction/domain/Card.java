@@ -50,7 +50,7 @@ public class Card {
     private LocalDate expired;
 
     @Column(name = "lock", nullable = false)
-    private Boolean lock = false;
+    private Boolean lockCard = false;
 
     @Column(name = "pin", nullable = false)
     private String pin;

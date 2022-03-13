@@ -17,10 +17,13 @@ import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
-import ru.pshiblo.transaction.service.interfaces.AccountService;
-import ru.pshiblo.transaction.service.interfaces.CardService;
+import ru.pshiblo.transaction.service.AccountService;
+import ru.pshiblo.transaction.service.CardService;
+import ru.pshiblo.transaction.service.CurrencyService;
 
 import javax.transaction.NotSupportedException;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * @author Maxim Pshiblo
@@ -33,6 +36,7 @@ public class SendTransactionListener {
     private final TransactionRepository transactionRepository;
     private final CardService cardService;
     private final RabbitTemplate rabbitTemplate;
+    private final CurrencyService currencyService;
 
     @RabbitListener(
             bindings = @QueueBinding(
@@ -43,39 +47,49 @@ public class SendTransactionListener {
             errorHandler = "errorTransactionHandler"
     )
     @Transactional
-    public synchronized void sendTransaction(@Payload Transaction transaction) throws NotSupportedException {
+    public void sendTransaction(@Payload Transaction transaction) throws NotSupportedException {
         transaction = transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
 
-        if (transaction.getStatus() == TransactionStatus.COMMISSION) {
-            if (transaction.isInner()) {
-                Account toAccount = transaction.isToCard() ?
-                        cardService.getByNumber(transaction.getToNumber()).getAccount() :
-                        accountService.getByNumber(transaction.getToNumber());
+        if (transaction.isInner()) {
+            Account toAccount = transaction.isToCard() ?
+                    cardService.getByNumber(transaction.getToNumber()).getAccount() :
+                    accountService.getByNumber(transaction.getToNumber());
 
-                Account fromAccount = accountService.getByNumber(transaction.getFromNumber());
+            Account fromAccount = accountService.getByNumber(transaction.getFromNumber());
 
-                Currency transactionCurrency = transaction.getCurrency();
+            Currency transactionCurrency = transaction.getCurrency();
+            Currency toAccountCurrency = toAccount.getCurrency();
+            Currency fromAccountCurrency = fromAccount.getCurrency();
 
-                //TODO: support Currency
+            BigDecimal moneyCurrentFrom = currencyService.convertMoney(
+                    transactionCurrency,
+                    fromAccountCurrency,
+                    Optional.ofNullable(transaction.getMoneyWithCommission()).orElse(transaction.getMoney())
+            );
 
-                if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
-                    if (accountService.getById(fromAccount.getId()).getBalance().compareTo(transaction.getMoney().add(transaction.getCommission())) < 0) {
-                        toAccount.setBalance(accountService.getById(toAccount.getId()).getBalance().add(transaction.getMoney()));
-                        accountService.save(toAccount);
-                        fromAccount.setBalance(accountService.getById(fromAccount.getId()).getBalance().subtract(transaction.getMoney().add(transaction.getCommission())));
-                        accountService.save(fromAccount);
+            BigDecimal moneyCurrentTo = currencyService.convertMoney(
+                    transactionCurrency,
+                    toAccountCurrency,
+                    transaction.getMoney()
+            );
 
-                        transaction.setStatus(TransactionStatus.SENT);
-                        transaction = transactionRepository.save(transaction);
+            if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
+                if (fromAccount.getBalance().compareTo(moneyCurrentFrom) > 0) {
+                    toAccount.setBalance(accountService.getById(toAccount.getId()).getBalance().add(moneyCurrentTo));
+                    accountService.save(toAccount);
+                    fromAccount.setBalance(accountService.getById(fromAccount.getId()).getBalance().subtract(moneyCurrentFrom));
+                    accountService.save(fromAccount);
 
-                        rabbitTemplate.convertAndSend(RabbitConsts.CLOSE_ROUTE, transaction);
-                    } else {
-                        throw new TransactionNotAllowedException();
-                    }
+                    transaction.setStatus(TransactionStatus.END_SEND);
+                    transaction = transactionRepository.save(transaction);
+
+                    rabbitTemplate.convertAndSend(RabbitConsts.CLOSE_ROUTE, transaction);
+                } else {
+                    throw new TransactionNotAllowedException();
                 }
-            } else {
-                throw new NotSupportedException("only is inner");
             }
+        } else {
+            throw new NotSupportedException("only is inner");
         }
     }
 }

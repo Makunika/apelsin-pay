@@ -1,4 +1,4 @@
-package ru.pshiblo.transaction.service;
+package ru.pshiblo.transaction.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,9 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Account;
+import ru.pshiblo.transaction.enums.AccountType;
 import ru.pshiblo.transaction.enums.Currency;
 import ru.pshiblo.transaction.repository.AccountRepository;
-import ru.pshiblo.transaction.service.interfaces.AccountService;
+import ru.pshiblo.transaction.service.AccountService;
 import ru.pshiblo.transaction.utils.RandomGenerator;
 
 import java.math.BigDecimal;
@@ -25,11 +26,12 @@ class AccountServiceImpl implements AccountService {
     private final AccountRepository repository;
 
     @Override
-    public Account create(int userId, Currency currency) {
+    public Account create(int userId, Currency currency, AccountType type) {
         Account account = new Account();
         account.setCurrency(currency);
         account.setBalance(new BigDecimal(0));
         account.setLock(false);
+        account.setType(type);
         String number;
         do {
             number = RandomGenerator.randomNumber(20);

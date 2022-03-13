@@ -4,6 +4,7 @@ import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.pshiblo.transaction.rabbit.listeners.ErrorHandler;
 
 @EnableRabbit
 @Configuration

@@ -6,5 +6,5 @@ package ru.pshiblo.transaction.enums;
 public enum Currency {
     RUB,
     EUR,
-    DOL
+    USD
 }

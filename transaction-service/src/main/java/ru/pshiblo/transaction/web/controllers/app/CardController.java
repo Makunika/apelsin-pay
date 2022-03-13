@@ -1,7 +1,7 @@
 package ru.pshiblo.transaction.web.controllers.app;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,38 +10,72 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.pshiblo.common.protocol.transaction.AccountInfo;
-import ru.pshiblo.common.protocol.transaction.CardInfo;
+import ru.pshiblo.security.AuthUtils;
+import ru.pshiblo.transaction.mappers.CardMapper;
+import ru.pshiblo.transaction.service.CardService;
+import ru.pshiblo.transaction.web.dto.request.ChangePinCardDto;
+import ru.pshiblo.transaction.web.dto.request.CreateCardDto;
+import ru.pshiblo.transaction.web.dto.response.CardResponseDto;
 
-import javax.transaction.NotSupportedException;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Maxim Pshiblo
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("app/money/card")
+@RequestMapping("api/card")
 public class CardController {
-    @SneakyThrows
-    @GetMapping("user/{userId}")
-    public List<CardInfo> getCardsByUserId(@PathVariable Integer userId) {
-        throw new NotSupportedException();
+
+    private final CardService cardService;
+    private final CardMapper cardMapper;
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping
+    public CardResponseDto createNew(@RequestBody CreateCardDto createCardDto) {
+        createCardDto.setUserId(((int) AuthUtils.getUserId()));
+        return cardMapper
+                .toDto(
+                        cardService.createCard(
+                                cardMapper.toEntity(createCardDto), createCardDto.getCurrency()
+                        )
+                );
     }
-    @SneakyThrows
-    @GetMapping("number/{number}")
-    public CardInfo getCardByNumber(@PathVariable Integer number) {
-        throw new NotSupportedException();
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PutMapping("/pin")
+    public void changePin(@RequestBody ChangePinCardDto changePinCardDto) {
+        cardService.changePin(changePinCardDto.getNumberCard(), changePinCardDto.getNewPin(), AuthUtils.getAuthUser());
     }
-    @SneakyThrows
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @GetMapping()
+    public Collection<CardResponseDto> getCardsByUserId() {
+        return cardMapper.toDtos(cardService.getByUserId((int) AuthUtils.getUserId()));
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @GetMapping("{number}")
+    public String getCvcByNumber(@PathVariable String number) {
+        return cardService.getCvcByNumber(number, AuthUtils.getAuthUser());
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_server')")
     @GetMapping("{id}")
-    public CardInfo getCardById(@PathVariable Integer id) {
-        throw new NotSupportedException();
+    public CardResponseDto getCardById(@PathVariable Integer id) {
+        return cardMapper.toDto(cardService.getById(id));
     }
-    @SneakyThrows
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
     @DeleteMapping("{id}")
     public void blockCard(@PathVariable Integer id) {
-        throw new NotSupportedException();
+        cardService.blockCard(id, AuthUtils.getAuthUser());
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @DeleteMapping("account/{id}")
+    public void blockAccountAndAll(@PathVariable Integer id) {
+        cardService.blockAccountCard(id, AuthUtils.getAuthUser());
     }
 
 

@@ -9,10 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.pshiblo.security.AuthUtils;
 import ru.pshiblo.transaction.domain.Transaction;
-import ru.pshiblo.transaction.enums.Currency;
-import ru.pshiblo.transaction.service.interfaces.TransactionService;
-import ru.pshiblo.transaction.web.dto.OpenToAccountTransactionDto;
-import ru.pshiblo.transaction.web.dto.OpenToCardTransactionDto;
+import ru.pshiblo.transaction.service.TransactionService;
+import ru.pshiblo.transaction.web.dto.request.OpenToAccountTransactionDto;
+import ru.pshiblo.transaction.web.dto.request.OpenToCardTransactionDto;
 
 /**
  * @author Maxim Pshiblo
@@ -29,12 +28,12 @@ public class TransactionsController {
     @PostMapping("to/card")
     public Transaction openToCardTransaction(@RequestBody OpenToCardTransactionDto dto) {
         Transaction newTransaction = new Transaction();
-        newTransaction.setCurrency(Currency.RUB);
+        newTransaction.setCurrency(dto.getCurrency());
         newTransaction.setToCard(true);
         newTransaction.setInner(true);
         newTransaction.setMoney(dto.getMoney());
         newTransaction.setToNumber(dto.getToCardNumber());
-        newTransaction.setFromNumber(dto.getFromCardNumber());
+        newTransaction.setFromNumber(dto.getFromAccountNumber());
         newTransaction.setOwnerUserId((int) AuthUtils.getUserId());
 
         return transactionService.create(newTransaction);
@@ -44,12 +43,12 @@ public class TransactionsController {
     @PostMapping("to/account")
     public Transaction openToAccountTransaction(@RequestBody OpenToAccountTransactionDto dto) {
         Transaction newTransaction = new Transaction();
-        newTransaction.setCurrency(Currency.RUB);
+        newTransaction.setCurrency(dto.getCurrency());
         newTransaction.setToCard(false);
         newTransaction.setInner(true);
         newTransaction.setMoney(dto.getMoney());
         newTransaction.setToNumber(dto.getToAccountNumber());
-        newTransaction.setFromNumber(dto.getFromCardNumber());
+        newTransaction.setFromNumber(dto.getFromAccountNumber());
         newTransaction.setOwnerUserId((int) AuthUtils.getUserId());
 
         return transactionService.create(newTransaction);

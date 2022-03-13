@@ -1,21 +1,26 @@
 package ru.pshiblo.transaction.domain;
 
 import lombok.Data;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.transaction.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
 
-@Table(name = "transactions")
+@Table(name = "transactions_history")
 @Entity
 @Data
-public class Transaction implements Serializable {
+@EntityListeners(AuditingEntityListener.class)
+public class TransactionHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Integer id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "transaction_id", nullable = false)
+    private Transaction transaction;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
@@ -65,4 +70,25 @@ public class Transaction implements Serializable {
 
     @Column(name = "money_with_commision")
     private BigDecimal moneyWithCommission;
+
+    public static TransactionHistory fromTransaction(Transaction transaction) {
+        TransactionHistory history = new TransactionHistory();
+        history.setTransaction(transaction);
+        history.status = transaction.getStatus();
+        history.toNumber = transaction.getToNumber();
+        history.fromNumber = transaction.getFromNumber();
+        history.isInner = transaction.isInner();
+        history.isToCard = transaction.isToCard();
+        history.commissionRate = transaction.getCommissionRate();
+        history.ownerUserId = transaction.getOwnerUserId();
+        history.reasonCancel = transaction.getReasonCancel();
+        history.toUserId = transaction.getToUserId();
+        history.currency = transaction.getCurrency();
+        history.money = transaction.getMoney();
+        history.currencyFrom = transaction.getCurrencyFrom();
+        history.currencyTo = transaction.getCurrencyTo();
+        history.moneyWithCommission = transaction.getMoneyWithCommission();
+        history.commissionValue = transaction.getCommissionValue();
+        return history;
+    }
 }

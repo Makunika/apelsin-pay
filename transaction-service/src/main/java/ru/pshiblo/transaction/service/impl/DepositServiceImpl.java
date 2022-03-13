@@ -1,8 +1,8 @@
-package ru.pshiblo.transaction.service;
+package ru.pshiblo.transaction.service.impl;
 
 import ru.pshiblo.transaction.domain.Account;
 import ru.pshiblo.transaction.domain.Deposit;
-import ru.pshiblo.transaction.service.interfaces.DepositService;
+import ru.pshiblo.transaction.service.DepositService;
 
 import java.util.List;
 

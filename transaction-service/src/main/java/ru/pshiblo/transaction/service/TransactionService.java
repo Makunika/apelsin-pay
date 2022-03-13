@@ -1,4 +1,4 @@
-package ru.pshiblo.transaction.service.interfaces;
+package ru.pshiblo.transaction.service;
 
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
