@@ -8,10 +8,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
+import ru.pshiblo.transaction.rabbit.RabbitConsts;
 
 /**
  * @author Maxim Pshiblo
@@ -32,8 +33,12 @@ public class CloseTransactionListener {
     )
     @Transactional
     public void closeTransaction(@Payload Transaction transaction) {
-        transaction.setStatus(TransactionStatus.CLOSED);
-        transactionRepository.save(transaction);
+        if (transaction.getStatus() == TransactionStatus.END_SEND) {
+            transaction.setStatus(TransactionStatus.CLOSED);
+            transactionRepository.save(transaction);
+        } else {
+            throw new TransactionNotAllowedException("Not status END_SEND in close listener");
+        }
     }
 
     @RabbitListener(

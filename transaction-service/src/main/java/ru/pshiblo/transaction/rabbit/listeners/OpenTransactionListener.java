@@ -10,15 +10,18 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.pshiblo.transaction.domain.Account;
+import ru.pshiblo.account.domain.Account;
+import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
-import ru.pshiblo.transaction.exceptions.TransactionNotAllowedException;
+import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
-import ru.pshiblo.transaction.service.AccountService;
-import ru.pshiblo.transaction.service.CardService;
-import ru.pshiblo.transaction.service.CurrencyService;
+import ru.pshiblo.account.service.AccountService;
+import ru.pshiblo.account.service.CardService;
+import ru.pshiblo.account.service.CurrencyService;
+
+import java.math.BigDecimal;
 
 /**
  * @author Maxim Pshiblo
@@ -45,41 +48,48 @@ public class OpenTransactionListener {
     )
     @Transactional
     public void openTransaction(@Payload Transaction transaction) {
+        if (transaction.getStatus() == TransactionStatus.START_OPEN) {
+            Account account = accountService.getByNumber(transaction.getFromNumber());
+            Account toAccount = transaction.isToCard() ?
+                    cardService.getByNumber(transaction.getToNumber()).getAccount() :
+                    accountService.getByNumber(transaction.getToNumber());
 
-        Account account = accountService.getByNumber(transaction.getFromNumber());
-        Account toAccount = transaction.isToCard() ?
-                cardService.getByNumber(transaction.getToNumber()).getAccount() :
-                accountService.getByNumber(transaction.getToNumber());
+            if (transaction.getMoney().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new TransactionNotAllowedException("Zero or negative money value");
+            }
 
-        if (account.getId().equals(toAccount.getId())) {
-            throw new TransactionNotAllowedException("Account equals");
-        }
+            if (account.getId().equals(toAccount.getId())) {
+                throw new TransactionNotAllowedException("Account equals");
+            }
 
-        if (account.getLock()) {
-            throw new TransactionNotAllowedException("Account is lock");
-        }
-        if (toAccount.getLock()) {
-            throw new TransactionNotAllowedException("To account is lock");
-        }
+            if (account.getLock()) {
+                throw new TransactionNotAllowedException("Account is lock");
+            }
+            if (toAccount.getLock()) {
+                throw new TransactionNotAllowedException("To account is lock");
+            }
 
-        if (account.getBalance().compareTo(
-                currencyService.convertMoney(transaction.getCurrency(), account.getCurrency(), transaction.getMoney())
-        ) < 0) {
-            throw new TransactionNotAllowedException("Balance small");
-        }
+            if (account.getBalance().compareTo(
+                    currencyService.convertMoney(transaction.getCurrency(), account.getCurrency(), transaction.getMoney())
+            ) < 0) {
+                throw new TransactionNotAllowedException("Balance small");
+            }
 
-        transaction.setCurrencyFrom(account.getCurrency());
-        transaction.setCurrencyTo(toAccount.getCurrency());
+            transaction.setCurrencyFrom(account.getCurrency());
+            transaction.setCurrencyTo(toAccount.getCurrency());
 
-        transaction = transactionRepository.save(transaction);
+            transaction = transactionRepository.save(transaction);
 
-        //if may be ban - on approve!!!!
+            //if may be ban - on approve!!!!
 
-        if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
-            transaction.setStatus(TransactionStatus.END_OPEN);
-            transactionRepository.save(transaction);
-            transaction.setStatus(TransactionStatus.START_COMMISSION);
-            rabbitTemplate.convertAndSend(RabbitConsts.COMMISSION_ROUTE, transaction);
+            if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
+                transaction.setStatus(TransactionStatus.END_OPEN);
+                transactionRepository.save(transaction);
+                transaction.setStatus(TransactionStatus.START_COMMISSION);
+                rabbitTemplate.convertAndSend(RabbitConsts.COMMISSION_ROUTE, transaction);
+            }
+        } else {
+            throw new TransactionNotAllowedException("status on open not START_OPEN");
         }
     }
 }

@@ -1,21 +1,32 @@
 package ru.pshiblo.transaction.domain;
 
 import lombok.Data;
-import ru.pshiblo.transaction.enums.Currency;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Table(name = "transactions")
 @Entity
 @Data
+@EntityListeners(AuditingEntityListener.class)
 public class Transaction implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Integer id;
+
+    @CreatedDate
+    private LocalDateTime created;
+
+    @LastModifiedDate
+    private LocalDateTime updated;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)

@@ -1,6 +1,7 @@
 package ru.pshiblo.transaction.rabbit.listeners;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -9,12 +10,13 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
-import ru.pshiblo.transaction.repository.AccountRepository;
-import ru.pshiblo.transaction.repository.CardRepository;
+import ru.pshiblo.account.repository.AccountRepository;
+import ru.pshiblo.account.repository.CardRepository;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
 import java.math.BigDecimal;
@@ -24,6 +26,7 @@ import java.math.BigDecimal;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommissionTransactionListener {
 
     private final AccountRepository accountRepository;
@@ -41,25 +44,36 @@ public class CommissionTransactionListener {
     )
     @Transactional
     public void commissionTransaction(@Payload Transaction transaction) {
-        transaction = transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
+        if (transaction.getStatus() == TransactionStatus.START_COMMISSION) {
+            log.info("START COMMISION {}", transaction.getId());
+            log.info(transaction.toString());
+            transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
+            log.info(transaction.toString());
+            transaction.setCommissionRate(
+                    transaction.isInner() ?
+                            new BigDecimal("2") :
+                            new BigDecimal("0.1")
+            );
 
-        transaction.setCommissionRate(
-                transaction.isInner() ?
-                        new BigDecimal("0.05") :
-                        new BigDecimal("0.1")
-        );
+            log.info(transaction.toString());
+            BigDecimal commissionValue = transaction.getMoney().multiply(transaction.getCommissionRate());
+            transaction.setCommissionValue(commissionValue);
 
-        BigDecimal commissionValue = transaction.getMoney().multiply(transaction.getCommissionRate());
-        transaction.setCommissionValue(commissionValue);
+            BigDecimal moneyWithCommission = transaction.getMoney().add(commissionValue);
+            transaction.setMoneyWithCommission(moneyWithCommission);
 
-        BigDecimal moneyWithCommission = transaction.getMoney().add(commissionValue);
-        transaction.setMoneyWithCommission(moneyWithCommission);
-
-        if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
-            transaction.setStatus(TransactionStatus.END_COMMISSION);
-            transaction = transactionRepository.save(transaction);
-            transaction.setStatus(TransactionStatus.START_SEND);
-            rabbitTemplate.convertAndSend(RabbitConsts.SEND_ROUTE, transaction);
+            if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
+                transaction.setStatus(TransactionStatus.END_COMMISSION);
+                log.info(transaction.toString());
+                transaction = transactionRepository.save(transaction);
+                log.info(transaction.toString());
+                transaction.setStatus(TransactionStatus.START_SEND);
+                log.info(transaction.toString());
+                log.info("FINISH COMMISION {}", transaction.getId());
+                rabbitTemplate.convertAndSend(RabbitConsts.SEND_ROUTE, transaction);
+            }
+        } else {
+            throw new TransactionNotAllowedException("status on commision not START_COMMISION");
         }
     }
 }

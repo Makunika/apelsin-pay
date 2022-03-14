@@ -1,12 +1,15 @@
 package ru.pshiblo.transaction.domain;
 
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import ru.pshiblo.transaction.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.account.enums.Currency;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Table(name = "transactions_history")
 @Entity
@@ -17,6 +20,12 @@ public class TransactionHistory {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Integer id;
+
+    @CreatedDate
+    private LocalDateTime created;
+
+    @LastModifiedDate
+    private LocalDateTime updated;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "transaction_id", nullable = false)
