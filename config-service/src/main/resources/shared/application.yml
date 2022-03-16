@@ -23,6 +23,3 @@ spring:
       resourceserver:
         jwt:
           public-key-location: http://localhost:5000/auth/oauth/token_key_new
-
-kafka:
-  bootstrap: "localhost:9092"

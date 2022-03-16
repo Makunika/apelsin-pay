@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: deposit-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+      fail-fast: true
+      password: ${CONFIG_SERVICE_PASSWORD}
+      username: user
+  config:
+    import: configserver:http://localhost:8888
+
+bank:
+  bik: 96754

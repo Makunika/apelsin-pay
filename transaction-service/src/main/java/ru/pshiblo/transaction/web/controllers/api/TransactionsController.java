@@ -2,17 +2,16 @@ package ru.pshiblo.transaction.web.controllers.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.pshiblo.security.jwt.AuthUser;
+import ru.pshiblo.security.AuthUtils;
 import ru.pshiblo.transaction.domain.Transaction;
-import ru.pshiblo.transaction.enums.Currency;
-import ru.pshiblo.transaction.kafka.KafkaTopics;
-import ru.pshiblo.transaction.web.dto.OpenToAccountTransactionDto;
-import ru.pshiblo.transaction.web.dto.OpenToCardTransactionDto;
+import ru.pshiblo.transaction.service.TransactionService;
+import ru.pshiblo.transaction.web.dto.request.OpenToAccountTransactionDto;
+import ru.pshiblo.transaction.web.dto.request.OpenToCardTransactionDto;
 
 /**
  * @author Maxim Pshiblo
@@ -23,32 +22,36 @@ import ru.pshiblo.transaction.web.dto.OpenToCardTransactionDto;
 @RequestMapping("api/transaction")
 public class TransactionsController {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final TransactionService transactionService;
 
+    @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("to/card")
-    public void openToCardTransaction(OpenToCardTransactionDto dto, @AuthenticationPrincipal AuthUser authUser) {
+    public Transaction openToCardTransaction(@RequestBody OpenToCardTransactionDto dto) {
         Transaction newTransaction = new Transaction();
-        newTransaction.setCurrency(Currency.RUB);
+        newTransaction.setCurrency(dto.getCurrency());
         newTransaction.setToCard(true);
         newTransaction.setInner(true);
         newTransaction.setMoney(dto.getMoney());
         newTransaction.setToNumber(dto.getToCardNumber());
-        newTransaction.setFromNumber(dto.getFromCardNumber());
-        newTransaction.setOwnerUserId(authUser.getId());
-        kafkaTemplate.send(KafkaTopics.OPEN, newTransaction);
+        newTransaction.setFromNumber(dto.getFromAccountNumber());
+        newTransaction.setOwnerUserId((int) AuthUtils.getUserId());
+
+        return transactionService.create(newTransaction);
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("to/account")
-    public void openToAccountTransaction(OpenToAccountTransactionDto dto, @AuthenticationPrincipal AuthUser authUser) {
+    public Transaction openToAccountTransaction(@RequestBody OpenToAccountTransactionDto dto) {
         Transaction newTransaction = new Transaction();
-        newTransaction.setCurrency(Currency.RUB);
+        newTransaction.setCurrency(dto.getCurrency());
         newTransaction.setToCard(false);
         newTransaction.setInner(true);
         newTransaction.setMoney(dto.getMoney());
         newTransaction.setToNumber(dto.getToAccountNumber());
-        newTransaction.setFromNumber(dto.getFromCardNumber());
-        newTransaction.setOwnerUserId(authUser.getId());
-        kafkaTemplate.send(KafkaTopics.OPEN, newTransaction);
+        newTransaction.setFromNumber(dto.getFromAccountNumber());
+        newTransaction.setOwnerUserId((int) AuthUtils.getUserId());
+
+        return transactionService.create(newTransaction);
     }
 
 

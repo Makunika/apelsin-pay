@@ -1,0 +1,29 @@
+security:
+  oauth2:
+    client:
+      clientId: transaction-service
+      clientSecret: ${TRANSACTION_SERVICE_PASSWORD}
+      accessTokenUri: http://localhost:5000/auth/oauth/token
+      grant-type: client_credentials
+      scope: server
+
+spring:
+  application:
+    name: deposit-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/maxbank-transactions
+    username: maxbank-transactions
+    password: maxbank-transactions
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+    hibernate:
+      ddl-auto: update
+
+
+server:
+  servlet:
+    context-path: /deposit
+  port: 6003
