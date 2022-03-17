@@ -22,11 +22,9 @@ public class ErrorHandler implements RabbitListenerErrorHandler {
     @Override
     public Object handleError(Message amqpMessage, org.springframework.messaging.Message<?> message, ListenerExecutionFailedException exception) throws Exception {
         log.info(exception.getMessage());
-        exception.printStackTrace();
         if (message != null && message.getPayload() instanceof Transaction) {
             Transaction transaction = (Transaction) message.getPayload();
             transaction.setReasonCancel(exception.getCause().getMessage());
-            transaction.setStatus(TransactionStatus.CANCELED);
             rabbitTemplate.convertAndSend(RabbitConsts.CANCEL_ROUTE, transaction);
         }
 

@@ -1,4 +1,8 @@
 spring:
+  rabbitmq:
+    host: localhost
+    template:
+      exchange: exchange-example-1
   application:
     name: deposit-service
   cloud:

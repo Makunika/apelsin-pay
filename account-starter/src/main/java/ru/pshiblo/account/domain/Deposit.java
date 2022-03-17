@@ -25,7 +25,7 @@ public class Deposit {
     @Column(name = "number", nullable = false)
     private String number;
 
-    @OneToOne(optional = false)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
@@ -37,7 +37,11 @@ public class Deposit {
 
     private LocalDate startDepositDate;
 
-    @ManyToOne(optional = false)
+    private int months;
+
+    private boolean isEnabled;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "deposit_id")
     private DepositType depositType;
 }

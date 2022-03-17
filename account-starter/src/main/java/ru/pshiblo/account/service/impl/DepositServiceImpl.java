@@ -33,25 +33,33 @@ public class DepositServiceImpl implements DepositService {
     private final AccountService accountService;
 
     @Override
-    public Deposit create(int userId, int depositTypeId) {
+    public Deposit create(int userId, int depositTypeId, int months) {
         DepositType depositType = depositTypeService.getById(depositTypeId)
                 .orElseThrow(() -> new NotFoundException(depositTypeId, DepositType.class));
         return create(
                 userId,
                 accountService.create(userId, depositType.getCurrency(), AccountType.DEPOSIT),
-                depositType
+                depositType,
+                months
         );
     }
 
     @Override
-    public Deposit create(int userId, Account account, DepositType depositType) {
+    public Deposit create(int userId, Account account, DepositType depositType, int months) {
+        if (months < depositType.getMinMonths() || months > depositType.getMaxMonths()) {
+            throw new IllegalArgumentException("");
+        }
+
         Deposit deposit = new Deposit();
         deposit.setUserId(userId);
         deposit.setDepositType(depositType);
         deposit.setNumber(account.getNumber());
         deposit.setAccount(account);
+        deposit.setMonths(months);
+        deposit.setEnabled(false);
         if (depositType.getMinSum().compareTo(BigDecimal.ZERO) == 0) {
             deposit.setStartDepositDate(LocalDate.now());
+            deposit.setEnabled(true);
         }
         return depositRepository.save(deposit);
     }
@@ -64,6 +72,11 @@ public class DepositServiceImpl implements DepositService {
     @Override
     public Optional<Deposit> getById(int id) {
         return depositRepository.findById(id);
+    }
+
+    @Override
+    public List<Deposit> getByDayStartDepositDate(int day) {
+        return depositRepository.findByDayInStartDay(day);
     }
 
     @Override

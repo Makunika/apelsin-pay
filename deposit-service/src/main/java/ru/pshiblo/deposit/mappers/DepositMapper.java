@@ -15,13 +15,4 @@ public interface DepositMapper {
     @Mapping(target = "currency", source = "deposit.depositType.currency")
     @Mapping(target = "balance", source = "deposit.account.balance")
     DepositResponseDto toDto(Deposit deposit);
-
-    @Mapping(target = "updated", ignore = true)
-    @Mapping(target = "startDepositDate", ignore = true)
-    @Mapping(target = "number", ignore = true)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "depositType", ignore = true)
-    @Mapping(target = "created", ignore = true)
-    @Mapping(target = "account", ignore = true)
-    Deposit toEntity(CreateDepositDto createDepositDto);
 }

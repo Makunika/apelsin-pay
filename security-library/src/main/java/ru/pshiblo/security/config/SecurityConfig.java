@@ -51,14 +51,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     @ConditionalOnMissingBean
-    public RequestInterceptor oauth2RequestInterceptor() {
-        return new OAuth2FeignRequestInterceptor(new DefaultOAuth2ClientContext(), clientCredentialsResourceDetails());
+    public RequestInterceptor oauth2RequestInterceptor(ClientCredentialsResourceDetails resourceDetails) {
+        return new OAuth2FeignRequestInterceptor(new DefaultOAuth2ClientContext(), resourceDetails);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public OAuth2RestTemplate oAuth2RestTemplate() {
-        return new OAuth2RestTemplate(clientCredentialsResourceDetails());
+    public OAuth2RestTemplate oAuth2RestTemplate(ClientCredentialsResourceDetails resourceDetails) {
+        return new OAuth2RestTemplate(resourceDetails);
     }
 
 }

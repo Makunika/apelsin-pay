@@ -14,6 +14,7 @@ import ru.pshiblo.account.utils.RandomGenerator;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Maxim Pshiblo
@@ -49,6 +50,11 @@ class AccountServiceImpl implements AccountService {
     @Override
     public Account getByNumber(String number) {
         return repository.findByNumber(number).orElseThrow(() -> new NotFoundException("Account with number " + number + " not found"));
+    }
+
+    @Override
+    public Optional<Account> findByNumber(String number) {
+        return repository.findByNumber(number);
     }
 
     @Override

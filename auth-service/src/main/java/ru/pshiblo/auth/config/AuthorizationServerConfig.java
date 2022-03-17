@@ -58,10 +58,10 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .authorizedGrantTypes("client_credentials", "refresh_token")
                 .scopes("server")
                 .and()
-                .withClient("account-service-service")
-                .secret(env.getProperty("ACCOUNT_SERVICE_PASSWORD"))
+                .withClient("deposit-service")
+                .secret(env.getProperty("DEPOSIT_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server");
+                .scopes("server", "edit_money");
 
     }
 

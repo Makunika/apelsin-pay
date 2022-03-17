@@ -1,4 +1,4 @@
-package ru.pshiblo.transaction.rabbit.listeners;
+package ru.pshiblo.transaction.rabbit.listeners.clients;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,48 +48,50 @@ public class OpenTransactionListener {
     )
     @Transactional
     public void openTransaction(@Payload Transaction transaction) {
-        if (transaction.getStatus() == TransactionStatus.START_OPEN) {
-            Account account = accountService.getByNumber(transaction.getFromNumber());
-            Account toAccount = transaction.isToCard() ?
-                    cardService.getByNumber(transaction.getToNumber()).getAccount() :
-                    accountService.getByNumber(transaction.getToNumber());
+        if (transaction.getStatus() != TransactionStatus.START_OPEN) {
+            throw new TransactionNotAllowedException("status on open not START_OPEN");
+        }
 
-            if (transaction.getMoney().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new TransactionNotAllowedException("Zero or negative money value");
+        Account account = accountService.getByNumber(transaction.getFromNumber());
+        if (transaction.isInner()) {
+            Account toAccount = accountService.getByNumber(transaction.getToNumber());
+
+            if (toAccount.getLock()) {
+                throw new TransactionNotAllowedException("To account is lock");
             }
 
             if (account.getId().equals(toAccount.getId())) {
                 throw new TransactionNotAllowedException("Account equals");
             }
 
-            if (account.getLock()) {
-                throw new TransactionNotAllowedException("Account is lock");
-            }
-            if (toAccount.getLock()) {
-                throw new TransactionNotAllowedException("To account is lock");
-            }
-
-            if (account.getBalance().compareTo(
-                    currencyService.convertMoney(transaction.getCurrency(), account.getCurrency(), transaction.getMoney())
-            ) < 0) {
-                throw new TransactionNotAllowedException("Balance small");
-            }
-
-            transaction.setCurrencyFrom(account.getCurrency());
+            transaction.setAccountTypeTo(toAccount.getType());
             transaction.setCurrencyTo(toAccount.getCurrency());
+        }
 
-            transaction = transactionRepository.save(transaction);
+        if (transaction.getMoney().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new TransactionNotAllowedException("Zero or negative money value");
+        }
 
-            //if may be ban - on approve!!!!
+        if (account.getLock()) {
+            throw new TransactionNotAllowedException("Account is lock");
+        }
 
-            if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
-                transaction.setStatus(TransactionStatus.END_OPEN);
-                transactionRepository.save(transaction);
-                transaction.setStatus(TransactionStatus.START_COMMISSION);
-                rabbitTemplate.convertAndSend(RabbitConsts.COMMISSION_ROUTE, transaction);
-            }
-        } else {
-            throw new TransactionNotAllowedException("status on open not START_OPEN");
+        if (account.getBalance().compareTo(
+                currencyService.convertMoney(transaction.getCurrency(), account.getCurrency(), transaction.getMoney())
+        ) < 0) {
+            throw new TransactionNotAllowedException("Balance small");
+        }
+
+        transaction.setCurrencyFrom(account.getCurrency());
+        transaction.setAccountTypeFrom(account.getType());
+
+        transaction = transactionRepository.save(transaction);
+
+        if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
+            transaction.setStatus(TransactionStatus.END_OPEN);
+            transactionRepository.save(transaction);
+            transaction.setStatus(TransactionStatus.START_COMMISSION);
+            rabbitTemplate.convertAndSend(RabbitConsts.COMMISSION_ROUTE, transaction);
         }
     }
 }

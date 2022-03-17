@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.pshiblo.auth.domain.User;
 import ru.pshiblo.auth.service.interfaces.UserService;
 import ru.pshiblo.auth.web.dto.response.UserDto;
-import ru.pshiblo.common.protocol.user.UserInfo;
 
 import java.security.Principal;
 
@@ -28,8 +28,8 @@ public class UserController {
 
     //@PreAuthorize("#oauth2.hasScope('server')")
     @GetMapping("/userinfo/{userId}")
-    public UserInfo getUserInfo(@PathVariable("userId") Long userId) {
-        return userService.getUserInfo(userId.intValue());
+    public User getUserInfo(@PathVariable("userId") Long userId) {
+        return userService.getUserById(userId.intValue());
     }
 
     @PreAuthorize("#oauth2.hasScope('server')")

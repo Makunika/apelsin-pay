@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CardRepository extends JpaRepository<Card, Integer> {
+    List<Card> findByAccount_Number(String number);
     List<Card> findByUserId(int userId);
     Optional<Card> findByNumber(String number);
     boolean existsByNumber(String number);
