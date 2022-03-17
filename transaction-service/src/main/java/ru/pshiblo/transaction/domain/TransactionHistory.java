@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.account.enums.Currency;
 
@@ -34,6 +35,9 @@ public class TransactionHistory {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private TransactionStatus status;
+
+    @Column(name = "routing_to")
+    private String route;
 
     @Column(name = "to_number", nullable = false, length = 100)
     private String toNumber;
@@ -80,24 +84,15 @@ public class TransactionHistory {
     @Column(name = "money_with_commision")
     private BigDecimal moneyWithCommission;
 
-    public static TransactionHistory fromTransaction(Transaction transaction) {
-        TransactionHistory history = new TransactionHistory();
-        history.setTransaction(transaction);
-        history.status = transaction.getStatus();
-        history.toNumber = transaction.getToNumber();
-        history.fromNumber = transaction.getFromNumber();
-        history.isInner = transaction.isInner();
-        history.isToCard = transaction.isToCard();
-        history.commissionRate = transaction.getCommissionRate();
-        history.ownerUserId = transaction.getOwnerUserId();
-        history.reasonCancel = transaction.getReasonCancel();
-        history.toUserId = transaction.getToUserId();
-        history.currency = transaction.getCurrency();
-        history.money = transaction.getMoney();
-        history.currencyFrom = transaction.getCurrencyFrom();
-        history.currencyTo = transaction.getCurrencyTo();
-        history.moneyWithCommission = transaction.getMoneyWithCommission();
-        history.commissionValue = transaction.getCommissionValue();
-        return history;
-    }
+    @Column(name = "owner_username", nullable = false)
+    private String ownerUsername;
+
+    @Column(name = "is_system", nullable = false)
+    private boolean isSystem = false;
+
+    @Column(name = "is_approve", nullable = false)
+    private boolean isApprove = false;
+
+    @Column(name = "account_type")
+    private AccountType accountType;
 }

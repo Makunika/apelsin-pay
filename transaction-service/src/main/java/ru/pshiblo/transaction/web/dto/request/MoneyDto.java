@@ -5,13 +5,9 @@ import ru.pshiblo.account.enums.Currency;
 
 import java.math.BigDecimal;
 
-/**
- * @author Maxim Pshiblo
- */
 @Data
-public class OpenToCardTransactionDto {
-    private String toCardNumber;
-    private BigDecimal money;
-    private String fromAccountNumber;
+public class MoneyDto {
+    private String accountNumber;
+    private BigDecimal balanceEdit;
     private Currency currency;
 }

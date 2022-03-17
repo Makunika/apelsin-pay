@@ -6,6 +6,7 @@ import ru.pshiblo.account.domain.Card;
 import ru.pshiblo.account.enums.Currency;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Maxim Pshiblo
@@ -16,10 +17,12 @@ public interface CardService {
     List<Card> getByUserId(int userId);
     Card getById(int id);
     Card getByNumber(String number);
+    Optional<Card> findByNumber(String number);
     boolean checkByPin(String number, int pin);
     boolean checkByCvc(String number, int cvc);
     void changePin(String numberCard, String newPin, AuthUser authUser);
     String getCvcByNumber(String number, AuthUser authUser);
     void blockCard(Integer id, AuthUser authUser);
     void blockAccountCard(Integer id, AuthUser authUser);
+    List<Card> getByAccountNumber(String number);
 }

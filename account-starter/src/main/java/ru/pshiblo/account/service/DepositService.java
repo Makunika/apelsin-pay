@@ -12,10 +12,11 @@ import java.util.Optional;
  * @author Maxim Pshiblo
  */
 public interface DepositService {
-    Deposit create(int userId, int depositTypeId);
-    Deposit create(int userId, Account account, DepositType depositType);
+    Deposit create(int userId, int depositTypeId, int months);
+    Deposit create(int userId, Account account, DepositType depositType, int months);
     List<Deposit> getByUserId(int userId);
     Optional<Deposit> getById(int id);
+    List<Deposit> getByDayStartDepositDate(int day);
     Optional<Deposit> getByNumber(String number);
     void block(String number, AuthUser authUser);
     void blockById(int id);

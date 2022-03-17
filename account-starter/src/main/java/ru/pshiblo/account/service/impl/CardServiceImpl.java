@@ -17,6 +17,7 @@ import ru.pshiblo.account.utils.RandomGenerator;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Maxim Pshiblo
@@ -77,6 +78,11 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    public Optional<Card> findByNumber(String number) {
+        return cardRepository.findByNumber(number);
+    }
+
+    @Override
     public boolean checkByPin(String number, int pin) {
         Card card = getByNumber(number);
         return Integer.parseInt(card.getPin()) == pin;
@@ -134,5 +140,10 @@ public class CardServiceImpl implements CardService {
         card.setLockCard(true);
         card.getAccount().setLock(true);
         cardRepository.save(card);
+    }
+
+    @Override
+    public List<Card> getByAccountNumber(String number) {
+        return cardRepository.findByAccount_Number(number);
     }
 }

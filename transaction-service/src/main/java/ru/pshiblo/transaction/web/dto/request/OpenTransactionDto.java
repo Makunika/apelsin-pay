@@ -9,9 +9,9 @@ import java.math.BigDecimal;
  * @author Maxim Pshiblo
  */
 @Data
-public class OpenToAccountTransactionDto {
-    private String toAccountNumber;
+public class OpenTransactionDto {
+    private String toNumber;
     private BigDecimal money;
-    private String fromAccountNumber;
+    private String fromNumber;
     private Currency currency;
 }

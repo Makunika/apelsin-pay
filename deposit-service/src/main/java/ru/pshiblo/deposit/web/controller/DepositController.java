@@ -29,7 +29,10 @@ public class DepositController {
     @PostMapping
     public DepositResponseDto create(@RequestBody CreateDepositDto request) {
         return mapper.toDto(
-                service.create(request.getUserId(), request.getDepositTypeId())
+                service.create(
+                        request.getUserId(),
+                        request.getDepositTypeId(),
+                        request.getMonths())
         );
     }
 

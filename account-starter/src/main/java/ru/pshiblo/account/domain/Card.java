@@ -56,4 +56,8 @@ public class Card {
 
     @LastModifiedDate
     private LocalDateTime updated;
+
+    public boolean isExpiredOrLock() {
+        return lockCard || LocalDate.now().isAfter(expired);
+    }
 }

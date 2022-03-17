@@ -6,4 +6,5 @@ import lombok.Data;
 public class CreateDepositDto {
     private int depositTypeId;
     private int userId;
+    private int months;
 }
