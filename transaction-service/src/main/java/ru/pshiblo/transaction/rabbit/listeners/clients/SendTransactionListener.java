@@ -56,7 +56,7 @@ public class SendTransactionListener {
 
         transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
 
-        if (transaction.isInner()) {
+        if (transaction.isInnerFrom()) {
             innerSendTransaction(transaction);
         } else {
             extendSendTransaction(transaction);

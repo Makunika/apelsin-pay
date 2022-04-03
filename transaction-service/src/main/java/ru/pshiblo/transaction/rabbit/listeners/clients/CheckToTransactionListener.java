@@ -37,10 +37,10 @@ public class CheckToTransactionListener {
         }
 
         switch (transaction.getAccountTypeTo()) {
-            case CARD:
+            case BUSINESS:
                 rabbitTemplate.convertAndSend(RabbitConsts.CARD_TO_CHECK_ROUTE, transaction);
                 break;
-            case DEPOSIT:
+            case PERSONAL:
                 rabbitTemplate.convertAndSend(RabbitConsts.DEPOSIT_TO_CHECK_ROUTE, transaction);
                 break;
         }

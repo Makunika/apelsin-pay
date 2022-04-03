@@ -20,8 +20,6 @@ spring:
       ddl-auto: create
 
 server:
-  servlet:
-    context-path: /info
   port: 6000
 
 

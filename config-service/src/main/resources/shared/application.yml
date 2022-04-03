@@ -22,4 +22,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          public-key-location: http://localhost:5000/auth/oauth/token_key_new
+          public-key-location: http://localhost:5000/oauth/token_key_new
+
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: '*'

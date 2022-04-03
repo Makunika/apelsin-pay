@@ -49,7 +49,7 @@ public class CommissionTransactionListener {
         transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
         log.info(transaction.toString());
         transaction.setCommissionRate(
-                transaction.isInner() ?
+                !transaction.isInnerTo() ?
                         new BigDecimal("2") :
                         new BigDecimal("0.1")
         );

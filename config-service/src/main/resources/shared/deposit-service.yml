@@ -24,8 +24,6 @@ spring:
 
 
 server:
-  servlet:
-    context-path: /deposit
   port: 6003
 
 feign:

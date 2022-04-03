@@ -9,7 +9,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.service.AccountService;
@@ -47,12 +46,12 @@ public class CloseTransactionListener {
             transaction.setStatus(TransactionStatus.CLOSED);
             transactionRepository.save(transaction);
 
-            if (transaction.isInner()) {
+            if (transaction.isInnerTo()) {
                 switch (transaction.getAccountTypeTo()) {
-                    case CARD:
+                    case BUSINESS:
                         rabbitTemplate.convertAndSend(RabbitConsts.CARD_AFTER_SEND_ROUTE, transaction);
                         break;
-                    case DEPOSIT:
+                    case PERSONAL:
                         rabbitTemplate.convertAndSend(RabbitConsts.DEPOSIT_AFTER_SEND_ROUTE, transaction);
                         break;
                 }

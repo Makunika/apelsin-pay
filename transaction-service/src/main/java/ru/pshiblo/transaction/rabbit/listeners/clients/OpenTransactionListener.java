@@ -35,7 +35,6 @@ public class OpenTransactionListener {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final CurrencyService currencyService;
-    private final CardService cardService;
 
 
     @RabbitListener(
@@ -53,7 +52,7 @@ public class OpenTransactionListener {
         }
 
         Account account = accountService.getByNumber(transaction.getFromNumber());
-        if (transaction.isInner()) {
+        if (transaction.isInnerFrom()) {
             Account toAccount = accountService.getByNumber(transaction.getToNumber());
 
             if (toAccount.getLock()) {

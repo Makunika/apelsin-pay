@@ -1,6 +1,7 @@
 package ru.pshiblo.account.domain;
 
-import lombok.Data;
+import lombok.*;
+import org.hibernate.Hibernate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -10,8 +11,12 @@ import ru.pshiblo.account.enums.Currency;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "accounts")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -19,9 +24,6 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-
-    @Column(nullable = false)
-    private Integer userId;
 
     @Column(name = "number", nullable = false)
     private String number;
@@ -45,4 +47,17 @@ public class Account {
 
     @LastModifiedDate
     private LocalDateTime updated;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Account account = (Account) o;
+        return id != null && Objects.equals(id, account.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

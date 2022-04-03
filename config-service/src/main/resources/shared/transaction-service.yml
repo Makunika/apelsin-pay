@@ -24,6 +24,4 @@ spring:
 
 
 server:
-  servlet:
-    context-path: /transactions
   port: 6001

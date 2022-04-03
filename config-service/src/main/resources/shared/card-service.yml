@@ -24,6 +24,4 @@ spring:
 
 
 server:
-  servlet:
-    context-path: /card
   port: 6002

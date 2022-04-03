@@ -15,8 +15,8 @@
         <module>gateway-service</module>
         <module>monitoring-service</module>
         <module>account-starter</module>
-        <module>card-service</module>
-        <module>deposit-service</module>
+        <module>account-business-service</module>
+        <module>account-personal-service</module>
     </modules>
 
     <parent>
