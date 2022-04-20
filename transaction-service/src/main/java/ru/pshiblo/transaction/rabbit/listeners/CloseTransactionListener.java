@@ -17,6 +17,7 @@ import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
+import ru.pshiblo.transaction.tinkoff.TinkoffApi;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -32,6 +33,7 @@ public class CloseTransactionListener {
     private final AccountService accountService;
     private final CurrencyService currencyService;
     private final RabbitTemplate rabbitTemplate;
+    private final TinkoffApi tinkoffApi;
 
     @RabbitListener(
             bindings = @QueueBinding(

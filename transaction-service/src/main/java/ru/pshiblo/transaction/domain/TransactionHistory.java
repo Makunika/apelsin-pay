@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.transaction.enums.TransactionType;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -32,6 +33,10 @@ public class TransactionHistory {
 
     @LastModifiedDate
     private LocalDateTime updated;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 30)
+    private TransactionType type;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "transaction_id", nullable = false)

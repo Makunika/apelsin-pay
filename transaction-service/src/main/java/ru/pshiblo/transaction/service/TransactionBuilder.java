@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.domain.Card;
+import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CardService;
@@ -19,84 +20,56 @@ import java.math.BigDecimal;
 public class TransactionBuilder {
 
     private final TransactionRepository repository;
-    private final CardService cardService;
     private final AccountService accountService;
 
-    public Builder builder() {
-        return new Builder();
+    public BuilderInner builderInner() {
+        return new BuilderInner();
     }
 
-    public class Builder {
+    public class BuilderInner {
         private Transaction transaction;
         private int cvc;
         private AuthUser authUser;
 
-        private Builder() {
+        private BuilderInner() {
             transaction = new Transaction();
         }
 
-        public Builder cvc(int cvc) {
-            this.cvc = cvc;
-            return this;
-        }
-
-        public Builder authUser(AuthUser authUser) {
+        public BuilderInner authUser(AuthUser authUser) {
             this.authUser = authUser;
             return this;
         }
 
-        public Builder money(BigDecimal money) {
+        public BuilderInner money(BigDecimal money) {
             transaction.setMoney(money);
             return this;
         }
 
-        public Builder currency(Currency currency) {
+        public BuilderInner currency(Currency currency) {
             transaction.setCurrency(currency);
             return this;
         }
 
-        public Builder fromCard(String cardNumber) {
-            if (cvc == 0 && authUser == null) {
-                throw new IllegalStateException("set authUser or cvc code");
-            }
-            Card card = cardService.getByNumber(cardNumber);
-            if (authUser != null) {
-                if (card.getUserId().longValue() != authUser.getId()) {
-                    throw new NotAllowedOperationException();
-                }
-                transaction.setOwnerUsername(authUser.getName());
-            } else {
-                if (card.getCvc() != cvc) {
-                    throw new NotAllowedOperationException();
-                }
-                transaction.setOwnerUsername("CVC");
-            }
-            transaction.setOwnerUserId(card.getUserId());
-            transaction.setFromNumber(card.getAccount().getNumber());
-            transaction.setFromCardNumber(cardNumber);
-            transaction.setCurrencyFrom(card.getAccount().getCurrency());
-            return this;
-        }
-
-        public Builder fromAccount(String accountNumber) {
+        public BuilderInner fromAccount(String accountNumber) {
             if (authUser == null) {
                 throw new IllegalStateException("set authUser");
             }
             Account account = accountService.getByNumber(accountNumber);
-            if (account.getUserId().longValue() != authUser.getId()) {
-                throw new NotAllowedOperationException();
-            }
-            transaction.setOwnerUserId(account.getUserId());
+//            if (account.getType() == AccountType.PERSONAL) {
+//
+//            }
+            transaction.setOwnerUserId((int) authUser.getId());
             transaction.setOwnerUsername(authUser.getName());
+            transaction.setInnerFrom(true);
             transaction.setFromNumber(account.getNumber());
             return this;
         }
 
-        public Builder toAccount(String accountNumber) {
+        public BuilderInner toAccount(String accountNumber) {
             transaction.setToNumber(accountNumber);
             accountService.findByNumber(accountNumber).ifPresentOrElse(
                     account -> {
-                        transaction.setInner(true);
+                        transaction.setInnerTo(true);
                         transaction.setToUserId(account.getUserId());
                     },
                     () -> {
@@ -106,7 +79,7 @@ public class TransactionBuilder {
             return this;
         }
 
-        public Builder toCard(String cardNumber) {
+        public BuilderInner toCard(String cardNumber) {
             cardService.findByNumber(cardNumber).ifPresentOrElse(
                     card -> {
                         transaction.setToUserId(card.getUserId());

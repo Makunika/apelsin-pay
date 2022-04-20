@@ -14,8 +14,6 @@ import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
-import ru.pshiblo.account.repository.AccountRepository;
-import ru.pshiblo.account.repository.CardRepository;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
 import java.math.BigDecimal;

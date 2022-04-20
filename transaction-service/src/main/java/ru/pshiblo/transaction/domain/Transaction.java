@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.transaction.enums.TransactionType;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -33,6 +34,10 @@ public class Transaction implements Serializable {
 
     @LastModifiedDate
     private LocalDateTime updated;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 30)
+    private TransactionType type;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)

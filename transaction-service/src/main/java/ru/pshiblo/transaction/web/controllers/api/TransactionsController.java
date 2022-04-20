@@ -30,7 +30,7 @@ public class TransactionsController {
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("/from/account/to/card")
     public Transaction openToCardTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
+        Transaction transaction = transactionBuilder.builderInner()
                 .authUser(AuthUtils.getAuthUser())
                 .money(dto.getMoney())
                 .currency(dto.getCurrency())
@@ -43,7 +43,7 @@ public class TransactionsController {
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("/from/card/to/card")
     public Transaction openFromCardToCardTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
+        Transaction transaction = transactionBuilder.builderInner()
                 .authUser(AuthUtils.getAuthUser())
                 .money(dto.getMoney())
                 .currency(dto.getCurrency())
@@ -56,7 +56,7 @@ public class TransactionsController {
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("/from/card/to/account")
     public Transaction openFromCardToAccountTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
+        Transaction transaction = transactionBuilder.builderInner()
                 .authUser(AuthUtils.getAuthUser())
                 .money(dto.getMoney())
                 .currency(dto.getCurrency())
@@ -69,7 +69,7 @@ public class TransactionsController {
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("/from/account/to/account")
     public Transaction openFromAccountToAccountTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
+        Transaction transaction = transactionBuilder.builderInner()
                 .authUser(AuthUtils.getAuthUser())
                 .money(dto.getMoney())
                 .currency(dto.getCurrency())
@@ -95,7 +95,7 @@ public class TransactionsController {
 
     @PostMapping("/from/card/to/card/cvc")
     public Transaction openFromCardToCardTransactionCvc(@RequestBody OpenTransactionCvcDto dto) {
-        Transaction transaction = transactionBuilder.builder()
+        Transaction transaction = transactionBuilder.builderInner()
                 .cvc(dto.getCvc())
                 .money(dto.getMoney())
                 .currency(dto.getCurrency())
@@ -107,7 +107,7 @@ public class TransactionsController {
 
     @PostMapping("/from/card/to/account/cvc")
     public Transaction openFromCardToAccountTransactionCvc(@RequestBody OpenTransactionCvcDto dto) {
-        Transaction transaction = transactionBuilder.builder()
+        Transaction transaction = transactionBuilder.builderInner()
                 .cvc(dto.getCvc())
                 .money(dto.getMoney())
                 .currency(dto.getCurrency())

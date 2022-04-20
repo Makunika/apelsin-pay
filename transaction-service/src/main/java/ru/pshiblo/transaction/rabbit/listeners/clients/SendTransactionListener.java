@@ -20,8 +20,8 @@ import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.account.service.AccountService;
-import ru.pshiblo.account.service.CardService;
 import ru.pshiblo.account.service.CurrencyService;
+import ru.pshiblo.transaction.tinkoff.TinkoffApi;
 
 import javax.transaction.NotSupportedException;
 import java.math.BigDecimal;
@@ -39,6 +39,7 @@ public class SendTransactionListener {
     private final TransactionRepository transactionRepository;
     private final RabbitTemplate rabbitTemplate;
     private final CurrencyService currencyService;
+    private final TinkoffApi tinkoffApi;
 
     @RabbitListener(
             bindings = @QueueBinding(

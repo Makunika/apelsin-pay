@@ -18,7 +18,6 @@ import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.account.service.AccountService;
-import ru.pshiblo.account.service.CardService;
 import ru.pshiblo.account.service.CurrencyService;
 
 import java.math.BigDecimal;

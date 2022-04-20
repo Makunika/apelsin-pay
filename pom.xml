@@ -17,6 +17,8 @@
         <module>account-starter</module>
         <module>account-business-service</module>
         <module>account-personal-service</module>
+        <module>info-personal-service</module>
+        <module>info-business-service</module>
     </modules>
 
     <parent>
