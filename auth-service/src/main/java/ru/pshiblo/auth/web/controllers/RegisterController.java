@@ -36,7 +36,7 @@ public class RegisterController {
         );
     }
 
-    @PreAuthorize("#oauth2.hasScope('server')")
+    @PreAuthorize("#oauth2.hasScope('user')")
     @PutMapping("change-password")
     public void changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
         registerService.changePassword(changePasswordDto.getLogin(), changePasswordDto.getPassword(), changePasswordDto.getNewPassword());

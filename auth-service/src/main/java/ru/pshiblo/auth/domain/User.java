@@ -17,33 +17,9 @@ import java.util.stream.Collectors;
 @Entity
 public class User {
     @Id
-    @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id", nullable = false)
     private Integer id;
-
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
-
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
-
-    @Column(name = "middle_name", length = 100)
-    private String middleName;
-
-    @Column(name = "email", nullable = false, length = 100)
-    private String email;
-
-    @Column(name = "phone", nullable = false, length = 100)
-    private String phone;
-
-    @Column(name = "birthday", nullable = false)
-    private LocalDate birthday;
-
-    @Column(name = "passport_series", nullable = false)
-    private Integer passportSeries;
-
-    @Column(name = "passport_number", nullable = false)
-    private Integer passportNumber;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
@@ -53,8 +29,4 @@ public class User {
 
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "user")
     private UserPassword userPassword;
-
-    public String getName() {
-        return lastName + " " + firstName;
-    }
 }

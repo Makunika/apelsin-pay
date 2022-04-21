@@ -32,9 +32,7 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public User registerUser(User user, String login, String password) {
-        if (userRepository.existsByPassportNumberAndPassportSeries(user.getPassportNumber(), user.getPassportSeries())
-                || userRepository.existsByEmail(user.getEmail())
-                || userPasswordRepository.existsByLogin(login)) {
+        if (userPasswordRepository.existsByLogin(login)) {
             throw new AlreadyExistException("User already exist");
         }
         String passwordHash = passwordEncoder.encode(password);

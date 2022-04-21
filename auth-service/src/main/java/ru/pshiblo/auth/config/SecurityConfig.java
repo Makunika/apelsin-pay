@@ -3,6 +3,7 @@ package ru.pshiblo.auth.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +23,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
  */
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Order(1)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
@@ -36,6 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated()
                 .and()
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
                 .csrf().disable();
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 //.and()

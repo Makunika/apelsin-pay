@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,7 @@ import java.util.Map;
 @Configuration
 @EnableAuthorizationServer
 @RequiredArgsConstructor
+@Order(1)
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private final AuthenticationManager authenticationManager;
@@ -53,11 +55,19 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .redirectUris("https://oidcdebugger.com/debug")
                 .scopes("user")
                 .and()
-                .withClient("info-service")
-                .secret(env.getProperty("INFO_SERVICE_PASSWORD"))
+
+                .withClient("info-personal-service")
+                .secret(env.getProperty("INFO_PERSONAL_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
                 .scopes("server")
                 .and()
+
+                .withClient("auth-service")
+                .secret(env.getProperty("AUTH_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server")
+                .and()
+
                 .withClient("deposit-service")
                 .secret(env.getProperty("DEPOSIT_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")

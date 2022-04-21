@@ -21,7 +21,7 @@ import javax.persistence.Table;
 public class UserPassword {
 
     @Id
-    @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id", nullable = false, length = 36)
     private String id;
 

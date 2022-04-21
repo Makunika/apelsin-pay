@@ -31,10 +31,4 @@ public class UserController {
     public User getUserInfo(@PathVariable("userId") Long userId) {
         return userService.getUserById(userId.intValue());
     }
-
-    @PreAuthorize("#oauth2.hasScope('server')")
-    @GetMapping("/passport/{userId}")
-    public String getPassport(@PathVariable("userId") Long userId) {
-        return userService.getPassport(userId.intValue());
-    }
 }

@@ -27,12 +27,6 @@ public class UserServiceImpl implements UserService {
     private final UserPasswordRepository userPasswordRepository;
 
     @Override
-    public String getPassport(int userId) {
-        User user = getUserById(userId);
-        return user.getPassportSeries() + " " + user.getPassportNumber();
-    }
-
-    @Override
     public User getUserById(int userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException(userId, User.class));
     }

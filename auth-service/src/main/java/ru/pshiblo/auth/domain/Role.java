@@ -17,7 +17,7 @@ import javax.persistence.Table;
 @Entity
 public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id", nullable = false)
     private Integer id;
 
