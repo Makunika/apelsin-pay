@@ -3,6 +3,7 @@ package ru.pshiblo.transaction.service;
 import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.transaction.model.PayoutModel;
 
 import java.math.BigDecimal;
 import java.util.Currency;

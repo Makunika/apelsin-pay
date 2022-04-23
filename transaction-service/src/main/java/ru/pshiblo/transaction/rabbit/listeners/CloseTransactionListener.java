@@ -9,15 +9,16 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
+import ru.pshiblo.transaction.tinkoff.client.TinkoffApi;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -33,6 +34,7 @@ public class CloseTransactionListener {
     private final AccountService accountService;
     private final CurrencyService currencyService;
     private final RabbitTemplate rabbitTemplate;
+    private final TinkoffApi tinkoffApi;
 
     @RabbitListener(
             bindings = @QueueBinding(
@@ -47,18 +49,18 @@ public class CloseTransactionListener {
             transaction.setStatus(TransactionStatus.CLOSED);
             transactionRepository.save(transaction);
 
-            if (transaction.isInner()) {
+            if (transaction.isInnerFrom()) {
                 switch (transaction.getAccountTypeTo()) {
-                    case CARD:
+                    case BUSINESS:
                         rabbitTemplate.convertAndSend(RabbitConsts.CARD_AFTER_SEND_ROUTE, transaction);
                         break;
-                    case DEPOSIT:
+                    case PERSONAL:
                         rabbitTemplate.convertAndSend(RabbitConsts.DEPOSIT_AFTER_SEND_ROUTE, transaction);
                         break;
                 }
             }
         } else {
-            throw new TransactionNotAllowedException("Not status END_SEND in close listener");
+            throw new TransactionNotAllowedException("Not status END_SEND or END_ADD_MONEY in close listener");
         }
     }
 
@@ -72,6 +74,10 @@ public class CloseTransactionListener {
     )
     public void cancelTransaction(@Payload Transaction transaction) {
 
+        if (transaction.getType() == null) {
+            transaction.setType(TransactionType.TRANSFER);
+        }
+
         if (transaction.getStatus().isDepositedMoney() || transaction.getStatus().isWithdrawnMoney()) {
             cancelTransactionWithMoney(transaction);
         }
@@ -83,6 +89,10 @@ public class CloseTransactionListener {
 
     @Transactional
     protected void cancelTransactionWithMoney(Transaction transaction) {
+        if (!transaction.isInnerFrom() || !transaction.isInnerTo()) {
+            return;
+        }
+
         if (transaction.getStatus().isWithdrawnMoney()) {
             accountService.findByNumber(transaction.getFromNumber()).ifPresent(account -> {
                 Currency transactionCurrency = transaction.getCurrency();
@@ -98,6 +108,7 @@ public class CloseTransactionListener {
                 accountService.save(account);
             });
         }
+
         if (transaction.getStatus().isDepositedMoney()) {
             accountService.findByNumber(transaction.getToNumber()).ifPresent(account -> {
                 Currency transactionCurrency = transaction.getCurrency();

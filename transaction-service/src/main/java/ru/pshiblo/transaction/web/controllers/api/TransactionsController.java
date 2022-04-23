@@ -3,17 +3,20 @@ package ru.pshiblo.transaction.web.controllers.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.security.AuthUtils;
 import ru.pshiblo.transaction.domain.Transaction;
+import ru.pshiblo.transaction.model.PayoutModel;
 import ru.pshiblo.transaction.service.TransactionBuilder;
 import ru.pshiblo.transaction.service.TransactionService;
 import ru.pshiblo.transaction.web.dto.request.MoneyDto;
-import ru.pshiblo.transaction.web.dto.request.OpenTransactionCvcDto;
 import ru.pshiblo.transaction.web.dto.request.OpenTransactionDto;
+import ru.pshiblo.transaction.web.dto.request.OpenTransactionExternalToDto;
 
 /**
  * @author Maxim Pshiblo
@@ -28,48 +31,9 @@ public class TransactionsController {
     private final TransactionBuilder transactionBuilder;
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
-    @PostMapping("/from/account/to/card")
-    public Transaction openToCardTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
-                .authUser(AuthUtils.getAuthUser())
-                .money(dto.getMoney())
-                .currency(dto.getCurrency())
-                .fromAccount(dto.getFromNumber())
-                .toCard(dto.getToNumber())
-                .build();
-        return transactionService.create(transaction);
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @PostMapping("/from/card/to/card")
-    public Transaction openFromCardToCardTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
-                .authUser(AuthUtils.getAuthUser())
-                .money(dto.getMoney())
-                .currency(dto.getCurrency())
-                .fromCard(dto.getFromNumber())
-                .toCard(dto.getToNumber())
-                .build();
-        return transactionService.create(transaction);
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @PostMapping("/from/card/to/account")
-    public Transaction openFromCardToAccountTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
-                .authUser(AuthUtils.getAuthUser())
-                .money(dto.getMoney())
-                .currency(dto.getCurrency())
-                .fromCard(dto.getFromNumber())
-                .toAccount(dto.getToNumber())
-                .build();
-        return transactionService.create(transaction);
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("/from/account/to/account")
     public Transaction openFromAccountToAccountTransaction(@RequestBody OpenTransactionDto dto) {
-        Transaction transaction = transactionBuilder.builder()
+        Transaction transaction = transactionBuilder.builderInner()
                 .authUser(AuthUtils.getAuthUser())
                 .money(dto.getMoney())
                 .currency(dto.getCurrency())
@@ -77,6 +41,32 @@ public class TransactionsController {
                 .toAccount(dto.getToNumber())
                 .build();
         return transactionService.create(transaction);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("/from/account/to/external")
+    public Transaction openFromAccountToExternalTransaction(@RequestBody OpenTransactionExternalToDto dto) {
+        PayoutModel payoutModel = dto.getPayoutModel();
+        if (!payoutModel.isPerson()) {
+            Assert.notNull(payoutModel.getKpp(), "kpp is null");
+        } else {
+            payoutModel.setInn("0");
+        }
+        Transaction transaction = transactionBuilder.builderOutTo()
+                .authUser(AuthUtils.getAuthUser())
+                .money(dto.getMoney())
+                .currency(Currency.RUB)
+                .fromAccount(dto.getFromNumber())
+                .to(payoutModel)
+                .build();
+        return transactionService.create(transaction);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("/from/external/to/account")
+    public Transaction openFromCardToAccountTransaction(@RequestBody OpenTransactionDto dto) {
+        //TODO: e-commerce
+        return new Transaction();
     }
 
     @PreAuthorize("hasAnyAuthority('SCOPE_edit_money')")
@@ -84,37 +74,14 @@ public class TransactionsController {
     public Transaction editMoneyToAccount(@RequestBody MoneyDto moneyDto) {
         Transaction newTransaction = new Transaction();
         newTransaction.setCurrency(moneyDto.getCurrency());
-        newTransaction.setInner(true);
+        newTransaction.setInnerFrom(true);
+        newTransaction.setInnerTo(true);
         newTransaction.setMoney(moneyDto.getBalanceEdit());
         newTransaction.setOwnerUserId((int) AuthUtils.getUserId());
         newTransaction.setFromNumber("SYSTEM");
         newTransaction.setOwnerUsername(AuthUtils.getAuthUser().getName());
         newTransaction.setToNumber(moneyDto.getAccountNumber());
         return transactionService.createSystem(newTransaction);
-    }
-
-    @PostMapping("/from/card/to/card/cvc")
-    public Transaction openFromCardToCardTransactionCvc(@RequestBody OpenTransactionCvcDto dto) {
-        Transaction transaction = transactionBuilder.builder()
-                .cvc(dto.getCvc())
-                .money(dto.getMoney())
-                .currency(dto.getCurrency())
-                .fromCard(dto.getFromNumber())
-                .toCard(dto.getToNumber())
-                .build();
-        return transactionService.create(transaction);
-    }
-
-    @PostMapping("/from/card/to/account/cvc")
-    public Transaction openFromCardToAccountTransactionCvc(@RequestBody OpenTransactionCvcDto dto) {
-        Transaction transaction = transactionBuilder.builder()
-                .cvc(dto.getCvc())
-                .money(dto.getMoney())
-                .currency(dto.getCurrency())
-                .fromCard(dto.getFromNumber())
-                .toAccount(dto.getToNumber())
-                .build();
-        return transactionService.create(transaction);
     }
 
 }

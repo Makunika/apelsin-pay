@@ -13,6 +13,8 @@ import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 
+import javax.validation.Valid;
+
 @Service
 @RequiredArgsConstructor
 public class CheckFromTransactionListener {
@@ -28,16 +30,16 @@ public class CheckFromTransactionListener {
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void checkTransaction(@Payload Transaction transaction) {
+    public void checkTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_FROM_CHECK) {
             throw new TransactionNotAllowedException("status on check not START_FROM_CHECK");
         }
 
         switch (transaction.getAccountTypeFrom()) {
-            case CARD:
+            case BUSINESS:
                 rabbitTemplate.convertAndSend(RabbitConsts.CARD_FROM_CHECK_ROUTE, transaction);
                 break;
-            case DEPOSIT:
+            case PERSONAL:
                 rabbitTemplate.convertAndSend(RabbitConsts.DEPOSIT_FROM_CHECK_ROUTE, transaction);
                 break;
         }

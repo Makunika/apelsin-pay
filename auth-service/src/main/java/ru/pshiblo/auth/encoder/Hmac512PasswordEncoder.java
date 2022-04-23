@@ -6,6 +6,7 @@ import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
@@ -22,6 +23,12 @@ public class Hmac512PasswordEncoder implements PasswordEncoder {
 
     @Value("${encoder.sha512.salt}")
     private String salt;
+
+    @PostConstruct
+    public void log() {
+        String pass = encode("pass");
+        log.info(">>>>> " + pass);
+    }
 
     @Override
     public String encode(CharSequence rawPassword) {

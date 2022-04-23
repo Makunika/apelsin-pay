@@ -1,5 +1,7 @@
 package ru.pshiblo.transaction.rabbit.listeners.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -10,6 +12,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.pshiblo.common.exception.InternalException;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.account.domain.Account;
@@ -17,13 +20,17 @@ import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
+import ru.pshiblo.transaction.model.PayoutModel;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.account.service.AccountService;
-import ru.pshiblo.account.service.CardService;
 import ru.pshiblo.account.service.CurrencyService;
+import ru.pshiblo.transaction.tinkoff.builders.TinkoffPaymentBuilder;
+import ru.pshiblo.transaction.tinkoff.client.TinkoffApi;
+import ru.pshiblo.transaction.tinkoff.model.request.TinkoffPayment;
+import ru.pshiblo.transaction.tinkoff.model.request.TinkoffTo;
 
-import javax.transaction.NotSupportedException;
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -39,6 +46,9 @@ public class SendTransactionListener {
     private final TransactionRepository transactionRepository;
     private final RabbitTemplate rabbitTemplate;
     private final CurrencyService currencyService;
+    private final TinkoffApi tinkoffApi;
+    private final ObjectMapper objectMapper;
+    private final TinkoffPaymentBuilder tinkoffPaymentBuilder;
 
     @RabbitListener(
             bindings = @QueueBinding(
@@ -49,22 +59,21 @@ public class SendTransactionListener {
             errorHandler = "errorTransactionHandler"
     )
     @Transactional
-    public void sendTransaction(@Payload Transaction transaction) {
+    public void sendTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_SEND || !transaction.isApproveSend()) {
             throw new TransactionNotAllowedException("status on send not START_SEND or not approved");
         }
 
         transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
 
-        if (transaction.isInner()) {
+        if (transaction.isInnerTo()) {
             innerSendTransaction(transaction);
         } else {
             extendSendTransaction(transaction);
         }
     }
 
-
-    private void innerSendTransaction(Transaction transaction) {
+    private void withdraw(Transaction transaction) {
         Account fromAccount = accountService.getByNumber(transaction.getFromNumber());
 
         Currency transactionCurrency = transaction.getCurrency();
@@ -80,18 +89,68 @@ public class SendTransactionListener {
             if (fromAccount.getBalance().compareTo(moneyCurrentFrom) >= 0) {
                 fromAccount.setBalance(accountService.getById(fromAccount.getId()).getBalance().subtract(moneyCurrentFrom));
                 accountService.save(fromAccount);
-
-                transaction.setStatus(TransactionStatus.END_SEND);
-                transaction = transactionRepository.save(transaction);
-                transaction.setStatus(TransactionStatus.START_APPLY_PAYMENT);
-                rabbitTemplate.convertAndSend(RabbitConsts.APPLY_PAYMENTS_ROUTE, transaction);
             } else {
-                throw new TransactionNotAllowedException("Balance small for withdrawn");
+                throw new TransactionNotAllowedException("Balance small for withdraw");
             }
         }
     }
 
+
+    private void innerSendTransaction(Transaction transaction) {
+        withdraw(transaction);
+        transaction.setStatus(TransactionStatus.END_SEND);
+        transaction = transactionRepository.save(transaction);
+        transaction.setStatus(TransactionStatus.START_APPLY_PAYMENT);
+        rabbitTemplate.convertAndSend(RabbitConsts.APPLY_PAYMENTS_ROUTE, transaction);
+    }
+
     private void extendSendTransaction(Transaction transaction) {
-        throw new NotAllowedOperationException("only is inner");
+        try {
+            if (transaction.getCurrency() != Currency.RUB) {
+                throw new TransactionNotAllowedException("Currency to required RUB");
+            }
+
+            PayoutModel payoutModel = objectMapper.readValue(transaction.getAdditionInfoTo(), PayoutModel.class);
+            TinkoffPayment payment;
+            if (payoutModel.isPerson()) {
+                payment = tinkoffPaymentBuilder.builder()
+                        .amountRubles(transaction.getMoney())
+                        .id(transaction.getId())
+                        .toPersonal(
+                                TinkoffTo.builder()
+                                        .accountNumber(payoutModel.getAccountNumber())
+                                        .bankName(payoutModel.getBankName())
+                                        .bik(payoutModel.getBik())
+                                        .name(payoutModel.getName())
+                                        .corrAccountNumber(payoutModel.getCorrAccountNumber())
+                                        .build()
+                        )
+                        .build();
+            } else {
+                payment = tinkoffPaymentBuilder.builder()
+                        .amountRubles(transaction.getMoney())
+                        .id(transaction.getId())
+                        .toBusiness(
+                                TinkoffTo.builder()
+                                        .accountNumber(payoutModel.getAccountNumber())
+                                        .bankName(payoutModel.getBankName())
+                                        .bik(payoutModel.getBik())
+                                        .name(payoutModel.getName())
+                                        .corrAccountNumber(payoutModel.getCorrAccountNumber())
+                                        .inn(payoutModel.getInn())
+                                        .kpp(payoutModel.getKpp())
+                                        .build()
+                        )
+                        .build();
+            }
+            tinkoffApi.paymentTo(payment);
+            withdraw(transaction);
+            transaction.setStatus(TransactionStatus.END_SEND);
+            transaction = transactionRepository.save(transaction);
+            rabbitTemplate.convertAndSend(RabbitConsts.CLOSE_ROUTE, transaction);
+        } catch (JsonProcessingException e) {
+            throw new InternalException(e.getMessage(), e);
+        }
+
     }
 }

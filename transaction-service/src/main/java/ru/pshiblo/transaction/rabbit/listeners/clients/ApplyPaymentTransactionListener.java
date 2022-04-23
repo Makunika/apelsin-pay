@@ -17,6 +17,8 @@ import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
+import javax.validation.Valid;
+
 
 @Service
 @Slf4j
@@ -34,7 +36,7 @@ public class ApplyPaymentTransactionListener {
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void applyPaymentTransaction(@Payload Transaction transaction) {
+    public void applyPaymentTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_APPLY_PAYMENT) {
             throw new TransactionNotAllowedException("status on send not END_SEND or not approved");
         }

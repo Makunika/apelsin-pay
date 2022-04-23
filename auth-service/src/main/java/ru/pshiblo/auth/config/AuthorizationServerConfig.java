@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,7 @@ import java.util.Map;
 @Configuration
 @EnableAuthorizationServer
 @RequiredArgsConstructor
+@Order(1)
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private final AuthenticationManager authenticationManager;
@@ -44,7 +46,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-
         //clients.jdbc(dataSource)
         clients.inMemory()
                 .withClient("browser_main")
@@ -53,15 +54,47 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .redirectUris("https://oidcdebugger.com/debug")
                 .scopes("user")
                 .and()
-                .withClient("info-service")
-                .secret(env.getProperty("INFO_SERVICE_PASSWORD"))
+
+                .withClient("info-personal-service")
+                .secret(env.getProperty("INFO_PERSONAL_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server", "users_s")
+                .and()
+
+                .withClient("info-business-service")
+                .secret(env.getProperty("INFO_BUSINESS_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
                 .scopes("server")
                 .and()
-                .withClient("deposit-service")
-                .secret(env.getProperty("DEPOSIT_SERVICE_PASSWORD"))
+
+                .withClient("users-service")
+                .secret(env.getProperty("USERS_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "edit_money");
+                .scopes("server")
+                .and()
+
+                .withClient("auth-service")
+                .secret(env.getProperty("AUTH_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server", "info_b_s", "info_p_s")
+                .and()
+
+                .withClient("transaction-service")
+                .secret(env.getProperty("TRANSACTION_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server", "account_b_s", "account_p_s")
+                .and()
+
+                .withClient("account-business-service")
+                .secret(env.getProperty("ACCOUNT_BUSINESS_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server")
+                .and()
+
+                .withClient("account-personal-service")
+                .secret(env.getProperty("ACCOUNT_PERSONAL_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server", "transaction");
 
     }
 
@@ -94,6 +127,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                     userMap.put("id", authUser.getId());
                     userMap.put("email", authUser.getEmail());
                     userMap.put("name", authUser.getName());
+                    userMap.put("status", authUser.getConfirmedStatus());
+                    userMap.put("companies", authUser.getCompanies());
                 }
                 return userMap;
             }

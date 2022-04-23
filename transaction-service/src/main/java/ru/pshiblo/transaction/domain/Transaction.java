@@ -1,21 +1,28 @@
 package ru.pshiblo.transaction.domain;
 
-import lombok.Data;
+import lombok.*;
+import org.hibernate.Hibernate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.transaction.enums.TransactionType;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Table(name = "transactions")
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class Transaction implements Serializable {
     @Id
@@ -29,24 +36,33 @@ public class Transaction implements Serializable {
     @LastModifiedDate
     private LocalDateTime updated;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 30)
+    private TransactionType type;
+
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private TransactionStatus status;
 
-    @Column(name = "to_number", nullable = false, length = 100)
+    @Column(name = "to_number", length = 100)
     private String toNumber;
 
-    @Column(name = "to_card_number", length = 100)
-    private String toCardNumber;
-
-    @Column(name = "from_number", nullable = false, length = 100)
+    @Column(name = "from_number", length = 100)
     private String fromNumber;
 
-    @Column(name = "from_card_number", length = 100)
-    private String fromCardNumber;
+    @NotNull
+    @Column(nullable = false)
+    private boolean isInnerFrom = false;
 
-    @Column(name = "is_inner", nullable = false)
-    private boolean isInner = false;
+    @NotNull
+    @Column(nullable = false)
+    private boolean isInnerTo = false;
+
+    private String additionInfoTo;
+
+    private String additionInfoFrom;
 
     @Column(name = "commission")
     private BigDecimal commissionRate;
@@ -54,21 +70,24 @@ public class Transaction implements Serializable {
     @Column(name = "commission_value")
     private BigDecimal commissionValue;
 
-    @Column(name = "owner_user_id", nullable = false)
+    @Column(name = "owner_user_id")
     private Integer ownerUserId;
 
+    @NotNull
     @Column(name = "owner_username", nullable = false)
     private String ownerUsername;
 
     @Column(name = "reason_cancel")
     private String reasonCancel;
 
+    @NotNull
     @Column(name = "is_system", nullable = false)
     private boolean isSystem = false;
 
     @Column(name = "to_user_id")
     private Integer toUserId;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "currency", nullable = false, length = 3)
     private Currency currency;
@@ -81,15 +100,18 @@ public class Transaction implements Serializable {
     @Column(name = "currency_to", length = 3)
     private Currency currencyTo;
 
+    @NotNull
     @Column(name = "money", nullable = false)
     private BigDecimal money;
 
     @Column(name = "money_with_commision")
     private BigDecimal moneyWithCommission;
 
+    @NotNull
     @Column(name = "is_approve_send", nullable = false)
     private boolean isApproveSend = false;
 
+    @NotNull
     @Column(name = "is_approve_add_money", nullable = false)
     private boolean isApproveAddMoney = false;
 
@@ -98,4 +120,17 @@ public class Transaction implements Serializable {
 
     @Column(name = "account_type_to")
     private AccountType accountTypeTo;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Transaction that = (Transaction) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

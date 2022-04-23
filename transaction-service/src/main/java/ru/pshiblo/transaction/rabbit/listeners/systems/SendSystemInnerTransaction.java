@@ -14,7 +14,6 @@ import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.service.AccountService;
-import ru.pshiblo.account.service.CardService;
 import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
@@ -22,7 +21,6 @@ import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -48,7 +46,7 @@ public class SendSystemInnerTransaction {
             throw new TransactionNotAllowedException("status on open not START_send");
         }
 
-        if (!transaction.isInner()) {
+        if (!(transaction.isInnerFrom() || transaction.isInnerTo())) {
             throw new TransactionNotAllowedException("System transaction only inner!");
         }
 

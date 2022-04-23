@@ -1,45 +1,23 @@
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          thread:
-            timeoutInMilliseconds: 20000
-
-ribbon:
-  ReadTimeout: 20000
-  ConnectTimeout: 20000
-
-zuul:
-  ignoredServices: '*'
-  host:
-    connect-timeout-millis: 20000
-    socket-timeout-millis: 20000
-
-  routes:
-    auth-service:
-        path: /uaa/**
-        url: http://auth-service:5000
-        stripPrefix: false
-        sensitiveHeaders:
-
-    account-service:
-        path: /accounts/**
-        serviceId: account-service
-        stripPrefix: false
-        sensitiveHeaders:
-
-    statistics-service:
-        path: /statistics/**
-        serviceId: statistics-service
-        stripPrefix: false
-        sensitiveHeaders:
-
-    notification-service:
-        path: /notifications/**
-        serviceId: notification-service
-        stripPrefix: false
-        sensitiveHeaders:
-
 server:
-  port: 4000
+  port: 8080
+#  ssl:
+#    key-store: classpath:keystore.p12
+#    key-store-password: qwerty
+#    key-alias: test_key
+#    key-store-type: PKCS12
+
+spring:
+  webflux:
+    static-path-pattern: /static/**
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+          include-expression: serviceId.endsWith('-SERVICE')
+          url-expression: "'lb:http://'+serviceId"
+
+#logging:
+#  level:
+#    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: debug

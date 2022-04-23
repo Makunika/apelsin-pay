@@ -21,6 +21,7 @@ import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 
 @Service
@@ -42,7 +43,7 @@ public class AddPaymentTransactionListener {
             errorHandler = "errorTransactionHandler"
     )
     @Transactional
-    public void applyPaymentTransaction(@Payload Transaction transaction) {
+    public void applyPaymentTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_ADD_MONEY || !transaction.isApproveAddMoney()) {
             throw new TransactionNotAllowedException("status on send not START_ADD_MONEY or not approve add money");
         }

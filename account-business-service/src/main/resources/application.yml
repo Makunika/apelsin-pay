@@ -1,0 +1,19 @@
+spring:
+  rabbitmq:
+    host: localhost
+    template:
+      exchange: exchange-example-1
+  application:
+    name: account-business-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+      fail-fast: true
+      password: ${CONFIG_SERVICE_PASSWORD}
+      username: user
+  config:
+    import: configserver:http://localhost:8888
+
+bank:
+  bik: 96754
+

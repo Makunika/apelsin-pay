@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.service.AccountService;
-import ru.pshiblo.account.service.CardService;
 import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
@@ -31,7 +30,6 @@ public class OpenSystemInnerTransaction {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final CurrencyService currencyService;
-    private final CardService cardService;
 
     @RabbitListener(
             bindings = @QueueBinding(

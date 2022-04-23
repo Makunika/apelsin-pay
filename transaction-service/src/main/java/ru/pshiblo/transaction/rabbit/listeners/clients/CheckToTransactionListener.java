@@ -15,6 +15,8 @@ import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
+import javax.validation.Valid;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -31,16 +33,16 @@ public class CheckToTransactionListener {
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void applyPaymentTransaction(@Payload Transaction transaction) {
+    public void applyPaymentTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_TO_CHECK) {
             throw new TransactionNotAllowedException("status on send not START_TO_CHECK");
         }
 
         switch (transaction.getAccountTypeTo()) {
-            case CARD:
+            case BUSINESS:
                 rabbitTemplate.convertAndSend(RabbitConsts.CARD_TO_CHECK_ROUTE, transaction);
                 break;
-            case DEPOSIT:
+            case PERSONAL:
                 rabbitTemplate.convertAndSend(RabbitConsts.DEPOSIT_TO_CHECK_ROUTE, transaction);
                 break;
         }

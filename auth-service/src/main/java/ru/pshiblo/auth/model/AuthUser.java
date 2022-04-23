@@ -25,18 +25,22 @@ public class AuthUser implements UserDetails {
     private String name;
     private int id;
     private List<String> roles;
+    private String confirmedStatus;
+    private List<Long> companies;
 
     @JsonIgnore
     private String passwordHash;
 
-    public static AuthUser fromUser(User user) {
+    public static AuthUser fromUser(User user, String email, String name, String confirmedStatus, List<Long> companies) {
         return new AuthUser(
-                user.getUserPassword().getLogin(),
-                user.getEmail(),
-                user.getName(),
+                user.getLogin(),
+                email,
+                name,
                 user.getId(),
                 user.getRoles().stream().map(Role::getName).collect(Collectors.toList()),
-                user.getUserPassword().getPasswordHash()
+                confirmedStatus,
+                companies,
+                user.getPasswordHash()
         );
     }
 

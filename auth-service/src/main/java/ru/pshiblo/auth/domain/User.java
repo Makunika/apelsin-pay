@@ -1,49 +1,31 @@
 package ru.pshiblo.auth.domain;
 
-import com.fasterxml.jackson.annotation.*;
-import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.*;
+import org.hibernate.Hibernate;
+import org.hibernate.annotations.Immutable;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
+@Immutable
 @Table(name = "users")
 @Entity
 public class User {
     @Id
-    @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
+    @Column(name = "password_hash", nullable = false, length = 200)
+    private String passwordHash;
 
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
-
-    @Column(name = "middle_name", length = 100)
-    private String middleName;
-
-    @Column(name = "email", nullable = false, length = 100)
-    private String email;
-
-    @Column(name = "phone", nullable = false, length = 100)
-    private String phone;
-
-    @Column(name = "birthday", nullable = false)
-    private LocalDate birthday;
-
-    @Column(name = "passport_series", nullable = false)
-    private Integer passportSeries;
-
-    @Column(name = "passport_number", nullable = false)
-    private Integer passportNumber;
+    @Column(name = "login", nullable = false, length = 100)
+    private String login;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
@@ -51,10 +33,16 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles;
 
-    @OneToOne(fetch = FetchType.EAGER, mappedBy = "user")
-    private UserPassword userPassword;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        User user = (User) o;
+        return id != null && Objects.equals(id, user.id);
+    }
 
-    public String getName() {
-        return lastName + " " + firstName;
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

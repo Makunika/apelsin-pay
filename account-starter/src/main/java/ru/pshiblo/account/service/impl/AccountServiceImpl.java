@@ -27,7 +27,7 @@ class AccountServiceImpl implements AccountService {
     private final AccountRepository repository;
 
     @Override
-    public Account create(int userId, Currency currency, AccountType type) {
+    public Account create(Currency currency, AccountType type) {
         Account account = new Account();
         account.setCurrency(currency);
         account.setBalance(new BigDecimal(0));
@@ -38,7 +38,6 @@ class AccountServiceImpl implements AccountService {
             number = RandomGenerator.randomNumber(20);
         } while (repository.existsByNumber(number));
         account.setNumber(number);
-        account.setUserId(userId);
         return repository.save(account);
     }
 
@@ -55,11 +54,6 @@ class AccountServiceImpl implements AccountService {
     @Override
     public Optional<Account> findByNumber(String number) {
         return repository.findByNumber(number);
-    }
-
-    @Override
-    public List<Account> getByUserId(int userId) {
-        return repository.findByUserId(userId);
     }
 
     @Override

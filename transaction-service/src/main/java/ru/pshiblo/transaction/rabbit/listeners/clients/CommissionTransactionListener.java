@@ -14,10 +14,9 @@ import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
-import ru.pshiblo.account.repository.AccountRepository;
-import ru.pshiblo.account.repository.CardRepository;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 
 /**
@@ -39,7 +38,7 @@ public class CommissionTransactionListener {
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void commissionTransaction(@Payload Transaction transaction) {
+    public void commissionTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_COMMISSION) {
             throw new TransactionNotAllowedException("status on commision not START_COMMISION");
         }
@@ -49,7 +48,7 @@ public class CommissionTransactionListener {
         transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
         log.info(transaction.toString());
         transaction.setCommissionRate(
-                transaction.isInner() ?
+                !transaction.isInnerTo() ?
                         new BigDecimal("2") :
                         new BigDecimal("0.1")
         );

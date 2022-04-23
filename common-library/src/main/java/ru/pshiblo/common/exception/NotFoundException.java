@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Maxim Pshiblo
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class NotFoundException extends RuntimeException {
+public class NotFoundException extends ApelsinException {
 
     public NotFoundException(String id, Class<?> clazz) {
         super(clazz.getName() + " not found with id " + id);

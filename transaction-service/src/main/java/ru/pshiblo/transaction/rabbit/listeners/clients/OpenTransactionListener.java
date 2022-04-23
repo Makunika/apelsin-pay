@@ -18,9 +18,9 @@ import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.account.service.AccountService;
-import ru.pshiblo.account.service.CardService;
 import ru.pshiblo.account.service.CurrencyService;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 
 /**
@@ -35,7 +35,6 @@ public class OpenTransactionListener {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final CurrencyService currencyService;
-    private final CardService cardService;
 
 
     @RabbitListener(
@@ -47,13 +46,13 @@ public class OpenTransactionListener {
             errorHandler = "errorTransactionHandler"
     )
     @Transactional
-    public void openTransaction(@Payload Transaction transaction) {
+    public void openTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_OPEN) {
             throw new TransactionNotAllowedException("status on open not START_OPEN");
         }
 
         Account account = accountService.getByNumber(transaction.getFromNumber());
-        if (transaction.isInner()) {
+        if (transaction.isInnerFrom()) {
             Account toAccount = accountService.getByNumber(transaction.getToNumber());
 
             if (toAccount.getLock()) {

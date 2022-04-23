@@ -1,20 +1,26 @@
 package ru.pshiblo.transaction.domain;
 
-import lombok.Data;
+import lombok.*;
+import org.hibernate.Hibernate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.account.enums.AccountType;
-import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.account.enums.Currency;
+import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.transaction.enums.TransactionType;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Table(name = "transactions_history")
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class TransactionHistory {
     @Id
@@ -28,28 +34,36 @@ public class TransactionHistory {
     @LastModifiedDate
     private LocalDateTime updated;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 30)
+    private TransactionType type;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "transaction_id", nullable = false)
     private Transaction transaction;
+
+    @Column(name = "routing_to")
+    private String route;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private TransactionStatus status;
 
-    @Column(name = "routing_to")
-    private String route;
-
-    @Column(name = "to_number", nullable = false, length = 100)
+    @Column(name = "to_number", length = 100)
     private String toNumber;
 
-    @Column(name = "from_number", nullable = false, length = 100)
+    @Column(name = "from_number", length = 100)
     private String fromNumber;
 
-    @Column(name = "is_inner", nullable = false)
-    private boolean isInner = false;
+    @Column(nullable = false)
+    private boolean isInnerFrom = false;
 
-    @Column(name = "is_to_card", nullable = false)
-    private boolean isToCard = false;
+    @Column(nullable = false)
+    private boolean isInnerTo = false;
+
+    private String additionInfoTo;
+
+    private String additionInfoFrom;
 
     @Column(name = "commission")
     private BigDecimal commissionRate;
@@ -57,11 +71,17 @@ public class TransactionHistory {
     @Column(name = "commission_value")
     private BigDecimal commissionValue;
 
-    @Column(name = "owner_user_id", nullable = false)
+    @Column(name = "owner_user_id")
     private Integer ownerUserId;
+
+    @Column(name = "owner_username", nullable = false)
+    private String ownerUsername;
 
     @Column(name = "reason_cancel")
     private String reasonCancel;
+
+    @Column(name = "is_system", nullable = false)
+    private boolean isSystem = false;
 
     @Column(name = "to_user_id")
     private Integer toUserId;
@@ -84,15 +104,28 @@ public class TransactionHistory {
     @Column(name = "money_with_commision")
     private BigDecimal moneyWithCommission;
 
-    @Column(name = "owner_username", nullable = false)
-    private String ownerUsername;
+    @Column(name = "is_approve_send", nullable = false)
+    private boolean isApproveSend = false;
 
-    @Column(name = "is_system", nullable = false)
-    private boolean isSystem = false;
+    @Column(name = "is_approve_add_money", nullable = false)
+    private boolean isApproveAddMoney = false;
 
-    @Column(name = "is_approve", nullable = false)
-    private boolean isApprove = false;
+    @Column(name = "account_type_from")
+    private AccountType accountTypeFrom;
 
-    @Column(name = "account_type")
-    private AccountType accountType;
+    @Column(name = "account_type_to")
+    private AccountType accountTypeTo;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        TransactionHistory that = (TransactionHistory) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
