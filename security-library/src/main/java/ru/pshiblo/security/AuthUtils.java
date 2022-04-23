@@ -22,6 +22,10 @@ public class AuthUtils {
     public static final long SERVER_ID = -1111L;
     public static final long UNAUTH_ID = -1000L;
 
+    public static String ROLE_ADMINISTRATOR = "ROLE_ADMINISTRATOR";
+    public static String ROLE_USER = "ROLE_USER";
+    public static String ROLE_MODERATOR = "ROLE_MODERATOR";
+
     public static AuthUser getAuthUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken) {
@@ -67,4 +71,7 @@ public class AuthUtils {
         return Objects.requireNonNull(getAuthUser()).getId();
     }
 
+    public static boolean hasRole(String role) {
+        return getAuthUser().getAuthoritiesSimple().stream().anyMatch(r -> r.equals(role));
+    }
 }

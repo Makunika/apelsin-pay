@@ -30,6 +30,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @ControllerAdvice
@@ -59,6 +60,17 @@ public class ExceptionControllerAdvice extends ResponseEntityExceptionHandler {
                 objectMapper.readTree(e.getMessage()),
                 new HttpHeaders(),
                 HttpStatus.valueOf(e.getStatus()),
+                request
+        );
+    }
+
+    @ExceptionHandler(value = {NoSuchElementException.class})
+    public ResponseEntity<?> handleNoSuchElementExceptions(NoSuchElementException e, WebRequest request) {
+        return handleExceptionInternal(
+                e,
+                e.getMessage(),
+                new HttpHeaders(),
+                HttpStatus.NOT_FOUND,
                 request
         );
     }

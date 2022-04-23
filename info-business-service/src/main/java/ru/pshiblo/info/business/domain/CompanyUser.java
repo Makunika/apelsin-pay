@@ -13,13 +13,11 @@ import java.util.Objects;
 @ToString
 @RequiredArgsConstructor
 public class CompanyUser {
-
     @Id
     @GeneratedValue
     private Long id;
     private long userId;
     private RoleCompany roleCompany;
-
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;

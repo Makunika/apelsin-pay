@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.security.oauth2.server.resource.authentication.DelegatingJwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import ru.pshiblo.security.auditing.SecurityAuditorAware;
 import ru.pshiblo.security.feign.CustomErrorDecoder;
 import ru.pshiblo.security.jwt.CustomJwtGrantedAuthoritiesConverter;
 
@@ -79,6 +80,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @ConditionalOnMissingBean
     public ErrorDecoder errorDecoder() {
         return new CustomErrorDecoder();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SecurityAuditorAware securityAuditorAware() {
+        return new SecurityAuditorAware();
     }
 
 }

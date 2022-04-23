@@ -6,28 +6,27 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.security.enums.ConfirmedStatus;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class Company {
+@EntityListeners(value = AuditingEntityListener.class)
+public class CompanyHistory {
+
     @Id
     @GeneratedValue
     private Long id;
-    private String name;
-    private String inn;
-    private String address;
-    private ConfirmedStatus status;
-
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
     @CreatedDate
     private LocalDateTime created;
     @LastModifiedDate
@@ -36,16 +35,18 @@ public class Company {
     private String createdBy;
     @LastModifiedBy
     private String updatedBy;
-
-    @OneToMany(mappedBy = "company", orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<CompanyUser> companyUsers = new LinkedHashSet<>();
+    private ConfirmedStatus status;
+    private String reason;
+    private String name;
+    private String inn;
+    private String address;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Company company = (Company) o;
-        return id != null && Objects.equals(id, company.id);
+        CompanyHistory that = (CompanyHistory) o;
+        return id != null && Objects.equals(id, that.id);
     }
 
     @Override
