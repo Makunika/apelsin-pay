@@ -1,6 +1,8 @@
 package ru.pshiblo.security.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.RequestInterceptor;
+import feign.codec.ErrorDecoder;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -18,6 +20,7 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.security.oauth2.server.resource.authentication.DelegatingJwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import ru.pshiblo.security.feign.CustomErrorDecoder;
 import ru.pshiblo.security.jwt.CustomJwtGrantedAuthoritiesConverter;
 
 @Configuration
@@ -37,9 +40,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests(authz -> authz
-                        .antMatchers("/actuator/**", "/public/**").permitAll()
-                        .mvcMatchers("public").permitAll()
-                        .anyRequest().authenticated())
+                        .antMatchers("/actuator/**", "/public/**", "/error/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(h -> h.accessDeniedHandler((request, response, accessDeniedException) ->
+                        System.out.println("Говно"))
+                )
                 .oauth2ResourceServer(
                         oauth2 -> oauth2.jwt()
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter));
@@ -47,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
-        webSecurity.ignoring().antMatchers("/actuator/**", "/public/**");
+        webSecurity.ignoring().antMatchers("/actuator/**", "/public/**", "/error/**");
     }
 
     @Bean
@@ -67,6 +73,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @ConditionalOnMissingBean
     public OAuth2RestTemplate oAuth2RestTemplate(ClientCredentialsResourceDetails resourceDetails) {
         return new OAuth2RestTemplate(resourceDetails);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ErrorDecoder errorDecoder() {
+        return new CustomErrorDecoder();
     }
 
 }

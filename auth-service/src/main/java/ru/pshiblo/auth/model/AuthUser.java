@@ -33,14 +33,14 @@ public class AuthUser implements UserDetails {
 
     public static AuthUser fromUser(User user, String email, String name, String confirmedStatus, List<Long> companies) {
         return new AuthUser(
-                user.getUserPassword().getLogin(),
+                user.getLogin(),
                 email,
                 name,
                 user.getId(),
                 user.getRoles().stream().map(Role::getName).collect(Collectors.toList()),
                 confirmedStatus,
                 companies,
-                user.getUserPassword().getPasswordHash()
+                user.getPasswordHash()
         );
     }
 

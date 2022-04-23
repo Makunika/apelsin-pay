@@ -35,14 +35,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/actuator/**").permitAll()
                 .antMatchers("/oauth/token_key_new").permitAll()
+                .antMatchers("/error").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
                 .csrf().disable();
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                //.and()
-                //.formLogin(withDefaults());
     }
 
     @Override

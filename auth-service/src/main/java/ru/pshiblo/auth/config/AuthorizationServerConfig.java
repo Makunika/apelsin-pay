@@ -62,6 +62,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .scopes("server")
                 .and()
 
+                .withClient("users-service")
+                .secret(env.getProperty("USERS_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server")
+                .and()
+
                 .withClient("auth-service")
                 .secret(env.getProperty("AUTH_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
@@ -104,6 +110,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                     userMap.put("id", authUser.getId());
                     userMap.put("email", authUser.getEmail());
                     userMap.put("name", authUser.getName());
+                    userMap.put("status", authUser.getConfirmedStatus());
+                    userMap.put("companies", authUser.getCompanies());
                 }
                 return userMap;
             }

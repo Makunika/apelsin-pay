@@ -18,6 +18,10 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
 
 spring:
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: false
   security:
     oauth2:
       resourceserver:

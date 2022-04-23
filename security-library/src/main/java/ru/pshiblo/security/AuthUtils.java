@@ -3,17 +3,19 @@ package ru.pshiblo.security;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import ru.pshiblo.security.enums.ConfirmedStatus;
 import ru.pshiblo.security.model.AuthUser;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AuthUtils {
 
     private static final String LOGIN_CLAIM = "user_name";
     private static final String CLIENT_CLAIM = "client_id";
     private static final String NAME_CLAIM = "name";
+    private static final String STATUS_CLAIM = "status";
+    private static final String COMPANIES_CLAIM = "companies";
     private static final String ID_CLAIM = "id";
     private static final String EMAIL_CLAIM = "email";
 
@@ -32,6 +34,8 @@ public class AuthUtils {
                         ((String) tokenAttributes.get(CLIENT_CLAIM)),
                         "none",
                         true,
+                        null,
+                        new ArrayList<>(),
                         jwtAuthenticationToken.getAuthorities()
                 );
             } else {
@@ -41,6 +45,8 @@ public class AuthUtils {
                         ((String) tokenAttributes.get(NAME_CLAIM)),
                         ((String) tokenAttributes.get(EMAIL_CLAIM)),
                         false,
+                        ConfirmedStatus.valueOf(((String) tokenAttributes.getOrDefault(STATUS_CLAIM, ConfirmedStatus.NOT_CONFIRMED.name()))),
+                        new ArrayList<>(((Collection<String>) tokenAttributes.getOrDefault(COMPANIES_CLAIM, new ArrayList<>()))),
                         jwtAuthenticationToken.getAuthorities()
                 );
             }
@@ -51,6 +57,8 @@ public class AuthUtils {
                 "UNAUTH",
                 "UNAUTH",
                 false,
+                null,
+                new ArrayList<>(),
                 new ArrayList<>()
         );
     }

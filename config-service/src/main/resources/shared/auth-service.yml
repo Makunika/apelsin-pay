@@ -15,7 +15,7 @@ server:
 
 encoder:
   sha512:
-    salt: saltsalt
+    salt: ${AUTH_SHA_SALT}
 
 security:
   oauth2:

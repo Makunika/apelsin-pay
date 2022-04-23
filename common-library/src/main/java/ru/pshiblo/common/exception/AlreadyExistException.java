@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Maxim Pshiblo
  */
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class AlreadyExistException extends RuntimeException {
+public class AlreadyExistException extends ApelsinException {
     public AlreadyExistException() {
         super();
     }

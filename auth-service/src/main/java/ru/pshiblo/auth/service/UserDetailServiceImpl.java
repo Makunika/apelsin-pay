@@ -13,6 +13,7 @@ import ru.pshiblo.auth.model.AuthUser;
 import ru.pshiblo.auth.repository.UserRepository;
 import ru.pshiblo.auth.service.interfaces.UserService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 @Service

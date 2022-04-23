@@ -6,7 +6,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import ru.pshiblo.common.exception.NotFoundException;
-import ru.pshiblo.info.personal.clients.AuthClient;
+import ru.pshiblo.info.personal.clients.UsersClient;
 import ru.pshiblo.info.personal.clients.model.RegisterAuthDto;
 import ru.pshiblo.info.personal.clients.model.UserIdDto;
 import ru.pshiblo.info.personal.domain.PersonInfo;
@@ -23,7 +23,7 @@ import java.util.Optional;
 public class PersonInfoServiceImpl implements PersonInfoService {
 
     private final PersonInfoRepository repository;
-    private final AuthClient authClient;
+    private final UsersClient usersClient;
 
     @Override
     public void register(PersonInfo personInfo, String password, String login) {
@@ -40,7 +40,7 @@ public class PersonInfoServiceImpl implements PersonInfoService {
         personInfo.setId(null);
         personInfo.setStatus(PersonStatus.NOT_CONFIRMED);
 
-        UserIdDto register = authClient.register(
+        UserIdDto register = usersClient.register(
                 RegisterAuthDto.builder()
                         .login(login)
                         .password(password)

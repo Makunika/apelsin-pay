@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Maxim Pshiblo
  */
 @ResponseStatus(HttpStatus.FORBIDDEN)
-public class SecurityException extends RuntimeException {
+public class SecurityException extends ApelsinException {
     public SecurityException() {
         super();
     }
