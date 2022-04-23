@@ -29,10 +29,10 @@
     </parent>
 
     <groupId>ru.pshiblo</groupId>
-    <artifactId>maxbank</artifactId>
+    <artifactId>apelsin-pay</artifactId>
     <version>1.0</version>
-    <name>maxbank</name>
-    <description>maxbank</description>
+    <name>apelsin-pay</name>
+    <description>apelsin-pay</description>
 
     <properties>
         <spring-cloud.version>2021.0.1</spring-cloud.version>

@@ -19,6 +19,4 @@ public class CreateCompanyDto implements Serializable {
     @NotNull
     @NotBlank
     private final String address;
-    @NotNull
-    private final ConfirmedStatus status;
 }
