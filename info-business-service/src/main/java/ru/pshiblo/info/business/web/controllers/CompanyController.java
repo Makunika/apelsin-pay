@@ -66,7 +66,7 @@ public class CompanyController {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_server')")
+    @PreAuthorize("hasAuthority('SCOPE_info_b_s')")
     @GetMapping("/user/{id}")
     public List<CompanyUserResponseDto> findByUser(@PathVariable long id) {
         return service.findByUser(id)

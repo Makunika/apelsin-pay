@@ -20,7 +20,7 @@ public class RegisterController {
     private final RegisterService registerService;
     private final UserMapper userMapper;
 
-    @PreAuthorize("hasAuthority('SCOPE_server')")
+    @PreAuthorize("hasAuthority('SCOPE_users_s')")
     @PostMapping
     public RegisterResponseDto registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
         return userMapper.toDTO(

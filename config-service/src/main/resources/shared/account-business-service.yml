@@ -1,15 +1,15 @@
 security:
   oauth2:
     client:
-      clientId: transaction-service
-      clientSecret: ${TRANSACTION_SERVICE_PASSWORD}
-      accessTokenUri: http://localhost:5000/auth/oauth/token
+      clientId: account-business-service
+      clientSecret: ${ACCOUNT_BUSINESS_SERVICE_PASSWORD}
+      accessTokenUri: http://localhost:5000/oauth/token
       grant-type: client_credentials
       scope: server
 
 spring:
   application:
-    name: card-service
+    name: account-business-service
 
   datasource:
     url: jdbc:postgresql://localhost:5432/maxbank-transactions
@@ -25,3 +25,7 @@ spring:
 
 server:
   port: 6002
+
+feign:
+  hystrix:
+    enabled: true

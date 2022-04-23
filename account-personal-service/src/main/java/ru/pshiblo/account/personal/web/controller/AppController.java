@@ -16,7 +16,7 @@ public class AppController {
     private final PersonalAccountTypeService typeService;
     private final PersonalAccountMapper mapper;
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_server')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_account_p_s')")
     @PostMapping("/check/{userId}/{number}")
     public ResponseEntity<Boolean> checkPersonalAccount(@PathVariable long userId, @PathVariable String number) {
         boolean check = service.checkOwnerPersonalAccount(userId, number);

@@ -44,9 +44,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .antMatchers("/actuator/**", "/public/**", "/error/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(h -> h.accessDeniedHandler((request, response, accessDeniedException) ->
-                        System.out.println("Говно"))
-                )
+//                .exceptionHandling(h -> h.accessDeniedHandler((request, response, accessDeniedException) ->
+//                        {
+//                            accessDeniedException.printStackTrace();
+//                            System.out.println("Говно");
+//
+//                        })
+//                )
                 .oauth2ResourceServer(
                         oauth2 -> oauth2.jwt()
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter));

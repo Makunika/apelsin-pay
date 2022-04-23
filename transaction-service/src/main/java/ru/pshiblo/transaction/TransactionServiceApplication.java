@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableJpaRepositories
 @EntityScan
 public class TransactionServiceApplication {

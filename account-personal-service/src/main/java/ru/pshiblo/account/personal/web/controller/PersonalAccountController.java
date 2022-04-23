@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/deposit")
+@RequestMapping("api/personal")
 public class PersonalAccountController {
 
     private final PersonalAccountService service;
@@ -33,7 +33,7 @@ public class PersonalAccountController {
     public PersonalResponseDto create(@RequestBody CreateAccountPersonalDto request) {
         return mapper.toDto(
                 service.create(
-                        request.getUserId(),
+                        AuthUtils.getAuthUser(),
                         typeService.getById(request.getTypeId())
                                 .orElseThrow(() -> new NotFoundException(request.getTypeId(), PersonalAccountType.class)))
         );
@@ -50,7 +50,7 @@ public class PersonalAccountController {
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @GetMapping("number/{number}")
-    public PersonalResponseDto getDepositByNumber(@PathVariable String number) {
+    public PersonalResponseDto getAccountByNumber(@PathVariable String number) {
         return mapper.toDto(
                 service.getByNumber(number)
                         .orElseThrow(() -> new NotFoundException(number, PersonalAccount.class))

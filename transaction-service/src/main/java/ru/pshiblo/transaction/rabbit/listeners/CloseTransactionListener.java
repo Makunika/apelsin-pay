@@ -15,9 +15,10 @@ import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
+import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.transaction.rabbit.RabbitConsts;
-import ru.pshiblo.transaction.tinkoff.TinkoffApi;
+import ru.pshiblo.transaction.tinkoff.client.TinkoffApi;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -48,7 +49,7 @@ public class CloseTransactionListener {
             transaction.setStatus(TransactionStatus.CLOSED);
             transactionRepository.save(transaction);
 
-            if (transaction.isInnerTo()) {
+            if (transaction.isInnerFrom()) {
                 switch (transaction.getAccountTypeTo()) {
                     case BUSINESS:
                         rabbitTemplate.convertAndSend(RabbitConsts.CARD_AFTER_SEND_ROUTE, transaction);
@@ -59,7 +60,7 @@ public class CloseTransactionListener {
                 }
             }
         } else {
-            throw new TransactionNotAllowedException("Not status END_SEND in close listener");
+            throw new TransactionNotAllowedException("Not status END_SEND or END_ADD_MONEY in close listener");
         }
     }
 
@@ -73,6 +74,10 @@ public class CloseTransactionListener {
     )
     public void cancelTransaction(@Payload Transaction transaction) {
 
+        if (transaction.getType() == null) {
+            transaction.setType(TransactionType.TRANSFER);
+        }
+
         if (transaction.getStatus().isDepositedMoney() || transaction.getStatus().isWithdrawnMoney()) {
             cancelTransactionWithMoney(transaction);
         }
@@ -84,6 +89,10 @@ public class CloseTransactionListener {
 
     @Transactional
     protected void cancelTransactionWithMoney(Transaction transaction) {
+        if (!transaction.isInnerFrom() || !transaction.isInnerTo()) {
+            return;
+        }
+
         if (transaction.getStatus().isWithdrawnMoney()) {
             accountService.findByNumber(transaction.getFromNumber()).ifPresent(account -> {
                 Currency transactionCurrency = transaction.getCurrency();
@@ -99,6 +108,7 @@ public class CloseTransactionListener {
                 accountService.save(account);
             });
         }
+
         if (transaction.getStatus().isDepositedMoney()) {
             accountService.findByNumber(transaction.getToNumber()).ifPresent(account -> {
                 Currency transactionCurrency = transaction.getCurrency();

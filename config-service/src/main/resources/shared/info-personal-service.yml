@@ -5,7 +5,7 @@ security:
       clientSecret: ${INFO_PERSONAL_SERVICE_PASSWORD}
       accessTokenUri: http://localhost:5000/oauth/token
       grant-type: client_credentials
-      scope: server
+      scope: server,users_s
 
 spring:
   application:

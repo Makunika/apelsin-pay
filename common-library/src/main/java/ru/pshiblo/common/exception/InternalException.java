@@ -19,4 +19,9 @@ public class InternalException extends ApelsinException {
     public InternalException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    @Override
+    public HttpStatus getHttpStatus() {
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
 }

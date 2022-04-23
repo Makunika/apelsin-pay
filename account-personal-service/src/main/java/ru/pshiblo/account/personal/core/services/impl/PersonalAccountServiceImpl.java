@@ -9,6 +9,9 @@ import ru.pshiblo.account.personal.core.repository.PersonalAccountRepository;
 import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.personal.core.services.PersonalAccountService;
+import ru.pshiblo.common.exception.ApelsinException;
+import ru.pshiblo.security.enums.ConfirmedStatus;
+import ru.pshiblo.security.model.AuthUser;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,13 +25,20 @@ public class PersonalAccountServiceImpl implements PersonalAccountService {
     private final PersonalAccountRepository repository;
 
     @Override
-    public PersonalAccount create(long userId, PersonalAccountType type) {
-        //TODO: check limit and some!
-        Account account = accountService.create(type.getCurrency(), AccountType.BUSINESS);
+    public PersonalAccount create(AuthUser user, PersonalAccountType type) {
+        if (getByUserId(user.getId()).size() >= 2) {
+            throw new ApelsinException("Limit of accounts of user " + user);
+        }
+
+        if (user.getStatus() != ConfirmedStatus.CONFIRMED && type.isTypeRequiredConfirmed()) {
+            throw new IllegalArgumentException("this type required to confirm account");
+        }
+
+        Account account = accountService.create(type.getCurrency(), AccountType.PERSONAL);
         PersonalAccount personalAccount = new PersonalAccount();
         personalAccount.setAccount(account);
         personalAccount.setType(type);
-        personalAccount.setUserId(userId);
+        personalAccount.setUserId(user.getId());
 
         if (!type.isRequiredToFirstPay()) {
             personalAccount.setIsEnabled(true);

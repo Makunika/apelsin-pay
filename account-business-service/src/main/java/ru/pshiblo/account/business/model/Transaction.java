@@ -18,6 +18,7 @@ public class Transaction implements Serializable {
     private Integer id;
     private LocalDateTime created;
     private LocalDateTime updated;
+    private String type;
     private String status;
     private String toNumber;
     private String fromNumber;

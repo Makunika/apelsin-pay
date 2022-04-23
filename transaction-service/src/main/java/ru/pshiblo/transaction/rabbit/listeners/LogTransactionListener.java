@@ -52,6 +52,10 @@ public class LogTransactionListener {
     )
     public void logTransaction(@Payload Transaction transaction, Message amqpMessage) {
         log.info("Transaction with id {}, status {}",transaction.getId(), transaction.getStatus().name());
+        if (transaction.getType() == null) {
+            log.info(transaction.toString());
+            return;
+        }
         String receivedRoutingKey = amqpMessage.getMessageProperties().getReceivedRoutingKey();
         TransactionHistory history = mapper.toHistory(transaction, receivedRoutingKey);
         repository.save(history);

@@ -37,7 +37,7 @@ public class BusinessTransactionListener {
             errorHandler = "errorTransactionHandler"
     )
     public void businessAfterSendListener(@Payload Transaction transaction) {
-        service.getByNumber(transaction.getToCardNumber()).ifPresent(account -> {
+        service.getByNumber(transaction.getFromNumber()).ifPresent(account -> {
             log.info(account.toString());
         });
     }

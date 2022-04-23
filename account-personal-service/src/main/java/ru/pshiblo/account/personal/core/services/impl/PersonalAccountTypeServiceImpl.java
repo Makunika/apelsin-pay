@@ -18,6 +18,7 @@ public class PersonalAccountTypeServiceImpl implements PersonalAccountTypeServic
 
     @Override
     public PersonalAccountType createType(PersonalAccountType type) {
+        type.setValid(true);
         return repository.save(type);
     }
 
@@ -29,6 +30,11 @@ public class PersonalAccountTypeServiceImpl implements PersonalAccountTypeServic
     @Override
     public List<PersonalAccountType> getAll() {
         return repository.findAll();
+    }
+
+    @Override
+    public List<PersonalAccountType> getAllValid() {
+        return repository.findByIsValidTrue();
     }
 
     @Override

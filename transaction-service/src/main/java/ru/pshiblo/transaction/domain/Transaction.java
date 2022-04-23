@@ -11,6 +11,7 @@ import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.enums.TransactionType;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -35,10 +36,12 @@ public class Transaction implements Serializable {
     @LastModifiedDate
     private LocalDateTime updated;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 30)
     private TransactionType type;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private TransactionStatus status;
@@ -49,9 +52,11 @@ public class Transaction implements Serializable {
     @Column(name = "from_number", length = 100)
     private String fromNumber;
 
+    @NotNull
     @Column(nullable = false)
     private boolean isInnerFrom = false;
 
+    @NotNull
     @Column(nullable = false)
     private boolean isInnerTo = false;
 
@@ -68,18 +73,21 @@ public class Transaction implements Serializable {
     @Column(name = "owner_user_id")
     private Integer ownerUserId;
 
+    @NotNull
     @Column(name = "owner_username", nullable = false)
     private String ownerUsername;
 
     @Column(name = "reason_cancel")
     private String reasonCancel;
 
+    @NotNull
     @Column(name = "is_system", nullable = false)
     private boolean isSystem = false;
 
     @Column(name = "to_user_id")
     private Integer toUserId;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "currency", nullable = false, length = 3)
     private Currency currency;
@@ -92,15 +100,18 @@ public class Transaction implements Serializable {
     @Column(name = "currency_to", length = 3)
     private Currency currencyTo;
 
+    @NotNull
     @Column(name = "money", nullable = false)
     private BigDecimal money;
 
     @Column(name = "money_with_commision")
     private BigDecimal moneyWithCommission;
 
+    @NotNull
     @Column(name = "is_approve_send", nullable = false)
     private boolean isApproveSend = false;
 
+    @NotNull
     @Column(name = "is_approve_add_money", nullable = false)
     private boolean isApproveAddMoney = false;
 

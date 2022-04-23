@@ -44,14 +44,14 @@ public class PersonInfoController {
     }
 
     @GetMapping("{id}")
-    @PreAuthorize("hasAuthority('SCOPE_server')")
+    @PreAuthorize("hasAuthority('SCOPE_info_p_s')")
     public PersonInfoDto findById(@PathVariable long id) {
         return mapper.personInfoToPersonInfoDto(service.findById(id)
                 .orElseThrow(() -> new NotFoundException(id, PersonInfo.class)));
     }
 
     @GetMapping("/user/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_server')")
+    @PreAuthorize("hasAuthority('SCOPE_info_p_s')")
     public PersonInfoDto findByUserId(@PathVariable long id) {
         return mapper.personInfoToPersonInfoDto(service.findByUserId(id)
                 .orElseThrow(() -> new NotFoundException(id, PersonInfo.class)));

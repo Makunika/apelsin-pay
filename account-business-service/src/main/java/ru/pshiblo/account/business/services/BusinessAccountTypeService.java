@@ -1,7 +1,6 @@
 package ru.pshiblo.account.business.services;
 
 import ru.pshiblo.account.business.domain.BusinessAccountType;
-import ru.pshiblo.account.domain.DepositType;
 
 import java.util.List;
 import java.util.Optional;

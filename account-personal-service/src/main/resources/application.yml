@@ -4,7 +4,7 @@ spring:
     template:
       exchange: exchange-example-1
   application:
-    name: deposit-service
+    name: account-personal-service
   cloud:
     config:
       uri: http://localhost:8888

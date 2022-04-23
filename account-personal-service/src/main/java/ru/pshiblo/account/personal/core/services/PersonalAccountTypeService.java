@@ -9,5 +9,6 @@ public interface PersonalAccountTypeService {
     PersonalAccountType createType(PersonalAccountType type);
     Optional<PersonalAccountType> getById(int id);
     List<PersonalAccountType> getAll();
+    List<PersonalAccountType> getAllValid();
     void blockType(int typeId);
 }

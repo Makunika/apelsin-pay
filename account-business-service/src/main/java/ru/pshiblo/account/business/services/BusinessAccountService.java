@@ -12,4 +12,5 @@ public interface BusinessAccountService {
     Optional<BusinessAccount> getByAccount(Account account);
     Optional<BusinessAccount> getByNumber(String number);
     List<BusinessAccount> getByCompanyId(long companyId);
+    boolean checkOwnerBusinessAccount(long userId, String number);
 }

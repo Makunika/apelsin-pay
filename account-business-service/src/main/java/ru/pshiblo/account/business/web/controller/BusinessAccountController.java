@@ -25,7 +25,7 @@ import java.util.Collection;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/card")
+@RequestMapping("api/business")
 public class BusinessAccountController {
 
     private final BusinessAccountService businessService;
@@ -55,7 +55,7 @@ public class BusinessAccountController {
         return businessMapper.toDtos(businessService.getByCompanyId(companyId));
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_server')")
+    @PreAuthorize("hasAuthority('SCOPE_account_b_s')")
     @GetMapping("{id}")
     public BusinessAccountResponseDto getCardById(@PathVariable Integer id) {
         //return businessMapper.toDto(businessService.get(companyId));

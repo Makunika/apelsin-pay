@@ -45,4 +45,10 @@ public class BusinessAccountServiceImpl implements BusinessAccountService {
     public List<BusinessAccount> getByCompanyId(long companyId) {
         return repository.findByCompanyId(companyId);
     }
+
+    @Override
+    public boolean checkOwnerBusinessAccount(long userId, String number) {
+        //TODO: check com[any id and user iD
+        return repository.findByAccount_Number(number).isPresent();
+    }
 }

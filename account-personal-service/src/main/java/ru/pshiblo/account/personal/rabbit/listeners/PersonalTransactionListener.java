@@ -97,8 +97,8 @@ public class PersonalTransactionListener {
             errorHandler = "errorTransactionHandler"
     )
     public void personalToCheckListener(@Payload Transaction transaction) {
-        PersonalAccount account = service.getByNumber(transaction.getFromNumber())
-                .orElseThrow(() -> new NotFoundException(transaction.getFromNumber(), PersonalAccount.class));
+        PersonalAccount account = service.getByNumber(transaction.getToNumber())
+                .orElseThrow(() -> new NotFoundException(transaction.getToNumber(), PersonalAccount.class));
 
         BigDecimal balance = account.getAccount().getBalance();
 

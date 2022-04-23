@@ -20,6 +20,7 @@ import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 
 /**
@@ -45,7 +46,7 @@ public class OpenTransactionListener {
             errorHandler = "errorTransactionHandler"
     )
     @Transactional
-    public void openTransaction(@Payload Transaction transaction) {
+    public void openTransaction(@Valid @Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_OPEN) {
             throw new TransactionNotAllowedException("status on open not START_OPEN");
         }

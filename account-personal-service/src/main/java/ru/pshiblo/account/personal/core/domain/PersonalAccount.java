@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.account.domain.Account;
@@ -45,9 +47,14 @@ public class PersonalAccount {
 
     @CreatedDate
     private LocalDateTime created;
+    @CreatedBy
+    private String createdBy;
 
     @LastModifiedDate
     private LocalDateTime updated;
+
+    @LastModifiedBy
+    private String updatedBy;
 
     @Override
     public boolean equals(Object o) {

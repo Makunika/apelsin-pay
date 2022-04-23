@@ -2,9 +2,12 @@ package ru.pshiblo.account.personal.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +18,7 @@ public class Transaction implements Serializable {
     private Integer id;
     private LocalDateTime created;
     private LocalDateTime updated;
+    private String type;
     private String status;
     private String toNumber;
     private String fromNumber;
