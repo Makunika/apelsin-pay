@@ -18,6 +18,10 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
 
 spring:
+  rabbitmq:
+    host: localhost
+    template:
+      exchange: exchange-main
   cloud:
     loadbalancer:
       cache:

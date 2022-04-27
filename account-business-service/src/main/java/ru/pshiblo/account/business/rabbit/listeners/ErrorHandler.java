@@ -7,7 +7,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.api.RabbitListenerErrorHandler;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import ru.pshiblo.account.business.model.Transaction;
-import ru.pshiblo.account.business.rabbit.RabbitConsts;
 
 /**
  * @author Maxim Pshiblo
@@ -24,7 +23,7 @@ public class ErrorHandler implements RabbitListenerErrorHandler {
         if (message != null && message.getPayload() instanceof Transaction) {
             Transaction transaction = (Transaction) message.getPayload();
             transaction.setReasonCancel(exception.getCause().getMessage());
-            rabbitTemplate.convertAndSend(RabbitConsts.CANCEL_ROUTE, transaction);
+            rabbitTemplate.convertAndSend("transaction.cancel", transaction.getId());
         }
 
         return null;

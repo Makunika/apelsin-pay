@@ -7,7 +7,8 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class PayoutModel {
-    private boolean isPerson;
+    @NotNull
+    private Boolean isPerson;
     @NotNull
     @NotBlank
     private String name;

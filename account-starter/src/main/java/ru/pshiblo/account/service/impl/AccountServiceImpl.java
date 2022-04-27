@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.pshiblo.account.domain.HoldMoney;
+import ru.pshiblo.account.repository.HoldMoneyRepository;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.enums.AccountType;
@@ -13,8 +15,9 @@ import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.utils.RandomGenerator;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Maxim Pshiblo
@@ -25,6 +28,7 @@ import java.util.Optional;
 class AccountServiceImpl implements AccountService {
 
     private final AccountRepository repository;
+    private final HoldMoneyRepository holdMoneyRepository;
 
     @Override
     public Account create(Currency currency, AccountType type) {
@@ -61,4 +65,32 @@ class AccountServiceImpl implements AccountService {
     public void save(Account account) {
         repository.save(account);
     }
+    @Override
+    @Transactional
+    public HoldMoney holdMoney(Account account, BigDecimal amount, LocalDateTime holdUntil) {
+        BigDecimal balance = account.getBalance();
+        BigDecimal holdSum = getCurrentHoldMoney(account);
+
+        if (holdSum.add(amount).compareTo(balance) > 0) {
+            throw new IllegalArgumentException("hold money > balance");
+        }
+
+        HoldMoney newHoldMoney = new HoldMoney();
+        newHoldMoney.setHoldUntil(holdUntil);
+        newHoldMoney.setAccount(account);
+        newHoldMoney.setAmount(amount);
+        return holdMoneyRepository.save(newHoldMoney);
+    }
+
+    @Override
+    public BigDecimal getCurrentHoldMoney(Account account) {
+        Set<HoldMoney> holdMoneys = holdMoneyRepository.findByAccountAndHoldUntilIsBefore(account, LocalDateTime.now());
+        return holdMoneys.stream().map(HoldMoney::getAmount).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+    }
+
+    @Override
+    public void unHoldMoney(long holdMoneyId) {
+        holdMoneyRepository.deleteById(holdMoneyId);
+    }
+
 }

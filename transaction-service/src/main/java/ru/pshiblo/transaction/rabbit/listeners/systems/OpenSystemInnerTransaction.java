@@ -2,6 +2,7 @@ package ru.pshiblo.transaction.rabbit.listeners.systems;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -16,7 +17,6 @@ import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
 import java.math.BigDecimal;
@@ -33,9 +33,9 @@ public class OpenSystemInnerTransaction {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.OPEN_SYSTEM_ROUTE,
-                    value = @Queue(RabbitConsts.OPEN_SYSTEM_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.open.system",
+                    value = @Queue("transaction.open.system_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
@@ -60,8 +60,8 @@ public class OpenSystemInnerTransaction {
             if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
                 transaction.setStatus(TransactionStatus.END_OPEN);
                 transactionRepository.save(transaction);
-                transaction.setStatus(TransactionStatus.START_SEND);
-                rabbitTemplate.convertAndSend(RabbitConsts.SEND_SYSTEM_ROUTE, transaction);
+                transaction.setStatus(TransactionStatus.START_ADD_MONEY);
+                rabbitTemplate.convertAndSend("transaction.deposit.system", transaction);
             }
         } else {
             throw new TransactionNotAllowedException("status on open not START_OPEN");

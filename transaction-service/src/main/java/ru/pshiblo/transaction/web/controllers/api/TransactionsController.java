@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.security.AuthUtils;
 import ru.pshiblo.transaction.domain.Transaction;
+import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.model.PayoutModel;
 import ru.pshiblo.transaction.service.TransactionBuilder;
 import ru.pshiblo.transaction.service.TransactionService;
 import ru.pshiblo.transaction.web.dto.request.MoneyDto;
+import ru.pshiblo.transaction.web.dto.request.OpenPaymentInnerDto;
 import ru.pshiblo.transaction.web.dto.request.OpenTransactionDto;
 import ru.pshiblo.transaction.web.dto.request.OpenTransactionExternalToDto;
 
@@ -29,6 +31,19 @@ public class TransactionsController {
 
     private final TransactionService transactionService;
     private final TransactionBuilder transactionBuilder;
+
+    @PreAuthorize("hasAuthority('SCOPE_transaction_s')")
+    @PostMapping("/payment/inner")
+    public Transaction openPaymentInner(@RequestBody OpenPaymentInnerDto request) {
+        Transaction transaction = transactionBuilder.builderInner()
+                .userId(request.getUserId())
+                .money(request.getMoney())
+                .type(TransactionType.PAYMENT)
+                .fromAccount(request.getAccountNumberFrom())
+                .toAccount(request.getAccountNumberTo())
+                .build();
+        return transactionService.create(transaction);
+    }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("/from/account/to/account")
@@ -47,7 +62,7 @@ public class TransactionsController {
     @PostMapping("/from/account/to/external")
     public Transaction openFromAccountToExternalTransaction(@RequestBody OpenTransactionExternalToDto dto) {
         PayoutModel payoutModel = dto.getPayoutModel();
-        if (!payoutModel.isPerson()) {
+        if (!payoutModel.getIsPerson()) {
             Assert.notNull(payoutModel.getKpp(), "kpp is null");
         } else {
             payoutModel.setInn("0");
@@ -69,7 +84,7 @@ public class TransactionsController {
         return new Transaction();
     }
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_edit_money')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_transaction_s')")
     @PostMapping("/admin/edit/money")
     public Transaction editMoneyToAccount(@RequestBody MoneyDto moneyDto) {
         Transaction newTransaction = new Transaction();

@@ -42,4 +42,5 @@ public class Transaction implements Serializable {
     private boolean isApproveAddMoney;
     private AccountType accountTypeFrom;
     private AccountType accountTypeTo;
+    private Long holdId;
 }

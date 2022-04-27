@@ -1,6 +1,7 @@
 package ru.pshiblo.transaction.rabbit.listeners;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -17,7 +18,6 @@ import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.repository.TransactionRepository;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.tinkoff.client.TinkoffApi;
 
 import java.math.BigDecimal;
@@ -38,41 +38,45 @@ public class CloseTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.CLOSE_ROUTE,
-                    value = @Queue(RabbitConsts.CLOSE_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.close",
+                    value = @Queue("close_t_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
     public void closeTransaction(@Payload Transaction transaction) {
-        if (transaction.getStatus() == TransactionStatus.END_SEND || transaction.getStatus() == TransactionStatus.END_ADD_MONEY) {
-            transaction.setStatus(TransactionStatus.CLOSED);
-            transactionRepository.save(transaction);
-
-            if (transaction.isInnerFrom()) {
-                switch (transaction.getAccountTypeTo()) {
-                    case BUSINESS:
-                        rabbitTemplate.convertAndSend(RabbitConsts.CARD_AFTER_SEND_ROUTE, transaction);
-                        break;
-                    case PERSONAL:
-                        rabbitTemplate.convertAndSend(RabbitConsts.DEPOSIT_AFTER_SEND_ROUTE, transaction);
-                        break;
-                }
-            }
-        } else {
+        if (
+                transaction.getStatus() != TransactionStatus.END_SEND
+                && transaction.getStatus() != TransactionStatus.END_ADD_MONEY
+                && transaction.getStatus() != TransactionStatus.HOLD
+        ) {
             throw new TransactionNotAllowedException("Not status END_SEND or END_ADD_MONEY in close listener");
+        }
+        transaction.setStatus(TransactionStatus.CLOSED);
+        transactionRepository.save(transaction);
+
+        if (transaction.isInnerFrom()) {
+            switch (transaction.getAccountTypeTo()) {
+                case BUSINESS:
+                    rabbitTemplate.convertAndSend("transaction.close.after.business", transaction);
+                    break;
+                case PERSONAL:
+                    rabbitTemplate.convertAndSend("transaction.close.after.personal", transaction);
+                    break;
+            }
         }
     }
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.CANCEL_ROUTE,
-                    value = @Queue(RabbitConsts.CANCEL_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.cancel",
+                    value = @Queue("cancel_t_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void cancelTransaction(@Payload Transaction transaction) {
+    public void cancelTransaction(@Payload Integer transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId).orElseThrow();
 
         if (transaction.getType() == null) {
             transaction.setType(TransactionType.TRANSFER);
@@ -83,7 +87,8 @@ public class CloseTransactionListener {
         }
 
         transaction.setStatus(TransactionStatus.CANCELED);
-        transactionRepository.save(transaction);
+        Transaction saved = transactionRepository.save(transaction);
+        rabbitTemplate.convertAndSend("transaction.cancel.after", saved);
     }
 
 
@@ -123,6 +128,10 @@ public class CloseTransactionListener {
                 account.setBalance(account.getBalance().subtract(moneyCurrentFrom));
                 accountService.save(account);
             });
+        }
+
+        if (transaction.getHoldId() != null) {
+            accountService.unHoldMoney(transaction.getHoldId());
         }
     }
 

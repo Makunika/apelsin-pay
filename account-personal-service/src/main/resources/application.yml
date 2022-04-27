@@ -1,8 +1,4 @@
 spring:
-  rabbitmq:
-    host: localhost
-    template:
-      exchange: exchange-example-1
   application:
     name: account-personal-service
   cloud:

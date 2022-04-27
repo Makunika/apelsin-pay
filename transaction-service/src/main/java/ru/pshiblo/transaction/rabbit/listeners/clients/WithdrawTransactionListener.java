@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -13,7 +14,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pshiblo.common.exception.InternalException;
-import ru.pshiblo.common.exception.NotAllowedOperationException;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.transaction.domain.Transaction;
@@ -21,7 +21,6 @@ import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.model.PayoutModel;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
@@ -40,7 +39,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SendTransactionListener {
+public class WithdrawTransactionListener {
 
     private final AccountService accountService;
     private final TransactionRepository transactionRepository;
@@ -52,9 +51,9 @@ public class SendTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.SEND_ROUTE,
-                    value = @Queue(RabbitConsts.SEND_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.withdraw",
+                    value = @Queue("transaction.withdraw_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
@@ -101,7 +100,7 @@ public class SendTransactionListener {
         transaction.setStatus(TransactionStatus.END_SEND);
         transaction = transactionRepository.save(transaction);
         transaction.setStatus(TransactionStatus.START_APPLY_PAYMENT);
-        rabbitTemplate.convertAndSend(RabbitConsts.APPLY_PAYMENTS_ROUTE, transaction);
+        rabbitTemplate.convertAndSend("transaction.apply_payment", transaction);
     }
 
     private void extendSendTransaction(Transaction transaction) {
@@ -112,7 +111,7 @@ public class SendTransactionListener {
 
             PayoutModel payoutModel = objectMapper.readValue(transaction.getAdditionInfoTo(), PayoutModel.class);
             TinkoffPayment payment;
-            if (payoutModel.isPerson()) {
+            if (payoutModel.getIsPerson()) {
                 payment = tinkoffPaymentBuilder.builder()
                         .amountRubles(transaction.getMoney())
                         .id(transaction.getId())
@@ -147,7 +146,7 @@ public class SendTransactionListener {
             withdraw(transaction);
             transaction.setStatus(TransactionStatus.END_SEND);
             transaction = transactionRepository.save(transaction);
-            rabbitTemplate.convertAndSend(RabbitConsts.CLOSE_ROUTE, transaction);
+            rabbitTemplate.convertAndSend("transaction.close", transaction);
         } catch (JsonProcessingException e) {
             throw new InternalException(e.getMessage(), e);
         }

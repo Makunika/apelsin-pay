@@ -1,6 +1,7 @@
 package ru.pshiblo.transaction.rabbit.listeners.clients;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
 
 import javax.validation.Valid;
 
@@ -24,9 +24,9 @@ public class CheckFromTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.CHECK_FROM_ROUTE,
-                    value = @Queue(RabbitConsts.CHECK_FROM_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.check_from",
+                    value = @Queue("transaction.check_from_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
@@ -37,10 +37,10 @@ public class CheckFromTransactionListener {
 
         switch (transaction.getAccountTypeFrom()) {
             case BUSINESS:
-                rabbitTemplate.convertAndSend(RabbitConsts.CARD_FROM_CHECK_ROUTE, transaction);
+                rabbitTemplate.convertAndSend("transaction.check_from.business", transaction);
                 break;
             case PERSONAL:
-                rabbitTemplate.convertAndSend(RabbitConsts.DEPOSIT_FROM_CHECK_ROUTE, transaction);
+                rabbitTemplate.convertAndSend("transaction.check_from.personal", transaction);
                 break;
         }
     }

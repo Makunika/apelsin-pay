@@ -3,6 +3,7 @@ package ru.pshiblo.account.personal.rabbit.listeners;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -12,11 +13,10 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.personal.core.domain.PersonalAccount;
-import ru.pshiblo.account.service.CurrencyService;
-import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.account.personal.core.services.PersonalAccountService;
 import ru.pshiblo.account.personal.model.Transaction;
-import ru.pshiblo.account.personal.rabbit.RabbitConsts;
+import ru.pshiblo.account.service.CurrencyService;
+import ru.pshiblo.common.exception.NotFoundException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,9 +33,9 @@ public class PersonalTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.PERSONAL_AFTER_SEND_ROUTE,
-                    value = @Queue(RabbitConsts.PERSONAL_AFTER_SEND_Q),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.close.after.personal",
+                    value = @Queue("transaction.close.after.p_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
@@ -56,9 +56,9 @@ public class PersonalTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.PERSONAL_FROM_CHECK_ROUTE,
-                    value = @Queue(RabbitConsts.PERSONAL_CHECK_FROM_Q),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.check_from.personal",
+                    value = @Queue("transaction.check_from.personal_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
@@ -85,14 +85,14 @@ public class PersonalTransactionListener {
 
         transaction.setApproveSend(true);
         transaction.setStatus("START_SEND");
-        rabbitTemplate.convertAndSend(RabbitConsts.SEND_ROUTE, transaction);
+        rabbitTemplate.convertAndSend("transaction.withdraw", transaction);
     }
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.PERSONAL_TO_CHECK_ROUTE,
-                    value = @Queue(RabbitConsts.PERSONAL_CHECK_TO_Q),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.check_to.personal",
+                    value = @Queue("transaction.check_to.personal_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
@@ -117,6 +117,6 @@ public class PersonalTransactionListener {
 
         transaction.setApproveAddMoney(true);
         transaction.setStatus("START_ADD_MONEY");
-        rabbitTemplate.convertAndSend(RabbitConsts.ADD_PAYMENT_ROUTE, transaction);
+        rabbitTemplate.convertAndSend("transaction.deposit", transaction);
     }
 }

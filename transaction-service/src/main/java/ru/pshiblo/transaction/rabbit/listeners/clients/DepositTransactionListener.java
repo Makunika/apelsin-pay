@@ -1,7 +1,9 @@
-package ru.pshiblo.transaction.rabbit.listeners.systems;
+package ru.pshiblo.transaction.rabbit.listeners.clients;
+
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -17,15 +19,16 @@ import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
+import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SendSystemInnerTransaction {
+public class DepositTransactionListener {
 
     private final AccountService accountService;
     private final TransactionRepository transactionRepository;
@@ -34,44 +37,40 @@ public class SendSystemInnerTransaction {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.SEND_SYSTEM_ROUTE,
-                    value = @Queue(RabbitConsts.SEND_SYSTEM_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.deposit",
+                    value = @Queue("transaction.deposit"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
     @Transactional
-    public void sendTransaction(@Payload Transaction transaction) {
-        if (transaction.getStatus() != TransactionStatus.START_SEND) {
-            throw new TransactionNotAllowedException("status on open not START_send");
+    public void applyPaymentTransaction(@Valid @Payload Transaction transaction) {
+        if (transaction.getStatus() != TransactionStatus.START_ADD_MONEY || !transaction.isApproveAddMoney()) {
+            throw new TransactionNotAllowedException("status on send not START_ADD_MONEY or not approve add money");
         }
-
-        if (!(transaction.isInnerFrom() || transaction.isInnerTo())) {
-            throw new TransactionNotAllowedException("System transaction only inner!");
-        }
-
         Account toAccount = accountService.getByNumber(transaction.getToNumber());
 
         Currency transactionCurrency = transaction.getCurrency();
         log.info(transaction.toString());
         Currency toAccountCurrency = toAccount.getCurrency();
 
-        BigDecimal moneyCurrent = currencyService.convertMoney(
+        BigDecimal moneyCurrentTo = currencyService.convertMoney(
                 transactionCurrency,
                 toAccountCurrency,
                 transaction.getMoney()
         );
 
         if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
-            toAccount.setBalance(accountService.getById(toAccount.getId()).getBalance().add(moneyCurrent));
+            toAccount.setBalance(accountService.getById(toAccount.getId()).getBalance().add(moneyCurrentTo));
             accountService.save(toAccount);
-
-            transaction.setStatus(TransactionStatus.END_SEND);
-            log.info(transaction.toString());
+            transaction.setStatus(TransactionStatus.END_ADD_MONEY);
             transaction = transactionRepository.save(transaction);
-            log.info(transaction.toString());
 
-            rabbitTemplate.convertAndSend(RabbitConsts.CLOSE_ROUTE, transaction);
+            rabbitTemplate.convertAndSend(
+                    transaction.getType() == TransactionType.PAYMENT ?
+                            "transaction.hold" : "transaction.close",
+                    transaction);
+
         }
     }
 

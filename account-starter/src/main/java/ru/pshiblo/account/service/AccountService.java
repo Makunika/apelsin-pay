@@ -1,10 +1,12 @@
 package ru.pshiblo.account.service;
 
 import ru.pshiblo.account.domain.Account;
+import ru.pshiblo.account.domain.HoldMoney;
 import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -16,4 +18,7 @@ public interface AccountService {
     Account getByNumber(String number);
     Optional<Account> findByNumber(String number);
     void save(Account account);
+    HoldMoney holdMoney(Account account, BigDecimal amount, LocalDateTime holdUntil);
+    BigDecimal getCurrentHoldMoney(Account account);
+    void unHoldMoney(long holdMoneyId);
 }

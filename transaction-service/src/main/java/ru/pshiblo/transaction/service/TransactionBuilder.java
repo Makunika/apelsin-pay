@@ -45,14 +45,23 @@ public class TransactionBuilder {
 
     public class BuilderInner {
         private final Transaction transaction;
-        private AuthUser authUser;
+        private Long userId;
+        private String username;
 
         private BuilderInner() {
             transaction = new Transaction();
+            transaction.setType(TransactionType.TRANSFER);
         }
 
         public BuilderInner authUser(AuthUser authUser) {
-            this.authUser = authUser;
+            this.userId = authUser.getId();
+            this.username = authUser.getName();
+            return this;
+        }
+
+        public BuilderInner userId(long userId) {
+            this.userId = userId;
+            this.username = "NOT";
             return this;
         }
 
@@ -66,23 +75,28 @@ public class TransactionBuilder {
             return this;
         }
 
+        public BuilderInner type(TransactionType type) {
+            transaction.setType(type);
+            return this;
+        }
+
         public BuilderInner fromAccount(String accountNumber) {
-            if (authUser == null) {
+            if (userId == null) {
                 throw new IllegalStateException("set authUser");
             }
             Account account = accountService.getByNumber(accountNumber);
             if (account.getType() == AccountType.PERSONAL) {
-                if (Boolean.FALSE.equals(personalAccountClient.checkPersonalAccount(authUser.getId(), accountNumber).getBody())) {
+                if (Boolean.FALSE.equals(personalAccountClient.checkPersonalAccount(userId, accountNumber).getBody())) {
                     throw new NotAllowedOperationException();
                 }
             } else {
-                if (Boolean.FALSE.equals(businessAccountClient.checkBusinessAccount(authUser.getId(), accountNumber).getBody())) {
+                if (Boolean.FALSE.equals(businessAccountClient.checkBusinessAccount(userId, accountNumber).getBody())) {
                     throw new NotAllowedOperationException();
                 }
             }
 
-            transaction.setOwnerUserId((int) authUser.getId());
-            transaction.setOwnerUsername(authUser.getName());
+            transaction.setOwnerUserId(userId.intValue());
+            transaction.setOwnerUsername(username);
             transaction.setInnerFrom(true);
             transaction.setFromNumber(account.getNumber());
             return this;
@@ -106,6 +120,7 @@ public class TransactionBuilder {
 
         private BuilderOutTo() {
             transaction = new Transaction();
+            transaction.setType(TransactionType.TRANSFER);
         }
 
         public BuilderOutTo authUser(AuthUser authUser) {
@@ -129,11 +144,11 @@ public class TransactionBuilder {
             }
             Account account = accountService.getByNumber(accountNumber);
             if (account.getType() == AccountType.PERSONAL) {
-                if (Boolean.TRUE.equals(personalAccountClient.checkPersonalAccount(authUser.getId(), accountNumber).getBody())) {
+                if (Boolean.FALSE.equals(personalAccountClient.checkPersonalAccount(authUser.getId(), accountNumber).getBody())) {
                     throw new NotAllowedOperationException();
                 }
             } else {
-                if (Boolean.TRUE.equals(businessAccountClient.checkBusinessAccount(authUser.getId(), accountNumber).getBody())) {
+                if (Boolean.FALSE.equals(businessAccountClient.checkBusinessAccount(authUser.getId(), accountNumber).getBody())) {
                     throw new NotAllowedOperationException();
                 }
             }

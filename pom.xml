@@ -19,6 +19,7 @@
         <module>info-personal-service</module>
         <module>info-business-service</module>
         <module>users-service</module>
+        <module>payment-service</module>
     </modules>
 
     <parent>

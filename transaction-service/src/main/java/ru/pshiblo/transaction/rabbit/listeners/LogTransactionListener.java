@@ -2,6 +2,7 @@ package ru.pshiblo.transaction.rabbit.listeners;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.domain.TransactionHistory;
 import ru.pshiblo.transaction.mappers.TransactionMapper;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionHistoryRepository;
 
 @Slf4j
@@ -25,28 +25,9 @@ public class LogTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = {
-                        RabbitConsts.CLOSE_ROUTE,
-                        RabbitConsts.OPEN_ROUTE,
-                        RabbitConsts.SEND_ROUTE,
-                        RabbitConsts.CANCEL_ROUTE,
-                        RabbitConsts.CHECK_FROM_ROUTE,
-                        RabbitConsts.CHECK_TO_ROUTE,
-                        RabbitConsts.COMMISSION_ROUTE,
-                        RabbitConsts.ERROR_ROUTE,
-                        RabbitConsts.APPLY_PAYMENTS_ROUTE,
-                        RabbitConsts.ADD_PAYMENT_ROUTE,
-                        RabbitConsts.DEPOSIT_AFTER_SEND_ROUTE,
-                        RabbitConsts.CARD_AFTER_SEND_ROUTE,
-                        RabbitConsts.DEPOSIT_FROM_CHECK_ROUTE,
-                        RabbitConsts.CARD_FROM_CHECK_ROUTE,
-                        RabbitConsts.DEPOSIT_TO_CHECK_ROUTE,
-                        RabbitConsts.CARD_TO_CHECK_ROUTE,
-                        RabbitConsts.OPEN_SYSTEM_ROUTE,
-                        RabbitConsts.SEND_SYSTEM_ROUTE
-                    },
-                    value = @Queue(RabbitConsts.LOG_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.#",
+                    value = @Queue("log_t_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )

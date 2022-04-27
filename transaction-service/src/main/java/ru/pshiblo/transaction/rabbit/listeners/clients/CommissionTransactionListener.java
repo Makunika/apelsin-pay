@@ -2,6 +2,7 @@ package ru.pshiblo.transaction.rabbit.listeners.clients;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -13,7 +14,6 @@ import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
-import ru.pshiblo.transaction.rabbit.RabbitConsts;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 
 import javax.validation.Valid;
@@ -32,9 +32,9 @@ public class CommissionTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = RabbitConsts.COMMISSION_ROUTE,
-                    value = @Queue(RabbitConsts.COMMISSION_QUEUE),
-                    exchange = @Exchange(RabbitConsts.MAIN_EXCHANGE)
+                    key = "transaction.commission",
+                    value = @Queue("transaction_commission_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
@@ -68,7 +68,7 @@ public class CommissionTransactionListener {
             transaction.setStatus(TransactionStatus.START_FROM_CHECK);
             log.info(transaction.toString());
             log.info("FINISH COMMISION {}", transaction.getId());
-            rabbitTemplate.convertAndSend(RabbitConsts.CHECK_FROM_ROUTE, transaction);
+            rabbitTemplate.convertAndSend("transaction.check_from", transaction);
         }
     }
 }

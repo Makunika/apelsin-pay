@@ -121,6 +121,8 @@ public class Transaction implements Serializable {
     @Column(name = "account_type_to")
     private AccountType accountTypeTo;
 
+    private Long holdId;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
