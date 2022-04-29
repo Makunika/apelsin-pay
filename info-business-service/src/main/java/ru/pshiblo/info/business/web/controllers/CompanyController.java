@@ -2,6 +2,7 @@ package ru.pshiblo.info.business.web.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.pshiblo.info.business.mappers.CompanyMapper;
@@ -49,6 +50,26 @@ public class CompanyController {
     @PostMapping("/confirm/failed")
     public void failedConfirm(@Valid @RequestBody FailedConfirmCompany request) {
         service.failedConfirm(request.getId(), request.getReason());
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_info_b_s')")
+    @PostMapping("/{companyId}/check/key")
+    public ResponseEntity<Boolean> checkApiKey(@PathVariable long companyId, @RequestBody String apiKey) {
+        boolean result = service.checkApiKey(companyId, apiKey);
+        return ResponseEntity.ok(result);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("/{companyId}/regenerate/key")
+    public void regenerateApiKey(@PathVariable long companyId) {
+        service.regenerateApiKry(companyId, AuthUtils.getAuthUser());
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @GetMapping("/{companyId}/key")
+    public ResponseEntity<String> getApiKey(@PathVariable long companyId) {
+        String apiKey = service.getApiKey(companyId, AuthUtils.getAuthUser());
+        return ResponseEntity.ok(apiKey);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")

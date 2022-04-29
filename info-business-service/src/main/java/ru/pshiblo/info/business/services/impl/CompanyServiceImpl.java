@@ -2,6 +2,7 @@ package ru.pshiblo.info.business.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
@@ -38,6 +39,7 @@ public class CompanyServiceImpl implements CompanyService {
         Assert.isNull(company.getId(), "id");
 
         company.setStatus(ConfirmedStatus.NOT_CONFIRMED);
+        company.setApiKey(RandomStringUtils.randomAlphanumeric(20));
         company = companyRepository.save(company);
         CompanyUser companyUser = new CompanyUser();
         companyUser.setCompany(company);
@@ -51,6 +53,11 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public void confirm(long companyId) {
         Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
+
+        if (ConfirmedStatus.NOT_CONFIRMED != company.getStatus()) {
+            throw new IllegalArgumentException("Status not in NOT CONFIRMED");
+        }
+
         company.setStatus(ConfirmedStatus.CONFIRMED);
         company = companyRepository.save(company);
         historyService.create(company, "confirmed");
@@ -59,6 +66,11 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public void failedConfirm(long companyId, String reason) {
         Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
+
+        if (ConfirmedStatus.NOT_CONFIRMED != company.getStatus()) {
+            throw new IllegalArgumentException("Status not in NOT CONFIRMED");
+        }
+
         company.setStatus(ConfirmedStatus.FAILED_CONFIRMED);
         company = companyRepository.save(company);
         historyService.create(company, reason);
@@ -162,5 +174,44 @@ public class CompanyServiceImpl implements CompanyService {
                 .filter(cu -> cu.getUserId() == userId)
                 .findFirst()
                 .ifPresent(companyUserRepository::delete);
+    }
+
+    @Override
+    public boolean checkApiKey(long companyId, String apiKey) {
+        Company company = findById(companyId)
+                .orElseThrow(() -> new NotFoundException(companyId, Company.class));
+        if (!company.getApiKey().equals(apiKey)) {
+            throw new NotAllowedOperationException();
+        }
+        return true;
+    }
+
+    @Override
+    public void regenerateApiKry(long companyId, AuthUser user) {
+        Company company = findById(companyId)
+                .orElseThrow(() -> new NotFoundException(companyId, Company.class));
+
+        if (!isOwnerCompany(company, user)) {
+            throw new NotAllowedOperationException();
+        }
+
+        company.setApiKey(RandomStringUtils.randomAlphanumeric(20));
+        companyRepository.save(company);
+    }
+
+    @Override
+    public String getApiKey(long companyId, AuthUser user) {
+        Company company = findById(companyId)
+                .orElseThrow(() -> new NotFoundException(companyId, Company.class));
+
+        if (!isOwnerCompany(companyId, user)) {
+            throw new NotAllowedOperationException();
+        }
+
+        if (company.getStatus() != ConfirmedStatus.CONFIRMED) {
+            throw new NotAllowedOperationException("Company not confirmed");
+        }
+
+        return company.getApiKey();
     }
 }

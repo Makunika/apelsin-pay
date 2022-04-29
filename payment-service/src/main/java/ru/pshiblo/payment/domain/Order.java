@@ -16,6 +16,7 @@ import java.util.Objects;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@Table(name = "orders")
 public class Order {
     @Id
     @GeneratedValue

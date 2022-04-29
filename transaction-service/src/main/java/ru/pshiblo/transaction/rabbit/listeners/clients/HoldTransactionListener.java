@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import ru.pshiblo.account.domain.HoldMoney;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.service.AccountService;
+import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.enums.TransactionType;
@@ -29,6 +30,8 @@ public class HoldTransactionListener {
     private final TransactionRepository repository;
     private final AccountService accountService;
     private final RabbitTemplate rabbitTemplate;
+
+    private final CurrencyService currencyService;
 
     @RabbitListener(
             bindings = @QueueBinding(
@@ -47,7 +50,11 @@ public class HoldTransactionListener {
             throw new TransactionNotAllowedException("Not type PAYMENT in hold listener");
         }
 
-        BigDecimal money = transaction.getMoney();
+        BigDecimal money = currencyService.convertMoney(
+                transaction.getCurrency(),
+                transaction.getCurrencyTo(),
+                transaction.getMoney()
+        );
         HoldMoney holdMoney = accountService.holdMoney(
                 accountService.getByNumber(transaction.getToNumber()),
                 money,

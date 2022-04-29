@@ -1,5 +1,8 @@
 package ru.pshiblo.payment.service.impl;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -15,6 +18,7 @@ import ru.pshiblo.payment.repository.OrderRepository;
 import ru.pshiblo.payment.service.OrderService;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -68,8 +72,19 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("order not in state HOLD");
         }
         order.setOrderStatus(OrderStatus.CANCEL);
-        rabbitTemplate.convertAndSend("transaction.cancel", order.getTransactionId());
+        rabbitTemplate.convertAndSend("transaction.cancel", new TransactionError(
+                "Отменен магазином",
+                order.getTransactionId().intValue()
+        ));
         return repository.save(order);
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    private static class TransactionError {
+        private String reason;
+        private Integer transactionId;
     }
 
     @Override
@@ -85,6 +100,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Order findById(long orderId, String apiKey) {
+        Order order = findById(orderId);
+        checkAuthCompany(order.getCompanyId(), apiKey);
+        return order;
+    }
+
+    @Override
     @Transactional
     public Order save(Order order) {
         return repository.save(order);
@@ -97,7 +119,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order findByTransactionId(long id) {
-        return repository.findByTransactionId(id).orElseThrow();
+        Optional<Order> order = repository.findByTransactionId(id);
+        return order.orElseThrow();
     }
 
     private void checkAuthCompany(long companyId ,String apiKey) {

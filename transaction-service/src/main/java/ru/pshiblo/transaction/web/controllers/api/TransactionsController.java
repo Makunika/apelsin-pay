@@ -20,6 +20,8 @@ import ru.pshiblo.transaction.web.dto.request.OpenPaymentInnerDto;
 import ru.pshiblo.transaction.web.dto.request.OpenTransactionDto;
 import ru.pshiblo.transaction.web.dto.request.OpenTransactionExternalToDto;
 
+import javax.validation.Valid;
+
 /**
  * @author Maxim Pshiblo
  */
@@ -34,10 +36,11 @@ public class TransactionsController {
 
     @PreAuthorize("hasAuthority('SCOPE_transaction_s')")
     @PostMapping("/payment/inner")
-    public Transaction openPaymentInner(@RequestBody OpenPaymentInnerDto request) {
+    public Transaction openPaymentInner(@Valid @RequestBody OpenPaymentInnerDto request) {
         Transaction transaction = transactionBuilder.builderInner()
                 .userId(request.getUserId())
                 .money(request.getMoney())
+                .currency(request.getCurrency())
                 .type(TransactionType.PAYMENT)
                 .fromAccount(request.getAccountNumberFrom())
                 .toAccount(request.getAccountNumberTo())

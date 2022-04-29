@@ -29,6 +29,10 @@ public class PayServiceImpl implements PayService {
             throw new IllegalArgumentException("Order is expired");
         }
 
+        if (order.getOrderStatus() != OrderStatus.CREATED) {
+            throw new IllegalArgumentException("Order not in status CREATED");
+        }
+
         order.setOrderType(OrderType.INNER);
 
         OpenPaymentInnerDto request = new OpenPaymentInnerDto();
@@ -45,7 +49,8 @@ public class PayServiceImpl implements PayService {
     }
 
     @Override
-    public void payTinkoff(long orderId, AuthUser user) {
+    public String payTinkoff(long orderId) {
         //TODO: оплата через тинькофф
+        return null;
     }
 }

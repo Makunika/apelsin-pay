@@ -1,5 +1,6 @@
 package ru.pshiblo.transaction.rabbit.listeners;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -75,8 +76,10 @@ public class CloseTransactionListener {
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void cancelTransaction(@Payload Integer transactionId) {
-        Transaction transaction = transactionRepository.findById(transactionId).orElseThrow();
+    public void cancelTransaction(@Payload TransactionError error) {
+        Transaction transaction = transactionRepository.findById(error.getTransactionId()).orElseThrow();
+
+        transaction.setReasonCancel(error.getReason());
 
         if (transaction.getType() == null) {
             transaction.setType(TransactionType.TRANSFER);
@@ -89,6 +92,12 @@ public class CloseTransactionListener {
         transaction.setStatus(TransactionStatus.CANCELED);
         Transaction saved = transactionRepository.save(transaction);
         rabbitTemplate.convertAndSend("transaction.cancel.after", saved);
+    }
+
+    @Data
+    private static class TransactionError {
+        private String reason;
+        private Integer transactionId;
     }
 
 

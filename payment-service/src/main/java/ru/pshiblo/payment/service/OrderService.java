@@ -10,6 +10,7 @@ public interface OrderService {
     Order cancel(long orderId, String apiKey);
     OrderStatus getStatus(long orderId, String apiKey);
     Order findById(long orderId);
+    Order findById(long orderId, String apiKey);
     Order save(Order order);
     boolean isExpired(Order order);
     Order findByTransactionId(long id);

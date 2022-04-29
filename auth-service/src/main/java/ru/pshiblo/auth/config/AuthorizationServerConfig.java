@@ -91,10 +91,18 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .scopes("server")
                 .and()
 
+                .withClient("payment-service")
+                .secret(env.getProperty("PAYMENT_SERVICE_PASSWORD"))
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("server", "account_b_s", "info_b_s", "transaction_s")
+                .and()
+
                 .withClient("account-personal-service")
                 .secret(env.getProperty("ACCOUNT_PERSONAL_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "transaction");
+                .scopes("server", "transaction_s");
+
+
 
     }
 

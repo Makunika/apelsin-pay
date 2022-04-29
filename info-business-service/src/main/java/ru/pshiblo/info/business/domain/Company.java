@@ -27,6 +27,7 @@ public class Company {
     private String inn;
     private String address;
     private ConfirmedStatus status;
+    private String apiKey;
 
     @CreatedDate
     private LocalDateTime created;

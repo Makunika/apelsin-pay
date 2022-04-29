@@ -21,4 +21,7 @@ public interface CompanyService {
     Optional<Company> findById(long companyId);
     void addUserToCompany(long companyId, AuthUser user, long userId, RoleCompany roleCompany);
     void deleteUserFromCompany(long companyId, AuthUser user, long userId);
+    boolean checkApiKey(long companyId, String apiKey);
+    void regenerateApiKry(long companyId, AuthUser user);
+    String getApiKey(long companyId, AuthUser user);
 }
