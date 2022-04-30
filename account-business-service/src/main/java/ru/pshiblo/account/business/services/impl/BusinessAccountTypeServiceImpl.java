@@ -2,6 +2,7 @@ package ru.pshiblo.account.business.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import ru.pshiblo.account.business.repository.BusinessAccountTypeRepository;
 import ru.pshiblo.account.business.domain.BusinessAccountType;
 import ru.pshiblo.account.business.services.BusinessAccountTypeService;
@@ -18,6 +19,12 @@ public class BusinessAccountTypeServiceImpl implements BusinessAccountTypeServic
 
     @Override
     public BusinessAccountType createType(BusinessAccountType type) {
+        Assert.isNull(type.getId(), "id");
+        Assert.notNull(type.getCurrency(), "currency");
+        Assert.notNull(type.getCommissionRateWithdraw(), "commissionRate");
+        Assert.notNull(type.getDescription(), "descr");
+        Assert.notNull(type.getName(), "name");
+        Assert.notNull(type.getMaxSumForTransfer(), "commission");
         return repository.save(type);
     }
 
@@ -28,7 +35,7 @@ public class BusinessAccountTypeServiceImpl implements BusinessAccountTypeServic
 
     @Override
     public List<BusinessAccountType> getAll() {
-        return repository.findAll();
+        return repository.findByIsValidIsTrue();
     }
 
     @Override

@@ -21,6 +21,8 @@ public class BusinessAccountType {
     private String name;
     private String description;
     private Currency currency;
+    private BigDecimal maxSumForTransfer;
+    private BigDecimal commissionRateWithdraw;
     private boolean isValid = true;
     @CreatedDate
     private LocalDateTime created;
