@@ -78,6 +78,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public void delete(long companyId, AuthUser user) {
+        //TODO: delete account company
         Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
         if (!isOwnerCompany(company, user)) {
             throw new NotAllowedOperationException();

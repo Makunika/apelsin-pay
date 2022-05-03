@@ -57,6 +57,9 @@ class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<Account> findByNumber(String number) {
+        if (number == null) {
+            return Optional.empty();
+        }
         return repository.findByNumber(number);
     }
 
@@ -71,6 +74,7 @@ class AccountServiceImpl implements AccountService {
         BigDecimal balance = account.getBalance();
         BigDecimal holdSum = getCurrentHoldMoney(account);
 
+        // FIXME: 04.05.2022 
         if (holdSum.add(amount).compareTo(balance) > 0) {
             throw new IllegalArgumentException("hold money > balance");
         }

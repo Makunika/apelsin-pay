@@ -1,5 +1,7 @@
 package ru.pshiblo.transaction.rabbit.listeners.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
@@ -18,6 +20,9 @@ import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.repository.TransactionRepository;
+import ru.pshiblo.transaction.tinkoff.client.TinkoffApi;
+import ru.pshiblo.transaction.tinkoff.model.response.TinkoffInvoicingResponse;
+import ru.pshiblo.transaction.tinkoff.model.response.TinkoffInvoicingStatusResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,66 +30,59 @@ import java.time.LocalDateTime;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class HoldTransactionListener {
+public class WaitTransactionListener {
 
     private final TransactionRepository repository;
-    private final AccountService accountService;
     private final RabbitTemplate rabbitTemplate;
-
-    private final CurrencyService currencyService;
+    private final TinkoffApi tinkoffApi;
+    private final ObjectMapper objectMapper;
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = "transaction.hold",
-                    value = @Queue("transaction.hold_q"),
+                    key = "transaction.wait",
+                    value = @Queue("transaction.wait_q"),
                     exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void holdTransaction(@Payload Transaction transaction) {
-        if (transaction.getStatus() != TransactionStatus.END_ADD_MONEY) {
-            throw new TransactionNotAllowedException("Not status END_ADD_MONEY in hold listener");
+    public void waitTransaction(@Payload Transaction transaction) {
+        if (transaction.getStatus() != TransactionStatus.START_TO_CHECK) {
+            throw new TransactionNotAllowedException("Not status START_TO_CHECK in hold listener");
         }
 
-        if (transaction.getType() != TransactionType.PAYMENT) {
-            throw new TransactionNotAllowedException("Not type PAYMENT in hold listener");
+        if (transaction.isInnerFrom()) {
+            throw new TransactionNotAllowedException("Not type PAYMENT in wait listener");
         }
 
-        BigDecimal money = currencyService.convertMoney(
-                transaction.getCurrency(),
-                transaction.getCurrencyTo(),
-                transaction.getMoney()
-        );
-        HoldMoney holdMoney = accountService.holdMoney(
-                accountService.getByNumber(transaction.getToNumber()),
-                money,
-                LocalDateTime.now().plusHours(10)
-        );
-
-        transaction.setStatus(TransactionStatus.HOLD);
-        transaction.setHoldId(holdMoney.getId());
+        transaction.setStatus(TransactionStatus.WAIT);
         repository.save(transaction);
     }
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    key = "transaction.unhold",
-                    value = @Queue("transaction.unhold_q"),
+                    key = "transaction.unwait",
+                    value = @Queue("transaction.unwait_q"),
                     exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
             ),
             errorHandler = "errorTransactionHandler"
     )
-    public void unHoldTransaction(@Payload Integer transactionId) {
+    public void unWaitTransaction(@Payload Integer transactionId) {
         Transaction transaction = repository.findById(transactionId).orElse(null);
         if (transaction == null) {
             return;
         }
 
-        if (transaction.getStatus() != TransactionStatus.HOLD) {
-            throw new TransactionNotAllowedException("Not status HOLD in unhold listener");
+        if (transaction.getStatus() != TransactionStatus.WAIT) {
+            throw new TransactionNotAllowedException("Not status WAIT in unwait listener");
         }
 
-        accountService.unHoldMoney(transaction.getHoldId());
-        rabbitTemplate.convertAndSend("transaction.close", transaction);
+        String tinkoffPaymentId = transaction.getTinkoffPaymentId();
+        TinkoffInvoicingStatusResponse statusInvoicing = tinkoffApi.getStatusInvoicing(tinkoffPaymentId);
+        if (!statusInvoicing.getStatus().isSuccess()) {
+            throw new TransactionNotAllowedException("Tinkoff not confirmed");
+        }
+
+        transaction.setStatus(TransactionStatus.START_TO_CHECK);
+        rabbitTemplate.convertAndSend("transaction.check_to", transaction);
     }
 }

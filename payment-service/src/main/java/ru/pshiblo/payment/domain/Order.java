@@ -28,6 +28,7 @@ public class Order {
     private Currency currency;
     private Long companyId;
     private Long transactionId;
+    private String payTinkoffUrl;
     private OrderType orderType;
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;

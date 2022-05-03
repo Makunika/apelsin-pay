@@ -28,7 +28,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository repository;
     private final InfoBusinessClient infoBusinessClient;
     private final RabbitTemplate rabbitTemplate;
-    @Value("${pay.url}")
+    @Value("${pay.main.url}")
     private String payUrl;
 
     @Override

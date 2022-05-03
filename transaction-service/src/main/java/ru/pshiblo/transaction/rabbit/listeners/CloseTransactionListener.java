@@ -1,7 +1,10 @@
 package ru.pshiblo.transaction.rabbit.listeners;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -20,6 +23,9 @@ import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.repository.TransactionRepository;
 import ru.pshiblo.transaction.tinkoff.client.TinkoffApi;
+import ru.pshiblo.transaction.tinkoff.model.request.TinkoffInvoicingCancelOrConfirm;
+import ru.pshiblo.transaction.tinkoff.model.response.TinkoffInvoicingResponse;
+import ru.pshiblo.transaction.tinkoff.model.response.TinkoffInvoicingStatusResponse;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -29,6 +35,7 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CloseTransactionListener {
 
     private final TransactionRepository transactionRepository;
@@ -36,6 +43,7 @@ public class CloseTransactionListener {
     private final CurrencyService currencyService;
     private final RabbitTemplate rabbitTemplate;
     private final TinkoffApi tinkoffApi;
+    private final ObjectMapper objectMapper;
 
     @RabbitListener(
             bindings = @QueueBinding(
@@ -53,10 +61,20 @@ public class CloseTransactionListener {
         ) {
             throw new TransactionNotAllowedException("Not status END_SEND or END_ADD_MONEY in close listener");
         }
+
+        if (!transaction.isInnerFrom()) {
+            String tinkoffPaymentId = transaction.getTinkoffPaymentId();
+            TinkoffInvoicingStatusResponse statusInvoicing = tinkoffApi.getStatusInvoicing(tinkoffPaymentId);
+            if (!statusInvoicing.getStatus().isSuccess()) {
+                throw new TransactionNotAllowedException("Tinkoff not confirmed");
+            }
+            tinkoffApi.confirmInvoicing(new TinkoffInvoicingCancelOrConfirm(transaction.getMoney()), tinkoffPaymentId);
+        }
+
         transaction.setStatus(TransactionStatus.CLOSED);
         transactionRepository.save(transaction);
 
-        if (transaction.isInnerFrom()) {
+        if (transaction.isInnerTo()) {
             switch (transaction.getAccountTypeTo()) {
                 case BUSINESS:
                     rabbitTemplate.convertAndSend("transaction.close.after.business", transaction);
@@ -80,6 +98,12 @@ public class CloseTransactionListener {
         Transaction transaction = transactionRepository.findById(error.getTransactionId()).orElseThrow();
 
         transaction.setReasonCancel(error.getReason());
+
+        if (transaction.getStatus() == TransactionStatus.CLOSED) {
+            if (!(transaction.isInnerFrom() && transaction.isInnerTo())) {
+                return;
+            }
+        }
 
         if (transaction.getType() == null) {
             transaction.setType(TransactionType.TRANSFER);
@@ -107,6 +131,12 @@ public class CloseTransactionListener {
             return;
         }
 
+        if (transaction.getStatus() == TransactionStatus.CLOSED) {
+            if (!(transaction.isInnerFrom() && transaction.isInnerTo())) {
+                return;
+            }
+        }
+
         if (transaction.getStatus().isWithdrawnMoney()) {
             accountService.findByNumber(transaction.getFromNumber()).ifPresent(account -> {
                 Currency transactionCurrency = transaction.getCurrency();
@@ -121,6 +151,10 @@ public class CloseTransactionListener {
                 account.setBalance(account.getBalance().add(moneyCurrentFrom));
                 accountService.save(account);
             });
+            if (transaction.getAdditionInfoFrom() != null) {
+                String tinkoffPaymentId = transaction.getTinkoffPaymentId();
+                tinkoffApi.cancelInvoicing(new TinkoffInvoicingCancelOrConfirm(transaction.getMoney()), tinkoffPaymentId);
+            }
         }
 
         if (transaction.getStatus().isDepositedMoney()) {

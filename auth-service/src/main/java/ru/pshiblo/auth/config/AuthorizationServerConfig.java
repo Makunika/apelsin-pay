@@ -88,7 +88,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .withClient("account-business-service")
                 .secret(env.getProperty("ACCOUNT_BUSINESS_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server")
+                .scopes("server", "info_b_s")
                 .and()
 
                 .withClient("payment-service")

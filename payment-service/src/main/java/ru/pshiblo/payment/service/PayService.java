@@ -5,6 +5,6 @@ import ru.pshiblo.security.model.AuthUser;
 
 public interface PayService {
     Order payInner(long orderId, AuthUser user, String accountNumber);
-    String payTinkoff(long orderId);
-
+    Order payTinkoff(long orderId);
+    void paySuccessByTinkoff(long orderId);
 }

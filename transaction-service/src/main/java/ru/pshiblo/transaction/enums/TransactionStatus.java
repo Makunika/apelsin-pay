@@ -23,7 +23,8 @@ public enum TransactionStatus {
     CLOSED(true, true),
     CANCELED(false, false),
     END_ADD_MONEY(true, true),
-    HOLD(true, true);
+    HOLD(true, true),
+    WAIT(true, false);
 
     private final boolean isWithdrawnMoney;
     private final boolean isDepositedMoney;

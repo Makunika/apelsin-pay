@@ -1,6 +1,7 @@
 package ru.pshiblo.account.business.web.dto.response;
 
 import lombok.Data;
+import ru.pshiblo.account.enums.Currency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,4 +14,5 @@ public class BusinessAccountResponseDto {
     private long typeId;
     private String typeName;
     private BigDecimal balance;
+    private Currency currency;
 }

@@ -43,4 +43,7 @@ public class Transaction implements Serializable {
     private AccountType accountTypeFrom;
     private AccountType accountTypeTo;
     private Long holdId;
+    private String tinkoffPaymentId;
+    private String tinkoffPayUrl;
+    private Boolean isWithdrawByTinkoff;
 }

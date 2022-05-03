@@ -178,14 +178,23 @@ public class TransactionBuilder {
 
     public class BuilderOutFrom {
         private final Transaction transaction;
-        private AuthUser authUser;
+        private Long userId;
+        private String username;
 
         private BuilderOutFrom() {
             transaction = new Transaction();
+            transaction.setType(TransactionType.TRANSFER);
         }
 
         public BuilderOutFrom authUser(AuthUser authUser) {
-            this.authUser = authUser;
+            this.userId = authUser.getId();
+            this.username = authUser.getName();
+            return this;
+        }
+
+        public BuilderOutFrom userId(long userId) {
+            this.userId = userId;
+            this.username = "NOT";
             return this;
         }
 
@@ -199,11 +208,6 @@ public class TransactionBuilder {
             return this;
         }
 
-        public BuilderOutFrom fromAccount(String accountNumber) {
-            //TODO: e-commerce
-            return this;
-        }
-
         public BuilderOutFrom toAccount(String accountNumber) {
             transaction.setToNumber(accountNumber);
             accountService.findByNumber(accountNumber).orElseThrow();
@@ -211,7 +215,15 @@ public class TransactionBuilder {
             return this;
         }
 
+        public BuilderOutFrom type(TransactionType type) {
+            transaction.setType(type);
+            return this;
+        }
+
         public Transaction build() {
+            transaction.setInnerFrom(false);
+            transaction.setOwnerUsername(username);
+            transaction.setOwnerUserId(Math.toIntExact(userId));
             return transaction;
         }
     }

@@ -41,6 +41,12 @@ public class ApplyPaymentTransactionListener {
         transaction.setStatus(TransactionStatus.END_APPLY_PAYMENT);
         repository.save(transaction);
         transaction.setStatus(TransactionStatus.START_TO_CHECK);
-        rabbitTemplate.convertAndSend("transaction.check_to", transaction);
+        rabbitTemplate.convertAndSend(
+                transaction.isInnerFrom() ?
+                "transaction.check_to"
+                        :
+                "transaction.wait"
+                ,
+                transaction);
     }
 }

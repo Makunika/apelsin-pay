@@ -13,4 +13,10 @@ public class IntegrationException extends RuntimeException {
         this.message = message;
     }
 
+    public IntegrationException(IntegrationException e) {
+        super(e.getMessage());
+        this.message = e.getMessage();
+        this.status = e.getStatus();
+    }
+
 }

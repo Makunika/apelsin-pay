@@ -123,6 +123,12 @@ public class Transaction implements Serializable {
 
     private Long holdId;
 
+    private String tinkoffPaymentId;
+
+    private String tinkoffPayUrl;
+
+    private Boolean isWithdrawByTinkoff;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

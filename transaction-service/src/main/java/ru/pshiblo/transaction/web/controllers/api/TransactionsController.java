@@ -4,21 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.security.AuthUtils;
+import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.model.PayoutModel;
 import ru.pshiblo.transaction.service.TransactionBuilder;
 import ru.pshiblo.transaction.service.TransactionService;
-import ru.pshiblo.transaction.web.dto.request.MoneyDto;
-import ru.pshiblo.transaction.web.dto.request.OpenPaymentInnerDto;
-import ru.pshiblo.transaction.web.dto.request.OpenTransactionDto;
-import ru.pshiblo.transaction.web.dto.request.OpenTransactionExternalToDto;
+import ru.pshiblo.transaction.web.dto.request.*;
 
 import javax.validation.Valid;
 
@@ -48,6 +43,32 @@ public class TransactionsController {
         return transactionService.create(transaction);
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_transaction_s')")
+    @PostMapping("/payment/tinkoff")
+    public Transaction openPaymentTinkoff(@Valid @RequestBody OpenPaymentTinkoffDto request) {
+        Transaction transaction = transactionBuilder.builderOutFrom()
+                .userId(AuthUtils.getUserId())
+                .money(request.getMoney())
+                .currency(Currency.RUB)
+                .type(TransactionType.PAYMENT)
+                .toAccount(request.getAccountNumberTo())
+                .build();
+        return transactionService.createFromTinkoff(transaction, request.getRedirectUrl());
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("/deposit/tinkoff")
+    public Transaction openDepositWithTinkoff(@Valid @RequestBody OpenDepositDto request) {
+        Transaction transaction = transactionBuilder.builderOutFrom()
+                .authUser(AuthUtils.getAuthUser())
+                .money(request.getMoney())
+                .currency(Currency.RUB)
+                .type(TransactionType.TRANSFER)
+                .toAccount(request.getAccountNumberTo())
+                .build();
+        return transactionService.createFromTinkoff(transaction, "redirect");
+    }
+
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping("/from/account/to/account")
     public Transaction openFromAccountToAccountTransaction(@RequestBody OpenTransactionDto dto) {
@@ -61,23 +82,11 @@ public class TransactionsController {
         return transactionService.create(transaction);
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @PostMapping("/from/account/to/external")
-    public Transaction openFromAccountToExternalTransaction(@RequestBody OpenTransactionExternalToDto dto) {
-        PayoutModel payoutModel = dto.getPayoutModel();
-        if (!payoutModel.getIsPerson()) {
-            Assert.notNull(payoutModel.getKpp(), "kpp is null");
-        } else {
-            payoutModel.setInn("0");
-        }
-        Transaction transaction = transactionBuilder.builderOutTo()
-                .authUser(AuthUtils.getAuthUser())
-                .money(dto.getMoney())
-                .currency(Currency.RUB)
-                .fromAccount(dto.getFromNumber())
-                .to(payoutModel)
-                .build();
-        return transactionService.create(transaction);
+    @PreAuthorize("hasAnyAuthority('SCOPE_user', 'SCOPE_transaction_s')")
+    @PostMapping("/success/redirect/{id}")
+    public void confirmTransaction(@PathVariable int id) {
+        AuthUser authUser = AuthUtils.getAuthUser();
+        transactionService.successPayment(id, authUser.getId());
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")

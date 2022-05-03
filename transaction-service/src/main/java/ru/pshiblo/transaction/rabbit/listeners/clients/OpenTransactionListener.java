@@ -50,46 +50,60 @@ public class OpenTransactionListener {
             throw new TransactionNotAllowedException("status on open not START_OPEN");
         }
 
-        Account account = accountService.getByNumber(transaction.getFromNumber());
+        if (transaction.getMoney().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new TransactionNotAllowedException("Zero or negative money value");
+        }
+
         if (transaction.isInnerFrom()) {
+            Account account = accountService.getByNumber(transaction.getFromNumber());
+
+            if (account.getLock()) {
+                throw new TransactionNotAllowedException("Account is lock");
+            }
+
+            BigDecimal holdMoney = accountService.getCurrentHoldMoney(account);
+
+            if (account.getBalance().add(holdMoney.negate()).compareTo(
+                    currencyService.convertMoney(transaction.getCurrency(), account.getCurrency(), transaction.getMoney())
+            ) < 0) {
+                throw new TransactionNotAllowedException("Balance small");
+            }
+
+            transaction.setCurrencyFrom(account.getCurrency());
+            transaction.setAccountTypeFrom(account.getType());
+        }
+
+        if (transaction.isInnerTo()) {
             Account toAccount = accountService.getByNumber(transaction.getToNumber());
 
             if (toAccount.getLock()) {
                 throw new TransactionNotAllowedException("To account is lock");
             }
 
-            if (account.getId().equals(toAccount.getId())) {
-                throw new TransactionNotAllowedException("Account equals");
-            }
-
             transaction.setAccountTypeTo(toAccount.getType());
             transaction.setCurrencyTo(toAccount.getCurrency());
         }
 
-        if (transaction.getMoney().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new TransactionNotAllowedException("Zero or negative money value");
+        if (transaction.isInnerTo() && transaction.isInnerFrom()) {
+            Account account = accountService.getByNumber(transaction.getFromNumber());
+            Account toAccount = accountService.getByNumber(transaction.getToNumber());
+            if (account.getId().equals(toAccount.getId())) {
+                throw new TransactionNotAllowedException("Account equals");
+            }
         }
-
-        if (account.getLock()) {
-            throw new TransactionNotAllowedException("Account is lock");
-        }
-
-        if (account.getBalance().compareTo(
-                currencyService.convertMoney(transaction.getCurrency(), account.getCurrency(), transaction.getMoney())
-        ) < 0) {
-            throw new TransactionNotAllowedException("Balance small");
-        }
-
-        transaction.setCurrencyFrom(account.getCurrency());
-        transaction.setAccountTypeFrom(account.getType());
 
         transaction = transactionRepository.save(transaction);
 
         if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
             transaction.setStatus(TransactionStatus.END_OPEN);
             transactionRepository.save(transaction);
-            transaction.setStatus(TransactionStatus.START_COMMISSION);
-            rabbitTemplate.convertAndSend("transaction.commission", transaction);
+            if (transaction.isInnerFrom()) {
+                transaction.setStatus(TransactionStatus.START_COMMISSION);
+                rabbitTemplate.convertAndSend("transaction.commission", transaction);
+            } else {
+                transaction.setStatus(TransactionStatus.START_APPLY_PAYMENT);
+                rabbitTemplate.convertAndSend("transaction.apply_payment", transaction);
+            }
         }
     }
 }

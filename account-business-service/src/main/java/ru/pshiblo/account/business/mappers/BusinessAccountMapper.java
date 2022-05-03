@@ -9,6 +9,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface BusinessAccountMapper {
+    @Mapping(target = "currency", source = "account.type.currency")
     @Mapping(target = "typeName", source = "account.type.name")
     @Mapping(target = "typeId", source = "account.type.id")
     @Mapping(target = "number", source = "account.account.number")

@@ -23,7 +23,10 @@ spring:
       ddl-auto: update
 
 pay:
-  url: https://redirect.ru/
+  main:
+    url: https://redirect.ru/main
+  internal:
+    url: https://redirect.ru/tinkoff/success
 
 server:
   port: 6006
