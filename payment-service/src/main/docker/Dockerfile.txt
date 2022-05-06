@@ -1,7 +1,0 @@
-FROM dockerfile/java:oracle-java11
-
-VOLUME /tmp
-ADD payment-service.jar /opt/payment-service/
-EXPOSE 8080
-WORKDIR /opt/payment-service/
-CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-Xms512m", "-Xmx1g", "-jar", "payment-service.jar"]

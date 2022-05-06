@@ -11,5 +11,5 @@ import ru.pshiblo.auth.clients.dto.PersonInfoDto;
 public interface PersonalInfoClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/api/persons/user/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    PersonInfoDto getByUserId(@PathVariable long id);
+    PersonInfoDto getByUserId(@PathVariable("id") long id);
 }

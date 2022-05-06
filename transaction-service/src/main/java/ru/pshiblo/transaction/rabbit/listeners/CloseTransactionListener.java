@@ -53,6 +53,7 @@ public class CloseTransactionListener {
             ),
             errorHandler = "errorTransactionHandler"
     )
+    @Transactional
     public void closeTransaction(@Payload Transaction transaction) {
         if (
                 transaction.getStatus() != TransactionStatus.END_SEND
@@ -94,6 +95,7 @@ public class CloseTransactionListener {
             ),
             errorHandler = "errorTransactionHandler"
     )
+    @Transactional
     public void cancelTransaction(@Payload TransactionError error) {
         Transaction transaction = transactionRepository.findById(error.getTransactionId()).orElseThrow();
 
@@ -124,13 +126,7 @@ public class CloseTransactionListener {
         private Integer transactionId;
     }
 
-
-    @Transactional
     protected void cancelTransactionWithMoney(Transaction transaction) {
-        if (!transaction.isInnerFrom() || !transaction.isInnerTo()) {
-            return;
-        }
-
         if (transaction.getStatus() == TransactionStatus.CLOSED) {
             if (!(transaction.isInnerFrom() && transaction.isInnerTo())) {
                 return;
@@ -151,7 +147,7 @@ public class CloseTransactionListener {
                 account.setBalance(account.getBalance().add(moneyCurrentFrom));
                 accountService.save(account);
             });
-            if (transaction.getAdditionInfoFrom() != null) {
+            if (!transaction.isInnerFrom()) {
                 String tinkoffPaymentId = transaction.getTinkoffPaymentId();
                 tinkoffApi.cancelInvoicing(new TinkoffInvoicingCancelOrConfirm(transaction.getMoney()), tinkoffPaymentId);
             }

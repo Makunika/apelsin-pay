@@ -1,0 +1,56 @@
+version: '2.1'
+services:
+  rabbitmq:
+    ports:
+      - "5672:5672"
+
+  config:
+    build: config-service
+    ports:
+      - "8888:8888"
+
+  registry:
+    build: registry-service
+
+  gateway:
+    build: gateway-service
+
+  auth-service:
+    build: auth-service
+    ports:
+      - "5000:5000"
+
+  users-service:
+    build: users-service
+    ports:
+      - "5001:5001"
+
+  account-business-service:
+    build: account-business-service
+    ports:
+      - "6002:6002"
+
+  account-personal-service:
+    build: account-personal-service
+    ports:
+      - "6003:6003"
+
+  transaction-service:
+    build: transaction-service
+    ports:
+      - "6001:6001"
+
+  info-business-service:
+    build: info-business-service
+    ports:
+      - "6005:6005"
+
+  info-personal-service:
+    build: info-personal-service
+    ports:
+      - "6004:6004"
+
+  payment-service:
+    build: payment-service
+    ports:
+      - "6006:6006"

@@ -1,0 +1,9 @@
+FROM adoptopenjdk:11-jre-hotspot
+MAINTAINER Maxim Pshiblo <pshblo.max@gmail.com>
+
+ARG JAR_FILE=./target/transaction-service-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} /app.jar
+
+CMD ["java", "-Xmx300m", "-Dspring.profiles.active=docker", "-jar", "/app.jar"]
+
+EXPOSE 6001

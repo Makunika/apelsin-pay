@@ -11,5 +11,5 @@ import java.util.List;
 @FeignClient(name = "info-business-service")
 public interface BusinessInfoClient {
     @GetMapping(value = "/company/user/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    List<CompanyUserDto> findByUser(@PathVariable long id);
+    List<CompanyUserDto> findByUser(@PathVariable("id") long id);
 }

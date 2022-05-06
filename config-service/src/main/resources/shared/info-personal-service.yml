@@ -3,7 +3,6 @@ security:
     client:
       clientId: info-personal-service
       clientSecret: ${INFO_PERSONAL_SERVICE_PASSWORD}
-      accessTokenUri: http://localhost:5000/oauth/token
       grant-type: client_credentials
       scope: server,users_s
 
@@ -12,7 +11,7 @@ spring:
     name: info-personal-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/info-personal
+    url: jdbc:postgresql://192.168.3.121:5432/info-personal
     username: info-personal
     password: info-personal
     driver-class-name: org.postgresql.Driver

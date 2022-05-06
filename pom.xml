@@ -20,6 +20,7 @@
         <module>info-business-service</module>
         <module>users-service</module>
         <module>payment-service</module>
+        <module>feign-starter</module>
     </modules>
 
     <parent>

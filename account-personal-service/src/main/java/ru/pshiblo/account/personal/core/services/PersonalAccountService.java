@@ -15,6 +15,5 @@ public interface PersonalAccountService {
     List<PersonalAccount> getByUserId(long userId);
     List<PersonalAccount> getByStartWorkDay(int day);
     void update(PersonalAccount account);
-
     boolean checkOwnerPersonalAccount(long userId, String number);
 }

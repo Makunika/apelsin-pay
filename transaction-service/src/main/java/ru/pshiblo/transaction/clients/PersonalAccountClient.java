@@ -7,10 +7,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import ru.pshiblo.transaction.clients.config.InternalClientConfig;
 
-@FeignClient(name = "account-personal-service")
+@FeignClient(
+        contextId = "internalPersonalId",
+        name = "account-personal-service",
+        configuration = InternalClientConfig.class
+)
 public interface PersonalAccountClient {
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/app/personal/check/{userId}/{number}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Boolean> checkPersonalAccount(@PathVariable long userId, @PathVariable String number);
+    ResponseEntity<Boolean> checkPersonalAccount(@PathVariable("userId") long userId, @PathVariable("number") String number);
 }

@@ -10,14 +10,43 @@ hystrix:
           thread:
             timeoutInMilliseconds: 10000
 
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: '*'
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  rabbitmq:
+    host: rabbitmq
+    template:
+      exchange: exchange-main
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: http://auth-service:5000/oauth/token_key_new
+
 eureka:
   instance:
     prefer-ip-address: true
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://registry:8761/eureka/
 
+security:
+  oauth2:
+    client:
+      accessTokenUri: http://auth-service:5000/oauth/token
+---
 spring:
+  config:
+    activate:
+      on-profile: local
   rabbitmq:
     host: localhost
     template:
@@ -32,9 +61,14 @@ spring:
         jwt:
           public-key-location: http://localhost:5000/oauth/token_key_new
 
-management:
-  endpoints:
-    enabled-by-default: true
-    web:
-      exposure:
-        include: '*'
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+security:
+  oauth2:
+    client:
+      accessTokenUri: http://localhost:5000/oauth/token

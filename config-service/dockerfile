@@ -1,0 +1,12 @@
+FROM adoptopenjdk:11-jre-hotspot
+MAINTAINER Maxim Pshiblo <pshblo.max@gmail.com>
+
+ARG JAR_FILE=./target/config.jar
+
+COPY ${JAR_FILE} /app.jar
+
+CMD ["java", "-Xmx300m", "-jar", "/app.jar"]
+
+HEALTHCHECK --interval=30s --timeout=30s CMD curl -f http://localhost:8888/actuator/health || exit 1
+
+EXPOSE 8888

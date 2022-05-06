@@ -22,13 +22,11 @@ public class FeignConfiguration {
     }
 
     @Bean
-    @Primary
     public RequestInterceptor oauth2RequestInterceptor(ClientCredentialsResourceDetails resourceDetails) {
         return new OAuth2FeignRequestInterceptor(new DefaultOAuth2ClientContext(), resourceDetails);
     }
 
     @Bean
-    @Primary
     public OAuth2RestTemplate oAuth2RestTemplate(ClientCredentialsResourceDetails resourceDetails) {
         return new OAuth2RestTemplate(resourceDetails);
     }

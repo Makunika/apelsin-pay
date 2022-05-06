@@ -5,19 +5,25 @@ spring:
     name: info-personal-service
   cloud:
     config:
-      uri: http://localhost:8888
       fail-fast: true
       password: ${CONFIG_SERVICE_PASSWORD}
       username: user
+
+---
+spring:
   config:
-    import: configserver:http://localhost:8888
-
-
-security:
-  oauth2:
-    client:
-      client-id: info-personal-service
-      client-secret: ${INFO_PERSONAL_SERVICE_PASSWORD}
-      grant-type: client_credentials
-      scope: server
-      acess-token-uri: http://localhost:5000/oauth/token
+    import: optional:configserver:http://config:8888
+    activate:
+      on-profile: docker
+  cloud:
+    config:
+      uri: http://config:8888
+---
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888
+    activate:
+      on-profile: local
+  cloud:
+    config:
+      uri: http://localhost:8888

@@ -3,7 +3,6 @@ security:
     client:
       clientId: account-personal-service
       clientSecret: ${ACCOUNT_PERSONAL_SERVICE_PASSWORD}
-      accessTokenUri: http://localhost:5000/oauth/token
       grant-type: client_credentials
       scope: transaction,server
 
@@ -12,7 +11,7 @@ spring:
     name: account-personal-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/maxbank-transactions
+    url: jdbc:postgresql://192.168.3.121:5432/maxbank-transactions
     username: maxbank-transactions
     password: maxbank-transactions
     driver-class-name: org.postgresql.Driver

@@ -11,5 +11,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface InfoBusinessClient {
 
     @PostMapping("/company/{companyId}/check/key")
-    ResponseEntity<Boolean> checkApiKey(@PathVariable long companyId, @RequestBody String apiKey);
+    ResponseEntity<Boolean> checkApiKey(@PathVariable("companyId") long companyId, @RequestBody String apiKey);
 }

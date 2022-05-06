@@ -1,0 +1,190 @@
+version: '2.1'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "15672:15672"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  config:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    image: makuni/apelsin-config
+    restart: always
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  registry:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    image: makuni/apelsin-registry
+    restart: always
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  gateway:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    image: makuni/apelsin-gateway
+    restart: always
+    ports:
+      - "80:8080"
+    depends_on:
+      - config
+      - registry
+      - account-personal-service
+      - account-business-service
+      - info-personal-service
+      - info-business-service
+      - auth-service
+      - users-service
+      - payment-service
+      - transaction-service
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  auth-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      TRANSACTION_SERVICE_PASSWORD: $TRANSACTION_SERVICE_PASSWORD
+      AUTH_SERVICE_PASSWORD: $AUTH_SERVICE_PASSWORD
+      USERS_SERVICE_PASSWORD: $USERS_SERVICE_PASSWORD
+      INFO_PERSONAL_SERVICE_PASSWORD: $INFO_PERSONAL_SERVICE_PASSWORD
+      ACCOUNT_BUSINESS_SERVICE_PASSWORD: $ACCOUNT_BUSINESS_SERVICE_PASSWORD
+      ACCOUNT_PERSONAL_SERVICE_PASSWORD: $ACCOUNT_PERSONAL_SERVICE_PASSWORD
+      INFO_BUSINESS_SERVICE_PASSWORD: $INFO_BUSINESS_SERVICE_PASSWORD
+      AUTH_SHA_SALT: $AUTH_SHA_SALT
+      PAYMENT_SERVICE_PASSWORD: $PAYMENT_SERVICE_PASSWORD
+    image: makuni/apelsin-auth-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  users-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      USERS_SERVICE_PASSWORD: $USERS_SERVICE_PASSWORD
+      AUTH_SHA_SALT: $AUTH_SHA_SALT
+    image: makuni/apelsin-users-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+      - auth-service
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  account-business-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      ACCOUNT_BUSINESS_SERVICE_PASSWORD: $ACCOUNT_BUSINESS_SERVICE_PASSWORD
+    image: makuni/apelsin-account-business-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+      - auth-service
+      - rabbitmq
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  account-personal-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      ACCOUNT_PERSONAL_SERVICE_PASSWORD: $ACCOUNT_PERSONAL_SERVICE_PASSWORD
+    image: makuni/apelsin-account-personal-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+      - auth-service
+      - rabbitmq
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  transaction-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      TRANSACTION_SERVICE_PASSWORD: $TRANSACTION_SERVICE_PASSWORD
+    image: makuni/apelsin-transaction-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+      - auth-service
+      - rabbitmq
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  info-business-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      INFO_BUSINESS_SERVICE_PASSWORD: $INFO_BUSINESS_SERVICE_PASSWORD
+    image: makuni/apelsin-info-business-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+      - auth-service
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  info-personal-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      INFO_PERSONAL_SERVICE_PASSWORD: $INFO_PERSONAL_SERVICE_PASSWORD
+    image: makuni/apelsin-info-personal-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+      - auth-service
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  payment-service:
+    environment:
+      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+      PAYMENT_SERVICE_PASSWORD: $PAYMENT_SERVICE_PASSWORD
+    image: makuni/apelsin-payment-service
+    restart: always
+    depends_on:
+      - config
+      - registry
+      - auth-service
+      - rabbitmq
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"

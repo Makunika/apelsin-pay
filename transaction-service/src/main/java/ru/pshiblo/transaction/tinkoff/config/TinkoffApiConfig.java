@@ -2,16 +2,20 @@ package ru.pshiblo.transaction.tinkoff.config;
 
 import feign.RequestInterceptor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
-@Configuration
 public class TinkoffApiConfig {
 
     @Bean
-    public RequestInterceptor feignRequestInterceptor(){
-        return  requestTemplate -> requestTemplate.header(
+    public RequestInterceptor tinkoffRequestInterceptor() {
+        return requestTemplate -> requestTemplate.header(
                 "Authorization",
                 "Bearer TinkoffOpenApiSandboxSecretToken"
         );
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

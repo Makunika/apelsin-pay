@@ -20,5 +20,5 @@ public interface TransactionClient {
     Transaction openPaymentTinkoff(@Valid @RequestBody OpenPaymentTinkoffDto request);
 
     @PostMapping("api/transaction/success/redirect/{id}")
-    void confirmTransaction(@PathVariable int id);
+    void confirmTransaction(@PathVariable("id") int id);
 }
