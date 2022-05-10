@@ -128,6 +128,15 @@
                         </goals>
                     </execution>
                     <execution>
+                        <id>npm run lint:fix</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run lint:fix</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>npm run build</id>
                         <goals>
                             <goal>npm</goal>

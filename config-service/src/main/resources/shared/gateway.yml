@@ -11,6 +11,12 @@ spring:
     static-path-pattern: /static/**
   cloud:
     gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowed-headers: "*"
       discovery:
         locator:
           enabled: true

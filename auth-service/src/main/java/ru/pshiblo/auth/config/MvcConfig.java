@@ -15,6 +15,8 @@ public class MvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/WEB-INF/view/react/build/static/");
+        registry.addResourceHandler("/favicon/**")
+                .addResourceLocations("classpath:/WEB-INF/view/react/build/favicon/");
         registry.addResourceHandler("/*.js")
                 .addResourceLocations("classpath:/WEB-INF/view/react/build/");
         registry.addResourceHandler("/*.json")

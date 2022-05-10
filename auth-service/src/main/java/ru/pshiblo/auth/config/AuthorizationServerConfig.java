@@ -52,6 +52,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .secret("browser_secret")
                 .authorizedGrantTypes("refresh_token", "password", "implicit")
                 .redirectUris("https://oidcdebugger.com/debug")
+                .autoApprove(true)
                 .scopes("user")
                 .and()
 

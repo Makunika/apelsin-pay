@@ -37,9 +37,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/actuator/**").permitAll()
                 .antMatchers("/oauth/token_key_new").permitAll()
                 .antMatchers("/error").permitAll()
+                .antMatchers("/perform_login").permitAll()
                 .antMatchers(
                         HttpMethod.GET,
-                        "/index*", "/static/**", "/*.js", "/*.json", "/*.ico")
+                        "/index*", "/static/**", "/*.js", "/*.json", "/*.ico", "/favicon/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

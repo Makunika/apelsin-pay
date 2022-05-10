@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useFormik, Form, FormikProvider } from 'formik';
 // material
 import {
@@ -16,30 +16,46 @@ import Iconify from '../../../components/Iconify';
 
 // ----------------------------------------------------------------------
 
-export default function LoginForm() {
+export default function LoginForm(props) {
   const [showPassword, setShowPassword] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
+  useEffect(() => {
+    const {search} = window.location;
+    const name = new URLSearchParams(search);
+    if (name.has("error")) {
+      enqueueSnackbar("Неправильный логин или пароль", { variant: 'error' })
+    }
+  }, []);
 
   const LoginSchema = Yup.object().shape({
-    login: Yup.string().required('Логин обязателен').min(3, "Никнейм должен быть больше 3 символов"),
+    username: Yup.string().required('Логин обязателен').min(3, "Логин должен быть больше 3 символов"),
     password: Yup.string().required('Пароль обязателен')
   });
 
   const formik = useFormik({
     initialValues: {
-      login: '',
+      username: '',
       password: '',
     },
     validationSchema: LoginSchema,
     onSubmit: (values) => {
       const data = new FormData();
-      data.append("login", values.login)
+      data.append("username", values.username)
       data.append("password", values.password)
       return fetch('/perform_login', {
         method: 'post',
+        mode: 'no-cors',
+        cache: 'no-cache',
         body: new URLSearchParams(data)
       }).then(v => {
-            if(v.redirected) window.location = v.url
+            if (!v.redirected) {
+              return;
+            }
+            if (v.url.search(/^.*\?error.*/g) !== -1) {
+              enqueueSnackbar("Неправильный логин или пароль", { variant: 'error' })
+            } else {
+              window.location = v.url
+            }
           }, e => {
         console.log(e)
         enqueueSnackbar(`Ошибка: ${e.data.error}`, {variant: 'error'});
@@ -62,9 +78,9 @@ export default function LoginForm() {
             autoComplete="username"
             type="text"
             label="Логин"
-            {...getFieldProps('login')}
-            error={Boolean(touched.login && errors.login)}
-            helperText={touched.login && errors.login}
+            {...getFieldProps('username')}
+            error={Boolean(touched.username && errors.username)}
+            helperText={touched.username && errors.username}
           />
 
           <TextField

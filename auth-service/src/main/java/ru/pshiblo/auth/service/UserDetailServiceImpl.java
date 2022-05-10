@@ -14,6 +14,8 @@ import ru.pshiblo.auth.domain.User;
 import ru.pshiblo.auth.model.AuthUser;
 import ru.pshiblo.auth.repository.UserRepository;
 import ru.pshiblo.auth.service.interfaces.UserService;
+import ru.pshiblo.common.exception.IntegrationException;
+import ru.pshiblo.common.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,20 +32,23 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        try {
+            User user = userService.getByUsername(username);
 
-        User user = userService.getByUsername(username);
+            PersonInfoDto personInfoDto = personalInfoClient.getByUserId(user.getId());
+            List<CompanyUserDto> companiesByUser = businessInfoClient.findByUser(user.getId());
 
-        PersonInfoDto personInfoDto = personalInfoClient.getByUserId(user.getId());
-        List<CompanyUserDto> companiesByUser = businessInfoClient.findByUser(user.getId());
-
-        return AuthUser.fromUser(
-                user,
-                personInfoDto.getEmail(),
-                personInfoDto.getLastName() + " " + personInfoDto.getFirstName(),
-                personInfoDto.getStatus(),
-                companiesByUser
-                        .stream()
-                        .map(cu -> cu.getCompany().getId())
-                        .collect(Collectors.toList()));
+            return AuthUser.fromUser(
+                    user,
+                    personInfoDto.getEmail(),
+                    personInfoDto.getLastName() + " " + personInfoDto.getFirstName(),
+                    personInfoDto.getStatus(),
+                    companiesByUser
+                            .stream()
+                            .map(cu -> cu.getCompany().getId())
+                            .collect(Collectors.toList()));
+        } catch (NotFoundException | IntegrationException e) {
+            throw new UsernameNotFoundException(e.getMessage());
+        }
     }
 }

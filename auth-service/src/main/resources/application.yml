@@ -10,7 +10,12 @@ spring:
 
   web:
     resources:
-      static-locations: "classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/", "classpath:/WEB-INF/"
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,/classpath:/public/,classpath:/WEB-INF/
+
+server:
+  servlet:
+    session:
+      timeout: 2m
 
 ---
 spring:
