@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,10 +37,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/actuator/**").permitAll()
                 .antMatchers("/oauth/token_key_new").permitAll()
                 .antMatchers("/error").permitAll()
+                .antMatchers(
+                        HttpMethod.GET,
+                        "/index*", "/static/**", "/*.js", "/*.json", "/*.ico")
+                .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
-                .csrf().disable();
+                .csrf().disable()
+                .formLogin()
+                .loginPage("/index.html")
+                .loginProcessingUrl("/perform_login");
     }
 
     @Override

@@ -8,6 +8,10 @@ spring:
       password: ${CONFIG_SERVICE_PASSWORD}
       username: user
 
+  web:
+    resources:
+      static-locations: "classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/", "classpath:/WEB-INF/"
+
 ---
 spring:
   config:

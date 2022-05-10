@@ -35,3 +35,4 @@ build/
 */.mvn/
 
 *.plantuml
+/auth-service/src/main/resources/WEB-INF/view/react/node/
