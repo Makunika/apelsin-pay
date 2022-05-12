@@ -53,6 +53,7 @@ public class PersonalAccountController {
     public PersonalResponseDto getAccountByNumber(@PathVariable String number) {
         return mapper.toDto(
                 service.getByNumber(number)
+                        .filter(p -> p.getUserId().equals(AuthUtils.getUserId()) || AuthUtils.hasRole("ROLE_ADMINISTRATOR"))
                         .orElseThrow(() -> new NotFoundException(number, PersonalAccount.class))
         );
     }

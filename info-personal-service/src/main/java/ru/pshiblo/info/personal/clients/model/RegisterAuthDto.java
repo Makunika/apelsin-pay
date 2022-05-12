@@ -1,11 +1,12 @@
 package ru.pshiblo.info.personal.clients.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class RegisterAuthDto {
     private String login;
     private String password;
