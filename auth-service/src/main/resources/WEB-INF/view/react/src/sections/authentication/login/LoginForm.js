@@ -1,6 +1,5 @@
-import * as Yup from 'yup';
+
 import {useEffect, useState} from 'react';
-import { useFormik, Form, FormikProvider } from 'formik';
 // material
 import {
   Link,
@@ -19,6 +18,7 @@ import Iconify from '../../../components/Iconify';
 export default function LoginForm(props) {
   const [showPassword, setShowPassword] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const {search} = window.location;
     const name = new URLSearchParams(search);
@@ -27,68 +27,33 @@ export default function LoginForm(props) {
     }
   }, []);
 
-  const LoginSchema = Yup.object().shape({
-    username: Yup.string().required('Логин обязателен').min(3, "Логин должен быть больше 3 символов"),
-    password: Yup.string().required('Пароль обязателен')
-  });
-
-  const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-    },
-    validationSchema: LoginSchema,
-    onSubmit: (values) => {
-      const data = new FormData();
-      data.append("username", values.username)
-      data.append("password", values.password)
-      return fetch('/perform_login', {
-        method: 'post',
-        mode: 'no-cors',
-        cache: 'no-cache',
-        body: new URLSearchParams(data)
-      }).then(v => {
-            if (!v.redirected) {
-              return;
-            }
-            if (v.url.search(/^.*\?error.*/g) !== -1) {
-              enqueueSnackbar("Неправильный логин или пароль", { variant: 'error' })
-            } else {
-              window.location = v.url
-            }
-          }, e => {
-        console.log(e)
-        enqueueSnackbar(`Ошибка: ${e.data.error}`, {variant: 'error'});
-      })
-    }
-  })
-
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
-
   const handleShowPassword = () => {
     setShowPassword((show) => !show);
   };
 
+  function handleSubmit(e) {
+      setLoading(true)
+  }
+
   return (
-    <FormikProvider value={formik}>
-      <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
+      <form autoComplete="off" onSubmit={handleSubmit} noValidate action={`${process.env.PUBLIC_URL}/perform_login`} method="POST">
         <Stack spacing={3}>
           <TextField
             fullWidth
             autoComplete="username"
+            id="username"
+            name="username"
             type="text"
             label="Логин"
-            {...getFieldProps('username')}
-            error={Boolean(touched.username && errors.username)}
-            helperText={touched.username && errors.username}
           />
 
           <TextField
             fullWidth
             autoComplete="current-password"
+            id="password"
+            name="password"
             type={showPassword ? 'text' : 'password'}
             label="Пароль"
-            {...getFieldProps('password')}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -98,13 +63,11 @@ export default function LoginForm(props) {
                 </InputAdornment>
               )
             }}
-            error={Boolean(touched.password && errors.password)}
-            helperText={touched.password && errors.password}
           />
         </Stack>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-          <Link variant="subtitle2" to="http://localhost:3000/reset-password" underline="hover">
+          <Link variant="subtitle2" href="http://localhost:3000/reset-password" underline="hover">
             Забыли пароль?
           </Link>
         </Stack>
@@ -114,11 +77,10 @@ export default function LoginForm(props) {
           size="large"
           type="submit"
           variant="contained"
-          loading={isSubmitting}
+          loading={loading}
         >
           Войти
         </LoadingButton>
-      </Form>
-    </FormikProvider>
+      </form>
   );
 }

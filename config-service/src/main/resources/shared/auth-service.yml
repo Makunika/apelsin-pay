@@ -12,6 +12,10 @@ spring:
 
 server:
   port: 5000
+  servlet:
+    session:
+      timeout: 1m
+
 
 encoder:
   sha512:

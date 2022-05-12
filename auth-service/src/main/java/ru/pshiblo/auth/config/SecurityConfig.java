@@ -48,7 +48,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .formLogin()
                 .loginPage("/index.html")
-                .loginProcessingUrl("/perform_login");
+                .loginProcessingUrl("/perform_login")
+                .and()
+                .cors()
+                .and()
+                .httpBasic()
+                .disable();
     }
 
     @Override

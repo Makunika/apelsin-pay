@@ -39,7 +39,7 @@ export default function Login() {
     <RootStyle title="Вход">
       <AuthLayout>
         Нет аккаунта? &nbsp;
-        <Link variant="subtitle2" to="http://localhost:3000/register" underline="none">
+        <Link variant="subtitle2" href="http://localhost:3000/register" underline="none">
           Создать
         </Link>
       </AuthLayout>
@@ -48,7 +48,7 @@ export default function Login() {
         <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
           Привет, с возвращением!
         </Typography>
-        <img src="/static/illustrations/illustration_login.png" alt="login" />
+        <img src={`${process.env.PUBLIC_URL}/static/illustrations/illustration_login.png`} alt="login" />
       </SectionStyle>
 
       <Container maxWidth="sm">
@@ -71,7 +71,7 @@ export default function Login() {
             }}
           >
             Нет аккаунта?&nbsp;
-            <Link variant="subtitle2" to="http://localhost:3000/register" underline="hover">
+            <Link variant="subtitle2" href="http://localhost:3000/register" underline="hover">
               Создать
             </Link>
           </Typography>

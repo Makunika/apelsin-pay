@@ -78,6 +78,8 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    ports:
+      - "5000:5000"
 
   users-service:
     environment:

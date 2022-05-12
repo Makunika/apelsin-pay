@@ -17,8 +17,6 @@ services:
 
   auth-service:
     build: auth-service
-    ports:
-      - "5000:5000"
 
   users-service:
     build: users-service
