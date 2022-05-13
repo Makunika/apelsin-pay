@@ -6,10 +6,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.time.DateUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.pshiblo.account.domain.Account;
+import ru.pshiblo.account.enums.AccountType;
+import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.common.exception.IntegrationException;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
 import ru.pshiblo.common.exception.NotFoundException;
+import ru.pshiblo.transaction.clients.BusinessAccountClient;
+import ru.pshiblo.transaction.clients.PersonalAccountClient;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.enums.TransactionType;
@@ -19,10 +26,7 @@ import ru.pshiblo.transaction.tinkoff.model.request.TinkoffInvoicingCreate;
 import ru.pshiblo.transaction.tinkoff.model.request.TinkoffInvoicingDescription;
 import ru.pshiblo.transaction.tinkoff.model.response.TinkoffInvoicingResponse;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,6 +35,9 @@ import java.util.Optional;
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository repository;
+    private final AccountService accountService;
+    private final PersonalAccountClient personalAccountClient;
+    private final BusinessAccountClient businessAccountClient;
     private final RabbitTemplate rabbitTemplate;
     private final TinkoffApi tinkoffApi;
     private final ObjectMapper objectMapper;
@@ -105,8 +112,18 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<Transaction> getByUserId(int userId) {
-        return repository.findAllByOwnerUserId(userId);
+    public Page<Transaction> getByUserIdAndNumber(int userId, String number, Pageable pageable) {
+        Account account = accountService.getByNumber(number);
+        if (account.getType() == AccountType.PERSONAL) {
+            if (Boolean.FALSE.equals(personalAccountClient.checkPersonalAccount(userId, number).getBody())) {
+                throw new NotAllowedOperationException();
+            }
+        } else {
+            if (Boolean.FALSE.equals(businessAccountClient.checkBusinessAccount(userId, number).getBody())) {
+                throw new NotAllowedOperationException();
+            }
+        }
+        return repository.findByFromNumberOrToNumberOrderByCreatedDesc(number, number, pageable);
     }
 
     @Override

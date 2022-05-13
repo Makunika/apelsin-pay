@@ -2,6 +2,8 @@ package ru.pshiblo.transaction.web.controllers.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
@@ -10,12 +12,15 @@ import ru.pshiblo.security.AuthUtils;
 import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionType;
+import ru.pshiblo.transaction.mappers.TransactionMapper;
 import ru.pshiblo.transaction.model.PayoutModel;
 import ru.pshiblo.transaction.service.TransactionBuilder;
 import ru.pshiblo.transaction.service.TransactionService;
 import ru.pshiblo.transaction.web.dto.request.*;
+import ru.pshiblo.transaction.web.dto.response.TransactionResponseDto;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author Maxim Pshiblo
@@ -28,6 +33,7 @@ public class TransactionsController {
 
     private final TransactionService transactionService;
     private final TransactionBuilder transactionBuilder;
+    private final TransactionMapper mapper;
 
     @PreAuthorize("hasAuthority('SCOPE_transaction_s')")
     @PostMapping("/payment/inner")
@@ -109,6 +115,13 @@ public class TransactionsController {
         newTransaction.setOwnerUsername(AuthUtils.getAuthUser().getName());
         newTransaction.setToNumber(moneyDto.getAccountNumber());
         return transactionService.createSystem(newTransaction);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @GetMapping("/account/{number}")
+    public Page<TransactionResponseDto> getTransactionList(Pageable pageable, @PathVariable String number) {
+        return transactionService.getByUserIdAndNumber(((int) AuthUtils.getUserId()), number, pageable)
+                .map(mapper::toDTO);
     }
 
 }
