@@ -13,6 +13,7 @@ import ru.pshiblo.account.business.mappers.BusinessAccountMapper;
 import ru.pshiblo.account.business.services.BusinessAccountService;
 import ru.pshiblo.account.business.domain.BusinessAccountType;
 import ru.pshiblo.account.business.services.BusinessAccountTypeService;
+import ru.pshiblo.account.business.web.dto.request.ChangeTypeAccountRequestDto;
 import ru.pshiblo.account.business.web.dto.request.CreateBusinessAccountDto;
 import ru.pshiblo.account.business.web.dto.response.BusinessAccountResponseDto;
 import ru.pshiblo.common.exception.NotFoundException;
@@ -34,15 +35,15 @@ public class BusinessAccountController {
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping
-    public BusinessAccountResponseDto createNew(@RequestBody CreateBusinessAccountDto createBusinessAccountDto) {
-        createBusinessAccountDto.setUserId(AuthUtils.getUserId());
+    public BusinessAccountResponseDto createNew(@RequestBody CreateBusinessAccountDto request) {
+        request.setUserId(AuthUtils.getUserId());
         return businessMapper
                 .toDto(
                         businessService.create(
-                                createBusinessAccountDto.getCompanyId(),
-                                createBusinessAccountDto.getUserId(),
-                                businessTypeService.getById((int) createBusinessAccountDto.getTypeId())
-                                        .orElseThrow(() -> new NotFoundException(createBusinessAccountDto.getTypeId(),
+                                request.getCompanyId(),
+                                request.getUserId(),
+                                businessTypeService.getById((int) request.getTypeId())
+                                        .orElseThrow(() -> new NotFoundException(request.getTypeId(),
                                                 BusinessAccountType.class))
                         )
                 );
@@ -50,16 +51,20 @@ public class BusinessAccountController {
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @GetMapping("/company/{companyId}")
-    public Collection<BusinessAccountResponseDto> getByCompanyId(@PathVariable Long companyId) {
+    public BusinessAccountResponseDto getByCompanyId(@PathVariable Long companyId) {
         //TODO:CHECK COMPANY ID
-        return businessMapper.toDtos(businessService.getByCompanyId(companyId));
+        return businessMapper.toDto(businessService.getByCompanyId(companyId));
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_account_b_s')")
-    @GetMapping("{id}")
-    public BusinessAccountResponseDto getCardById(@PathVariable Integer id) {
-        //return businessMapper.toDto(businessService.get(companyId));
-        return null;
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("/type/change")
+    public void changeTypeOfAccount(@RequestBody ChangeTypeAccountRequestDto request) {
+        businessService.changeTypeOfAccount(
+                businessTypeService.getById(request.getTypeId())
+                        .orElseThrow(() -> new NotFoundException(request.getTypeId(),
+                                BusinessAccountType.class)),
+                request.getNumber(),
+                AuthUtils.getUserId());
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")

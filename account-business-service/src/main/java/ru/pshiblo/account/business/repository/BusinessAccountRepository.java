@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface BusinessAccountRepository extends JpaRepository<BusinessAccount, Integer> {
     Optional<BusinessAccount> findByAccount_Number(String number);
-    List<BusinessAccount> findByCompanyId(Long companyId);
+    Optional<BusinessAccount> findByCompanyId(Long companyId);
     Optional<BusinessAccount> findByAccount(Account account);
 
 }

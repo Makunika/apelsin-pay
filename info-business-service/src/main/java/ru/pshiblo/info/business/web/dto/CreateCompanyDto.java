@@ -12,11 +12,11 @@ import java.io.Serializable;
 public class CreateCompanyDto implements Serializable {
     @NotNull
     @NotBlank
-    private final String name;
+    private String name;
     @NotNull
     @Pattern(regexp = "\\d+")
-    private final String inn;
+    private String inn;
     @NotNull
     @NotBlank
-    private final String address;
+    private String address;
 }

@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CompanyService {
-    void create(Company company, AuthUser user);
+    Company create(Company company, AuthUser user);
     void confirm(long companyId);
     void failedConfirm(long companyId, String reason);
     void delete(long companyId, AuthUser user);
     List<CompanyUser> findByUser(long userId);
     List<CompanyUser> findOwnerCompanies(long userId);
-    void update(Company company, AuthUser user);
+    Company update(Company company, AuthUser user);
     boolean isOwnerCompany(Company company, AuthUser user);
     boolean isOwnerCompany(long companyId, AuthUser user);
     Optional<Company> findById(long companyId);

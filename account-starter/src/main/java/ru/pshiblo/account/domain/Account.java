@@ -44,6 +44,9 @@ public class Account {
     @Column(name = "currency", nullable = false)
     private Currency currency;
 
+    @Column(name = "owner_name", nullable = false)
+    private String ownerName;
+
     @CreatedDate
     private LocalDateTime created;
 

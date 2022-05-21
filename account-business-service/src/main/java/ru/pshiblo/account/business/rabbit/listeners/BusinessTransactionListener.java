@@ -17,6 +17,9 @@ import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
+import ru.pshiblo.common.exception.NotFoundException;
+
+import java.math.BigDecimal;
 
 @Service
 @Slf4j
@@ -40,6 +43,34 @@ public class BusinessTransactionListener {
         service.getByNumber(transaction.getFromNumber()).ifPresent(account -> {
             log.info(account.toString());
         });
+    }
+
+    @RabbitListener(
+            bindings = @QueueBinding(
+                    key = "transaction.commission.business",
+                    value = @Queue("transaction.commission.business_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
+            ),
+            errorHandler = "errorTransactionHandler"
+    )
+    public void businessCommissionListener(@Payload Transaction transaction) {
+        if (!transaction.isInnerTo()) {
+            transaction.setCommissionRate(
+                    service.getByNumber(transaction.getFromNumber())
+                            .orElseThrow(NotFoundException::new)
+                            .getType()
+                            .getCommissionRateWithdraw()
+            );
+
+            BigDecimal commissionValue = transaction.getMoney().multiply(transaction.getCommissionRate());
+            transaction.setCommissionValue(commissionValue);
+
+            BigDecimal moneyWithCommission = transaction.getMoney().add(commissionValue);
+            transaction.setMoneyWithCommission(moneyWithCommission);
+        }
+
+        transaction.setStatus("START_FROM_CHECK");
+        rabbitTemplate.convertAndSend("transaction.check_from", transaction);
     }
 
     @RabbitListener(

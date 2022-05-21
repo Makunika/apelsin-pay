@@ -31,7 +31,7 @@ class AccountServiceImpl implements AccountService {
     private final HoldMoneyRepository holdMoneyRepository;
 
     @Override
-    public Account create(Currency currency, AccountType type) {
+    public Account create(Currency currency, AccountType type, String ownerName) {
         Account account = new Account();
         account.setCurrency(currency);
         account.setBalance(new BigDecimal(0));

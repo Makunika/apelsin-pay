@@ -1,4 +1,4 @@
-package ru.pshiblo.transaction.service;
+package ru.pshiblo.transaction.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

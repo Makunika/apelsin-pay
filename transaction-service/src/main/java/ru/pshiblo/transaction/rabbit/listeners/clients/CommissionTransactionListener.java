@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 @Slf4j
 public class CommissionTransactionListener {
 
-    private final TransactionRepository transactionRepository;
     private final RabbitTemplate rabbitTemplate;
 
     @RabbitListener(
@@ -42,33 +41,9 @@ public class CommissionTransactionListener {
         if (transaction.getStatus() != TransactionStatus.START_COMMISSION) {
             throw new TransactionNotAllowedException("status on commision not START_COMMISION");
         }
-
-        log.info("START COMMISION {}", transaction.getId());
-        log.info(transaction.toString());
-        transactionRepository.findById(transaction.getId()).orElseThrow(NotFoundException::new);
-        log.info(transaction.toString());
-        transaction.setCommissionRate(
-                !transaction.isInnerTo() ?
-                        new BigDecimal("2") :
-                        new BigDecimal("0.1")
+        rabbitTemplate.convertAndSend(
+                "transaction.commission." + transaction.getAccountTypeFrom().name().toLowerCase(),
+                transaction
         );
-
-        log.info(transaction.toString());
-        BigDecimal commissionValue = transaction.getMoney().multiply(transaction.getCommissionRate());
-        transaction.setCommissionValue(commissionValue);
-
-        BigDecimal moneyWithCommission = transaction.getMoney().add(commissionValue);
-        transaction.setMoneyWithCommission(moneyWithCommission);
-
-        if (!transactionRepository.existsByStatusAndId(TransactionStatus.CANCELED, transaction.getId())) {
-            transaction.setStatus(TransactionStatus.END_COMMISSION);
-            log.info(transaction.toString());
-            transaction = transactionRepository.save(transaction);
-            log.info(transaction.toString());
-            transaction.setStatus(TransactionStatus.START_FROM_CHECK);
-            log.info(transaction.toString());
-            log.info("FINISH COMMISION {}", transaction.getId());
-            rabbitTemplate.convertAndSend("transaction.check_from", transaction);
-        }
     }
 }

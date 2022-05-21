@@ -56,6 +56,19 @@ public class PersonalTransactionListener {
 
     @RabbitListener(
             bindings = @QueueBinding(
+                    key = "transaction.commission.personal",
+                    value = @Queue("transaction.commission.personal_q"),
+                    exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")
+            ),
+            errorHandler = "errorTransactionHandler"
+    )
+    public void personalCommissionListener(@Payload Transaction transaction) {
+        transaction.setStatus("START_FROM_CHECK");
+        rabbitTemplate.convertAndSend("transaction.check_from", transaction);
+    }
+
+    @RabbitListener(
+            bindings = @QueueBinding(
                     key = "transaction.check_from.personal",
                     value = @Queue("transaction.check_from.personal_q"),
                     exchange = @Exchange(type = ExchangeTypes.TOPIC, name = "exchange-main")

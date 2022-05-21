@@ -13,7 +13,7 @@ import java.util.Optional;
  * @author Maxim Pshiblo
  */
 public interface AccountService {
-    Account create(Currency currency, AccountType type);
+    Account create(Currency currency, AccountType type, String ownerName);
     Account getById(int id);
     Account getByNumber(String number);
     Optional<Account> findByNumber(String number);

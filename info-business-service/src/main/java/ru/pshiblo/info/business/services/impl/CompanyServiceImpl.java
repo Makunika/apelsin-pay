@@ -32,7 +32,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyHistoryService historyService;
 
     @Override
-    public void create(Company company, AuthUser user) {
+    public Company create(Company company, AuthUser user) {
         Assert.notNull(company.getAddress(), "address");
         Assert.notNull(company.getInn(), "inn");
         Assert.notNull(company.getName(), "name");
@@ -48,6 +48,7 @@ public class CompanyServiceImpl implements CompanyService {
         companyUserRepository.save(companyUser);
         log.info("Success saved company with name {} and owner {}", company.getName(), user.getName());
         historyService.create(company, "Created");
+        return company;
     }
 
     @Override
@@ -97,14 +98,14 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public void update(Company company, AuthUser user) {
+    public Company update(Company company, AuthUser user) {
         Assert.notNull(company.getAddress(), "address");
         Assert.notNull(company.getInn(), "inn");
         Assert.notNull(company.getName(), "name");
         Assert.notNull(company.getId(), "id");
 
         Company companyInDb = findById(company.getId()).orElseThrow(() -> new NotFoundException(company.getId(), Company.class));
-        if (!isOwnerCompany(companyInDb, user)) {
+        if (!isOwnerCompany(companyInDb, user) && companyInDb.getStatus() == ConfirmedStatus.CONFIRMED) {
             throw new NotAllowedOperationException();
         }
 
@@ -112,10 +113,12 @@ public class CompanyServiceImpl implements CompanyService {
         companyInDb.setInn(company.getInn());
         companyInDb.setAddress(company.getAddress());
         companyInDb.setName(company.getName());
+        companyInDb.setStatus(ConfirmedStatus.ON_CONFIRMED);
 
         companyInDb = companyRepository.save(companyInDb);
         log.info("Success update company with name {} and owner {}", company.getName(), user.getName());
         historyService.create(companyInDb, "Updated");
+        return companyInDb;
     }
 
     @Override

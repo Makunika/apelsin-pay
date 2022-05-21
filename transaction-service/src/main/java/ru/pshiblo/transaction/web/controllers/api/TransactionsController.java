@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.security.AuthUtils;
@@ -13,14 +12,12 @@ import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.mappers.TransactionMapper;
-import ru.pshiblo.transaction.model.PayoutModel;
-import ru.pshiblo.transaction.service.TransactionBuilder;
+import ru.pshiblo.transaction.service.impl.TransactionBuilder;
 import ru.pshiblo.transaction.service.TransactionService;
 import ru.pshiblo.transaction.web.dto.request.*;
 import ru.pshiblo.transaction.web.dto.response.TransactionResponseDto;
 
 import javax.validation.Valid;
-import java.util.List;
 
 /**
  * @author Maxim Pshiblo

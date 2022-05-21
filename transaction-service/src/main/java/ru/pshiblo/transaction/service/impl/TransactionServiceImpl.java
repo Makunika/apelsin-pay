@@ -1,4 +1,4 @@
-package ru.pshiblo.transaction.service;
+package ru.pshiblo.transaction.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.enums.AccountType;
+import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.service.AccountService;
+import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.common.exception.IntegrationException;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
 import ru.pshiblo.common.exception.NotFoundException;
@@ -20,12 +22,15 @@ import ru.pshiblo.transaction.clients.PersonalAccountClient;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionStatus;
 import ru.pshiblo.transaction.enums.TransactionType;
+import ru.pshiblo.transaction.model.InfoPrepare;
 import ru.pshiblo.transaction.repository.TransactionRepository;
+import ru.pshiblo.transaction.service.TransactionService;
 import ru.pshiblo.transaction.tinkoff.client.TinkoffApi;
 import ru.pshiblo.transaction.tinkoff.model.request.TinkoffInvoicingCreate;
 import ru.pshiblo.transaction.tinkoff.model.request.TinkoffInvoicingDescription;
 import ru.pshiblo.transaction.tinkoff.model.response.TinkoffInvoicingResponse;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Optional;
 
@@ -39,6 +44,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final PersonalAccountClient personalAccountClient;
     private final BusinessAccountClient businessAccountClient;
     private final RabbitTemplate rabbitTemplate;
+    private final CurrencyService currencyService;
     private final TinkoffApi tinkoffApi;
     private final ObjectMapper objectMapper;
 
@@ -114,20 +120,44 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Page<Transaction> getByUserIdAndNumber(int userId, String number, Pageable pageable) {
         Account account = accountService.getByNumber(number);
-        if (account.getType() == AccountType.PERSONAL) {
-            if (Boolean.FALSE.equals(personalAccountClient.checkPersonalAccount(userId, number).getBody())) {
-                throw new NotAllowedOperationException();
-            }
-        } else {
-            if (Boolean.FALSE.equals(businessAccountClient.checkBusinessAccount(userId, number).getBody())) {
-                throw new NotAllowedOperationException();
-            }
-        }
+        checkOwnerAccount(account, userId);
         return repository.findByFromNumberOrToNumberOrderByCreatedDesc(number, number, pageable);
     }
 
     @Override
     public Optional<TransactionStatus> getStatusById(int id) {
         return getById(id).map(Transaction::getStatus);
+    }
+
+    @Override
+    public InfoPrepare getPrepareInfo(String toNumber, String fromNumber, BigDecimal money, Currency currency, long userId) {
+        InfoPrepare infoPrepare = new InfoPrepare();
+        Account accountFrom = accountService.findByNumber(fromNumber).orElseThrow(() -> new NotFoundException(toNumber, "Счет"));
+        checkOwnerAccount(accountFrom, userId);
+        Account accountTo = accountService.findByNumber(toNumber).orElseThrow(() -> new NotFoundException(toNumber, "Счет"));
+        infoPrepare.setNameTo(accountTo.getOwnerName());
+        if (accountFrom.getCurrency() != currency) {
+            infoPrepare.setMoneyFrom(currencyService.convertMoney(currency, accountFrom.getCurrency(), money));
+            infoPrepare.setCurrencyFrom(accountFrom.getCurrency());
+        }
+        if (accountTo.getCurrency() != currency) {
+            infoPrepare.setMoneyTo(currencyService.convertMoney(currency, accountTo.getCurrency(), money));
+            infoPrepare.setCurrencyTo(accountTo.getCurrency());
+        }
+        infoPrepare.setCurrency(currency);
+        infoPrepare.setMoney(money);
+        return infoPrepare;
+    }
+
+    private void checkOwnerAccount(Account account, long userId) {
+        if (account.getType() == AccountType.PERSONAL) {
+            if (Boolean.FALSE.equals(personalAccountClient.checkPersonalAccount(userId, account.getNumber()).getBody())) {
+                throw new NotAllowedOperationException();
+            }
+        } else {
+            if (Boolean.FALSE.equals(businessAccountClient.checkBusinessAccount(userId, account.getNumber()).getBody())) {
+                throw new NotAllowedOperationException();
+            }
+        }
     }
 }

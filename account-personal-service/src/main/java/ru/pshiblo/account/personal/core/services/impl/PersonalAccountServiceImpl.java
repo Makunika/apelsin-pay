@@ -34,7 +34,7 @@ public class PersonalAccountServiceImpl implements PersonalAccountService {
             throw new IllegalArgumentException("this type required to confirm account");
         }
 
-        Account account = accountService.create(type.getCurrency(), AccountType.PERSONAL);
+        Account account = accountService.create(type.getCurrency(), AccountType.PERSONAL, user.getName());
         PersonalAccount personalAccount = new PersonalAccount();
         personalAccount.setAccount(account);
         personalAccount.setType(type);

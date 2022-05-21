@@ -47,7 +47,7 @@ public class WaitTransactionListener {
     )
     public void waitTransaction(@Payload Transaction transaction) {
         if (transaction.getStatus() != TransactionStatus.START_TO_CHECK) {
-            throw new TransactionNotAllowedException("Not status START_TO_CHECK in hold listener");
+            throw new TransactionNotAllowedException("Not status START_TO_CHECK in wait listener");
         }
 
         if (transaction.isInnerFrom()) {

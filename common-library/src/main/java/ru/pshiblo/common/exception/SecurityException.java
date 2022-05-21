@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.FORBIDDEN)
 public class SecurityException extends ApelsinException {
     public SecurityException() {
-        super();
+        super(HttpStatus.FORBIDDEN);
     }
 
+
+
     public SecurityException(String message) {
-        super(message);
+        super(message, HttpStatus.FORBIDDEN);
     }
 }

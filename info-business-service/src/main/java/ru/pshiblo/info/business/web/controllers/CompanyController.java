@@ -24,19 +24,23 @@ public class CompanyController {
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping
-    public void create(@Valid @RequestBody CreateCompanyDto request) {
-        service.create(
-                mapper.createCompanyDtoToCompany(request),
-                AuthUtils.getAuthUser()
+    public CompanyResponseDto create(@Valid @RequestBody CreateCompanyDto request) {
+        return mapper.companyToCompanyResponseDto(
+                service.create(
+                        mapper.createCompanyDtoToCompany(request),
+                        AuthUtils.getAuthUser()
+                )
         );
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PutMapping
-    public void update(@Valid @RequestBody UpdateCompanyDto request) {
-        service.update(
-                mapper.updateCompanyDtoToCompany(request),
-                AuthUtils.getAuthUser()
+    public CompanyResponseDto update(@Valid @RequestBody UpdateCompanyDto request) {
+        return mapper.companyToCompanyResponseDto(
+                service.update(
+                        mapper.updateCompanyDtoToCompany(request),
+                        AuthUtils.getAuthUser()
+                )
         );
     }
 

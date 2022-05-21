@@ -11,16 +11,14 @@ import java.io.Serializable;
 @Data
 public class UpdateCompanyDto implements Serializable {
     @NotNull
-    private final Long id;
+    private Long id;
     @NotNull
     @NotBlank
-    private final String name;
+    private String name;
     @NotNull
     @Pattern(regexp = "\\d+")
-    private final String inn;
+    private String inn;
     @NotNull
     @NotBlank
-    private final String address;
-    @NotNull
-    private final ConfirmedStatus status;
+    private String address;
 }
