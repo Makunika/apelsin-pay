@@ -14,4 +14,7 @@ public interface BusinessAccountService {
     BusinessAccount getByCompanyId(long companyId);
     boolean checkOwnerBusinessAccount(long userId, String number);
     void changeTypeOfAccount(BusinessAccountType type, String number, long userId);
+    void block(String number, long userId);
+    void unblock(String number, long userId);
+    void delete(String number, long userId);
 }

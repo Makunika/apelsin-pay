@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -23,6 +24,7 @@ import java.util.Objects;
 @Table(name = "personal_accounts")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Where(clause = "is_deleted = false")
 public class PersonalAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -55,6 +57,9 @@ public class PersonalAccount {
 
     @LastModifiedBy
     private String updatedBy;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @Override
     public boolean equals(Object o) {

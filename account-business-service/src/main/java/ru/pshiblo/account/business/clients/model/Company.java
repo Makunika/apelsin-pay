@@ -7,9 +7,9 @@ import java.io.Serializable;
 
 @Data
 public class Company implements Serializable {
-    private final Long id;
-    private final String name;
-    private final String inn;
-    private final String address;
-    private final ConfirmedStatus status;
+    private Long id;
+    private String name;
+    private String inn;
+    private String address;
+    private ConfirmedStatus status;
 }

@@ -12,30 +12,31 @@ import java.time.LocalDate;
 @Data
 public class PersonInfoDto implements Serializable {
     @NotNull
-    private final Long id;
+    private Long id;
     @NotNull
-    private final Long userId;
+    private Long userId;
     @NotNull
-    private final String firstName;
-    @NotNull
-    @NotBlank
-    private final String lastName;
+    private String firstName;
     @NotNull
     @NotBlank
-    private final String middleName;
+    private String lastName;
+    @NotNull
+    @NotBlank
+    private String middleName;
     @NotNull
     @NotBlank
     @Email
-    private final String email;
+    private String email;
     @NotNull
     @NotBlank
-    private final String phone;
+    private String phone;
     @NotNull
-    private final LocalDate birthday;
+    private LocalDate birthday;
     @NotNull
-    private final Integer passportSeries;
+    private Integer passportSeries;
     @NotNull
-    private final Integer passportNumber;
+    private Integer passportNumber;
     @NotNull
-    private final PersonStatus status;
+    private PersonStatus status;
+    private Boolean lock;
 }

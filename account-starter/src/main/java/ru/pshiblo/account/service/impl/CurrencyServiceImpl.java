@@ -107,7 +107,7 @@ public class CurrencyServiceImpl implements CurrencyService {
         private BigDecimal rate;
 
         public BigDecimal calculate(BigDecimal money) {
-            return money.multiply(rate).setScale(2, RoundingMode.CEILING);
+            return money.multiply(rate).setScale(2, RoundingMode.HALF_DOWN);
         }
     }
 }

@@ -16,4 +16,7 @@ public interface PersonalAccountService {
     List<PersonalAccount> getByStartWorkDay(int day);
     void update(PersonalAccount account);
     boolean checkOwnerPersonalAccount(long userId, String number);
+    void block(String number, AuthUser user);
+    void unblock(String number, AuthUser user);
+    void delete(String number, AuthUser user);
 }

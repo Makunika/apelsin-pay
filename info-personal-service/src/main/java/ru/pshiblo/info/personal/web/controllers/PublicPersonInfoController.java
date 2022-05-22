@@ -22,6 +22,6 @@ public class PublicPersonInfoController {
 
     @PostMapping("/register")
     public void register(@Valid @RequestBody RegisterPersonInfoDto request) {
-        service.register(mapper.registerPersonInfoDtoToPersonInfo(request), request.getPassword(), request.getLogin());
+        service.register(mapper.toEntity(request), request.getPassword(), request.getLogin());
     }
 }

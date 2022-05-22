@@ -79,12 +79,12 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public void delete(long companyId, AuthUser user) {
-        //TODO: delete account company
         Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
         if (!isOwnerCompany(company, user)) {
             throw new NotAllowedOperationException();
         }
-        companyRepository.deleteById(companyId);
+        company.setIsDeleted(true);
+        companyRepository.save(company);
     }
 
     @Override
@@ -95,6 +95,14 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public List<CompanyUser> findOwnerCompanies(long userId) {
         return companyUserRepository.findByUserIdAndRoleCompany(userId, RoleCompany.OWNER);
+    }
+    @Override
+    public List<CompanyUser> findUsersInCompany(long companyId, AuthUser user) {
+        Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
+        if (!isOwnerCompany(company, user)) {
+            throw new NotAllowedOperationException();
+        }
+        return companyUserRepository.findByCompany_Id(companyId);
     }
 
     @Override

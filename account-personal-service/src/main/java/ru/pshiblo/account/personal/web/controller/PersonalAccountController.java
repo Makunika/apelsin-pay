@@ -60,22 +60,19 @@ public class PersonalAccountController {
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @DeleteMapping("number/{number}")
-    public void blockDeposit(@PathVariable String number) {
-        //service.block(number, AuthUtils.getAuthUser());
+    public void deleteDeposit(@PathVariable String number) {
+        service.delete(number, AuthUtils.getAuthUser());
     }
 
-//    @PreAuthorize("hasAuthority('SCOPE_server')")
-//    @GetMapping("{id}")
-//    public PersonalResponseDto getDepositById(@PathVariable Integer id) {
-//        return mapper.toDto(
-//                service.getById(id)
-//                        .orElseThrow(() -> new NotFoundException(id, Deposit.class))
-//        );
-//    }
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @DeleteMapping("block/number/{number}")
+    public void blockDeposit(@PathVariable String number) {
+        service.block(number, AuthUtils.getAuthUser());
+    }
 
-//    @PreAuthorize("hasAuthority('SCOPE_server')")
-//    @DeleteMapping("{id}")
-//    public void blockDeposit(@PathVariable Integer id) {
-//        service.blockById(id);
-//    }
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("unblock/number/{number}")
+    public void unblockDeposit(@PathVariable String number) {
+        service.unblock(number, AuthUtils.getAuthUser());
+    }
 }

@@ -72,4 +72,8 @@ public class AuthUser {
     public List<String> getCompanies() {
         return companies;
     }
+
+    public boolean isAdmin() {
+        return getAuthoritiesSimple().contains("ROLE_ADMINISTRATOR");
+    }
 }

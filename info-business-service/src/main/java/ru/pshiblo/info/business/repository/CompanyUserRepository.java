@@ -11,4 +11,6 @@ public interface CompanyUserRepository extends JpaRepository<CompanyUser, Long> 
     List<CompanyUser> findByUserId(long userId);
 
     List<CompanyUser> findByUserIdAndRoleCompany(long userId, RoleCompany roleCompany);
+
+    List<CompanyUser> findByCompany_Id(Long id);
 }

@@ -10,6 +10,8 @@ import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.personal.core.services.PersonalAccountService;
 import ru.pshiblo.common.exception.ApelsinException;
+import ru.pshiblo.common.exception.NotAllowedOperationException;
+import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.security.enums.ConfirmedStatus;
 import ru.pshiblo.security.model.AuthUser;
 
@@ -80,5 +82,37 @@ public class PersonalAccountServiceImpl implements PersonalAccountService {
             return false;
         }
         return personalAccount.getUserId() == userId;
+    }
+
+    @Override
+    public void block(String number, AuthUser user) {
+        if (!user.isAdmin() || !checkOwnerPersonalAccount(user.getId(), number)) {
+            throw new NotAllowedOperationException();
+        }
+        PersonalAccount personalAccount = getByNumber(number)
+                .orElseThrow(() -> new NotFoundException(number, "Счет"));
+        accountService.block(personalAccount.getAccount());
+    }
+
+    @Override
+    public void unblock(String number, AuthUser user) {
+        if (!user.isAdmin() || !checkOwnerPersonalAccount(user.getId(), number)) {
+            throw new NotAllowedOperationException();
+        }
+        PersonalAccount personalAccount = getByNumber(number)
+                .orElseThrow(() -> new NotFoundException(number, "Счет"));
+        accountService.unblock(personalAccount.getAccount());
+    }
+
+    @Override
+    public void delete(String number, AuthUser user) {
+        if (!user.isAdmin() || !checkOwnerPersonalAccount(user.getId(), number)) {
+            throw new NotAllowedOperationException();
+        }
+        PersonalAccount personalAccount = getByNumber(number)
+                .orElseThrow(() -> new NotFoundException(number, "Счет"));
+        personalAccount.setIsDeleted(true);
+        repository.save(personalAccount);
+        accountService.delete(personalAccount.getAccount());
     }
 }

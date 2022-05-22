@@ -2,6 +2,7 @@ package ru.pshiblo.account.business.domain;
 
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -18,6 +19,7 @@ import java.util.Objects;
 @Table(name = "business_accounts")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Where(clause = "is_deleted = false")
 public class BusinessAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,6 +42,9 @@ public class BusinessAccount {
 
     @LastModifiedDate
     private LocalDateTime updated;
+
+    @JoinColumn(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @Override
     public boolean equals(Object o) {

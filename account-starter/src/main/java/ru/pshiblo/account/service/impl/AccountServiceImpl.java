@@ -37,6 +37,7 @@ class AccountServiceImpl implements AccountService {
         account.setBalance(new BigDecimal(0));
         account.setLock(false);
         account.setType(type);
+        account.setOwnerName(ownerName);
         String number;
         do {
             number = RandomGenerator.randomNumber(20);
@@ -95,6 +96,24 @@ class AccountServiceImpl implements AccountService {
     @Override
     public void unHoldMoney(long holdMoneyId) {
         holdMoneyRepository.deleteById(holdMoneyId);
+    }
+
+    @Override
+    public void delete(Account account) {
+        account.setIsDeleted(true);
+        repository.save(account);
+    }
+
+    @Override
+    public void block(Account account) {
+        account.setLock(true);
+        repository.save(account);
+    }
+
+    @Override
+    public void unblock(Account account) {
+        account.setLock(false);
+        repository.save(account);
     }
 
 }

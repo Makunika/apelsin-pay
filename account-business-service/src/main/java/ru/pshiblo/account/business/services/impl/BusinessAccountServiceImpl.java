@@ -67,7 +67,7 @@ public class BusinessAccountServiceImpl implements BusinessAccountService {
 
     @Override
     public BusinessAccount getByCompanyId(long companyId) {
-        return repository.findByCompanyId(companyId);
+        return repository.findByCompanyId(companyId).orElseThrow(() -> new NotFoundException(companyId, "Компания"));
     }
 
     @Override
@@ -102,17 +102,49 @@ public class BusinessAccountServiceImpl implements BusinessAccountService {
             businessAccount.setType(type);
             repository.save(businessAccount);
         } else {
-            businessAccount.setType(type);
-            repository.save(businessAccount);
             BigDecimal convertMoney = currencyService.convertMoney(
                     businessAccount.getType().getCurrency(),
                     type.getCurrency(),
                     businessAccount.getAccount().getBalance()
             );
+            businessAccount.setType(type);
+            repository.save(businessAccount);
             Account account = businessAccount.getAccount();
             account.setBalance(convertMoney);
             account.setCurrency(type.getCurrency());
             accountService.save(account);
         }
+    }
+
+    @Override
+    public void block(String number, long userId) {
+        if (!checkOwnerBusinessAccount(userId, number)) {
+            throw new NotAllowedOperationException();
+        }
+        BusinessAccount businessAccount = getByNumber(number)
+                .orElseThrow(() -> new NotFoundException(number, "Счет"));
+        accountService.block(businessAccount.getAccount());
+    }
+
+    @Override
+    public void unblock(String number, long userId) {
+        if (!checkOwnerBusinessAccount(userId, number)) {
+            throw new NotAllowedOperationException();
+        }
+        BusinessAccount businessAccount = getByNumber(number)
+                .orElseThrow(() -> new NotFoundException(number, "Счет"));
+        accountService.unblock(businessAccount.getAccount());
+    }
+
+    @Override
+    public void delete(String number, long userId) {
+        if (!checkOwnerBusinessAccount(userId, number)) {
+            throw new NotAllowedOperationException();
+        }
+        BusinessAccount businessAccount = getByNumber(number)
+                .orElseThrow(() -> new NotFoundException(number, "Счет"));
+        businessAccount.setIsDeleted(true);
+        repository.save(businessAccount);
+        accountService.delete(businessAccount.getAccount());
     }
 }

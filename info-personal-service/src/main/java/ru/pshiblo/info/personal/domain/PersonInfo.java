@@ -50,6 +50,9 @@ public class PersonInfo {
 
     private PersonStatus status;
 
+    @Column(name = "is_lock", nullable = false)
+    private Boolean isLock = false;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -61,5 +64,9 @@ public class PersonInfo {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public String getFIO() {
+        return firstName + " " + lastName;
     }
 }

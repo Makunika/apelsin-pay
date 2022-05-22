@@ -6,8 +6,8 @@ import java.io.Serializable;
 
 @Data
 public class CompanyUser implements Serializable {
-    private final Long id;
-    private final long userId;
-    private final String roleCompany;
-    private final Company company;
+    private Long id;
+    private long userId;
+    private String roleCompany;
+    private Company company;
 }

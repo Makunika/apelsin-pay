@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.pshiblo.info.business.domain.CompanyUser;
 import ru.pshiblo.info.business.mappers.CompanyMapper;
 import ru.pshiblo.info.business.services.CompanyService;
 import ru.pshiblo.info.business.web.dto.*;
@@ -115,6 +116,15 @@ public class CompanyController {
         return mapper.companyToCompanyResponseDto(
                 service.findById(id).orElseThrow()
         );
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @GetMapping("{id}/users")
+    public List<CompanyUserResponseDto> addUserToCompany(@PathVariable long id) {
+       return service.findUsersInCompany(id, AuthUtils.getAuthUser())
+               .stream()
+               .map(mapper::companyUserToCompanyUserResponseDto)
+               .collect(Collectors.toList());
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")

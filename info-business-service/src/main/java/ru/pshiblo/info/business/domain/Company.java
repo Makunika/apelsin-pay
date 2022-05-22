@@ -2,10 +2,12 @@ package ru.pshiblo.info.business.domain;
 
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.pshiblo.security.enums.ConfirmedStatus;
 
 import javax.persistence.*;
@@ -18,7 +20,9 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
+@EntityListeners(AuditingEntityListener.class)
 @RequiredArgsConstructor
+@Where(clause = "is_deleted = false")
 public class Company {
     @Id
     @GeneratedValue
@@ -37,6 +41,9 @@ public class Company {
     private String createdBy;
     @LastModifiedBy
     private String updatedBy;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "company", orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<CompanyUser> companyUsers = new LinkedHashSet<>();

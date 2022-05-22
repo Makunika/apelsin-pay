@@ -21,4 +21,7 @@ public interface AccountService {
     HoldMoney holdMoney(Account account, BigDecimal amount, LocalDateTime holdUntil);
     BigDecimal getCurrentHoldMoney(Account account);
     void unHoldMoney(long holdMoneyId);
+    void delete(Account account);
+    void block(Account account);
+    void unblock(Account account);
 }

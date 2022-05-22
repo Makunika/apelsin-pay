@@ -1,7 +1,9 @@
 package ru.pshiblo.info.personal.services;
 
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.pshiblo.info.personal.domain.PersonInfo;
+import ru.pshiblo.info.personal.web.dto.PersonInfoDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,4 +16,8 @@ public interface PersonInfoService {
     Optional<PersonInfo> findByUserId(long userId);
     Optional<PersonInfo> findById(long personInfoId);
     List<PersonInfo> findByOnConfirmed();
+    void ban(long id);
+    void update(PersonInfo personInfo, long userId);
+
+    Page<PersonInfo> findAll(Pageable pageable);
 }

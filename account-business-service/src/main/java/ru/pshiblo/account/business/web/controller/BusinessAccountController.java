@@ -68,9 +68,21 @@ public class BusinessAccountController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
-    @DeleteMapping("{id}")
-    public void block(@PathVariable Long id) {
+    @DeleteMapping("/block/{number}")
+    public void block(@PathVariable String number) {
+        businessService.block(number, AuthUtils.getUserId());
+    }
 
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("/unblock/{number}")
+    public void unblock(@PathVariable String number) {
+        businessService.unblock(number, AuthUtils.getUserId());
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @DeleteMapping("{number}")
+    public void delete(@PathVariable String number) {
+        businessService.delete(number, AuthUtils.getUserId());
     }
 
 }

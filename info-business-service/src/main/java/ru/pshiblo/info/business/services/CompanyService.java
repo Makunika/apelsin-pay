@@ -15,6 +15,7 @@ public interface CompanyService {
     void delete(long companyId, AuthUser user);
     List<CompanyUser> findByUser(long userId);
     List<CompanyUser> findOwnerCompanies(long userId);
+    List<CompanyUser> findUsersInCompany(long companyId, AuthUser user);
     Company update(Company company, AuthUser user);
     boolean isOwnerCompany(Company company, AuthUser user);
     boolean isOwnerCompany(long companyId, AuthUser user);
