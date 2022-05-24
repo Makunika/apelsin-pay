@@ -20,9 +20,7 @@ public class PersonInfoDto implements Serializable {
     @NotNull
     @NotBlank
     private String lastName;
-    @NotNull
-    @NotBlank
-    private String middleName;
+    private String login;
     @NotNull
     @NotBlank
     @Email
@@ -33,9 +31,9 @@ public class PersonInfoDto implements Serializable {
     @NotNull
     private LocalDate birthday;
     @NotNull
-    private Integer passportSeries;
+    private String passportSeries;
     @NotNull
-    private Integer passportNumber;
+    private String passportNumber;
     @NotNull
     private PersonStatus status;
     private Boolean lock;

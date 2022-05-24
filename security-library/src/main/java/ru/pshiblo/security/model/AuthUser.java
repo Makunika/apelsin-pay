@@ -1,6 +1,7 @@
 package ru.pshiblo.security.model;
 
 import org.springframework.security.core.GrantedAuthority;
+import ru.pshiblo.security.AuthContants;
 import ru.pshiblo.security.enums.ConfirmedStatus;
 
 import java.util.Collection;
@@ -14,9 +15,9 @@ public class AuthUser {
     private final String email;
     private final boolean isServer;
     private final ConfirmedStatus status;
-    private final List<String> companies;
     private final List<String> authoritiesSimple;
     private final Collection<? extends GrantedAuthority> authorities;
+    private final Boolean isLock;
 
     public AuthUser(String login,
                     long id,
@@ -24,17 +25,17 @@ public class AuthUser {
                     String email,
                     boolean isServer,
                     ConfirmedStatus status,
-                    List<String> companies,
-                    Collection<? extends GrantedAuthority> authorities) {
+                    Collection<? extends GrantedAuthority> authorities,
+                    Boolean isLock) {
         this.login = login;
         this.id = id;
         this.name = name;
         this.email = email;
         this.isServer = isServer;
         this.status = status;
-        this.companies = companies;
         this.authoritiesSimple = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
         this.authorities = authorities;
+        this.isLock = isLock;
     }
 
     public String getLogin() {
@@ -69,11 +70,11 @@ public class AuthUser {
         return status;
     }
 
-    public List<String> getCompanies() {
-        return companies;
+    public boolean isAdmin() {
+        return getAuthoritiesSimple().contains(AuthContants.ROLE_ADMIN);
     }
 
-    public boolean isAdmin() {
-        return getAuthoritiesSimple().contains("ROLE_ADMINISTRATOR");
+    public Boolean getLock() {
+        return isLock;
     }
 }

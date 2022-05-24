@@ -30,8 +30,8 @@ public class PersonInfo {
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
-    @Column(name = "middle_name", length = 100)
-    private String middleName;
+    @Column(name = "login", length = 100, nullable = false)
+    private String login;
 
     @Column(name = "email", nullable = false, length = 100)
     private String email;
@@ -43,10 +43,10 @@ public class PersonInfo {
     private LocalDate birthday;
 
     @Column(name = "passport_series")
-    private Integer passportSeries;
+    private String passportSeries;
 
     @Column(name = "passport_number")
-    private Integer passportNumber;
+    private String passportNumber;
 
     private PersonStatus status;
 

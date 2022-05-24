@@ -6,8 +6,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.server.resource.authentication.DelegatingJwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -16,6 +18,8 @@ import ru.pshiblo.security.auditing.SecurityAuditorAware;
 import ru.pshiblo.security.jwt.CustomJwtGrantedAuthoritiesConverter;
 
 @Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -31,17 +35,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
         http
+                .cors()
+                .and()
+                .csrf().disable()
                 .authorizeRequests(authz -> authz
                         .antMatchers("/actuator/**", "/public/**", "/error/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().access("hasAuthority('ROLE_UNBAN')")
                 )
-//                .exceptionHandling(h -> h.accessDeniedHandler((request, response, accessDeniedException) ->
-//                        {
-//                            accessDeniedException.printStackTrace();
-//                            System.out.println("Говно");
-//
-//                        })
-//                )
                 .oauth2ResourceServer(
                         oauth2 -> oauth2.jwt()
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter));

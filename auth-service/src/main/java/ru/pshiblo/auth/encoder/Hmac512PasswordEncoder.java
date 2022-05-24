@@ -24,12 +24,6 @@ public class Hmac512PasswordEncoder implements PasswordEncoder {
     @Value("${encoder.sha512.salt}")
     private String salt;
 
-    @PostConstruct
-    public void log() {
-        String pass = encode("pass");
-        log.info(">>>>> " + pass);
-    }
-
     @Override
     public String encode(CharSequence rawPassword) {
         String result = null;

@@ -33,6 +33,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final JwtAccessTokenConverter jwtAccessTokenConverter;
     private final Environment env;
 
     @Override
@@ -108,9 +109,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .secret(env.getProperty("ACCOUNT_PERSONAL_SERVICE_PASSWORD"))
                 .authorizedGrantTypes("client_credentials", "refresh_token")
                 .scopes("server", "transaction_s");
-
-
-
     }
 
     @Override
@@ -119,37 +117,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .authenticationManager(authenticationManager)
                 .userDetailsService(userDetailsService)
                 .tokenStore(new InMemoryTokenStore())
-                .accessTokenConverter(accessTokenConverter());
-    }
-
-    @SneakyThrows
-    private static KeyPair generateRsaKey() {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
-        return keyPairGenerator.generateKeyPair();
-    }
-
-    @Bean
-    public JwtAccessTokenConverter accessTokenConverter(){
-        final JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
-        DefaultAccessTokenConverter tokenConverter = new DefaultAccessTokenConverter();
-        tokenConverter.setUserTokenConverter(new DefaultUserAuthenticationConverter() {
-            @Override
-            public Map<String, ?> convertUserAuthentication(Authentication authentication) {
-                Map<String, Object> userMap = (Map<String, Object>) super.convertUserAuthentication(authentication);
-                if (authentication.getPrincipal() instanceof AuthUser) {
-                    AuthUser authUser = (AuthUser) authentication.getPrincipal();
-                    userMap.put("id", authUser.getId());
-                    userMap.put("email", authUser.getEmail());
-                    userMap.put("name", authUser.getName());
-                    userMap.put("status", authUser.getConfirmedStatus());
-                    userMap.put("companies", authUser.getCompanies());
-                }
-                return userMap;
-            }
-        });
-        jwtAccessTokenConverter.setAccessTokenConverter(tokenConverter);
-        jwtAccessTokenConverter.setKeyPair(generateRsaKey());
-        return jwtAccessTokenConverter;
+                .accessTokenConverter(jwtAccessTokenConverter);
     }
 }

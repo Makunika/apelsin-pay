@@ -19,6 +19,28 @@ public class CustomJwtGrantedAuthoritiesConverter implements Converter<Jwt, Coll
                 grantedAuthorities.add(new SimpleGrantedAuthority(authority));
             }
         }
+        Object isLock = jwt.getClaims().get("lock");
+        if (isLock instanceof Boolean) {
+            Boolean lock = (Boolean) isLock;
+            if (!lock) {
+                grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_UNBAN"));
+            }
+        } else if (isServer(jwt)) {
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_UNBAN"));
+        }
         return grantedAuthorities;
+    }
+
+    private boolean isServer(Jwt jwt) {
+        Object scopes = jwt.getClaims().get("scope");
+        if (scopes instanceof Collection) {
+            Collection<String> scopesAuth = (Collection<String>) scopes;
+            for (String scope : scopesAuth) {
+                if ("server".equals(scope)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

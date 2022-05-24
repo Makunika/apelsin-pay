@@ -120,7 +120,7 @@ public class CompanyController {
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @GetMapping("{id}/users")
-    public List<CompanyUserResponseDto> addUserToCompany(@PathVariable long id) {
+    public List<CompanyUserResponseDto> getUsersCompany(@PathVariable long id) {
        return service.findUsersInCompany(id, AuthUtils.getAuthUser())
                .stream()
                .map(mapper::companyUserToCompanyUserResponseDto)

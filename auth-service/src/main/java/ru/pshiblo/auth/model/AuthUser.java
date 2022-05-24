@@ -6,8 +6,8 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import ru.pshiblo.auth.domain.Role;
-import ru.pshiblo.auth.domain.User;
+import ru.pshiblo.auth.clients.dto.Role;
+import ru.pshiblo.auth.clients.dto.User;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,12 +26,12 @@ public class AuthUser implements UserDetails {
     private int id;
     private List<String> roles;
     private String confirmedStatus;
-    private List<Long> companies;
+    private Boolean isLock;
 
     @JsonIgnore
     private String passwordHash;
 
-    public static AuthUser fromUser(User user, String email, String name, String confirmedStatus, List<Long> companies) {
+    public static AuthUser fromUser(User user, String email, String name, String confirmedStatus, Boolean isLock) {
         return new AuthUser(
                 user.getLogin(),
                 email,
@@ -39,11 +39,10 @@ public class AuthUser implements UserDetails {
                 user.getId(),
                 user.getRoles().stream().map(Role::getName).collect(Collectors.toList()),
                 confirmedStatus,
-                companies,
+                isLock,
                 user.getPasswordHash()
         );
     }
-
 
     @JsonIgnore
     @Override
@@ -72,7 +71,7 @@ public class AuthUser implements UserDetails {
     @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !isLock;
     }
 
     @JsonIgnore

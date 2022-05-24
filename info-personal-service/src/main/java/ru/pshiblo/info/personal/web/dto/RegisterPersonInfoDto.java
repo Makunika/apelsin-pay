@@ -18,9 +18,6 @@ public class RegisterPersonInfoDto implements Serializable {
     private final String lastName;
     @NotNull
     @NotBlank
-    private final String middleName;
-    @NotNull
-    @NotBlank
     @Email
     private final String email;
     @NotNull

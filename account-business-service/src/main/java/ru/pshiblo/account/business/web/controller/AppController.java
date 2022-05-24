@@ -19,8 +19,8 @@ public class AppController {
 
     @PreAuthorize("hasAnyAuthority('SCOPE_account_b_s')")
     @PostMapping("/check/{userId}/{number}")
-    public ResponseEntity<Boolean> checkPersonalAccount(@PathVariable long userId, @PathVariable String number) {
-        boolean check = service.checkOwnerBusinessAccount(userId, number);
+    public ResponseEntity<Boolean> checkBusinessAccount(@PathVariable long userId, @PathVariable String number) {
+        boolean check = service.checkOwnerOrModeratorBusinessAccount(userId, number);
         return ResponseEntity.ok(check);
     }
 

@@ -34,7 +34,7 @@ public class PersonInfoServiceImpl implements PersonInfoService {
         Assert.notNull(personInfo, "person required not null");
         Assert.notNull(personInfo.getFirstName(), "person f required not null");
         Assert.notNull(personInfo.getLastName(), "person l required not null");
-        Assert.notNull(personInfo.getMiddleName(), "person m required not null");
+        Assert.notNull(personInfo.getLogin(), "person l required not null");
         Assert.notNull(personInfo.getBirthday(), "person b required not null");
         Assert.notNull(personInfo.getEmail(), "person e required not null");
         Assert.notNull(personInfo.getPhone(), "person p required not null");
@@ -60,51 +60,6 @@ public class PersonInfoServiceImpl implements PersonInfoService {
     }
 
     @Override
-    public void confirmed(int passportNumber, int passportSeries, long personInfoId, long userId) {
-        PersonInfo personInfo = findById(personInfoId)
-                .orElseThrow(() -> new NotFoundException(personInfoId, PersonInfo.class));
-        personInfo.setPassportSeries(passportSeries);
-        personInfo.setPassportNumber(passportNumber);
-
-        if (personInfo.getUserId() != userId) {
-            throw new AccessDeniedException("userId not equals personInfoId");
-        }
-
-        if (personInfo.getStatus() == PersonStatus.ON_CONFIRMED || personInfo.getStatus() == PersonStatus.CONFIRMED) {
-            throw new IllegalArgumentException("person already confirmed or on confirmed");
-        }
-
-        personInfo.setStatus(PersonStatus.ON_CONFIRMED);
-        repository.save(personInfo);
-    }
-
-    @Override
-    public void confirmedAccept(long personInfoId) {
-        PersonInfo personInfo = findById(personInfoId)
-                .orElseThrow(() -> new NotFoundException(personInfoId, PersonInfo.class));
-
-        if (personInfo.getStatus() != PersonStatus.ON_CONFIRMED) {
-            throw new IllegalArgumentException("person not in on confirmed");
-        }
-
-        personInfo.setStatus(PersonStatus.CONFIRMED);
-        repository.save(personInfo);
-    }
-
-    @Override
-    public void confirmedFailed(long personInfoId) {
-        PersonInfo personInfo = findById(personInfoId)
-                .orElseThrow(() -> new NotFoundException(personInfoId, PersonInfo.class));
-
-        if (personInfo.getStatus() != PersonStatus.ON_CONFIRMED) {
-            throw new IllegalArgumentException("person not in on confirmed");
-        }
-
-        personInfo.setStatus(PersonStatus.FAILED_CONFIRMED);
-        repository.save(personInfo);
-    }
-
-    @Override
     public Optional<PersonInfo> findByUserId(long userId) {
         return repository.findByUserId(userId);
     }
@@ -115,25 +70,10 @@ public class PersonInfoServiceImpl implements PersonInfoService {
     }
 
     @Override
-    public List<PersonInfo> findByOnConfirmed() {
-        return repository.findByStatus(PersonStatus.ON_CONFIRMED);
-    }
-
-    @Override
-    public void ban(long personInfoId) {
-        PersonInfo personInfo = findById(personInfoId)
-                .orElseThrow(() -> new NotFoundException(personInfoId, PersonInfo.class));
-
-        personInfo.setIsLock(true);
-        repository.save(personInfo);
-    }
-
-    @Override
     public void update(PersonInfo personInfo, long userId) {
         Assert.notNull(personInfo, "person required not null");
         Assert.notNull(personInfo.getFirstName(), "person f required not null");
         Assert.notNull(personInfo.getLastName(), "person l required not null");
-        Assert.notNull(personInfo.getMiddleName(), "person m required not null");
         Assert.notNull(personInfo.getBirthday(), "person b required not null");
         Assert.notNull(personInfo.getEmail(), "person e required not null");
         Assert.notNull(personInfo.getPhone(), "person p required not null");
@@ -148,7 +88,6 @@ public class PersonInfoServiceImpl implements PersonInfoService {
 
         personInfoDb.setFirstName(personInfo.getFirstName());
         personInfoDb.setLastName(personInfo.getLastName());
-        personInfoDb.setMiddleName(personInfo.getMiddleName());
         personInfoDb.setBirthday(personInfo.getBirthday());
         personInfoDb.setEmail(personInfo.getEmail());
         personInfoDb.setPhone(personInfo.getPhone());
@@ -159,5 +98,30 @@ public class PersonInfoServiceImpl implements PersonInfoService {
     @Override
     public Page<PersonInfo> findAll(Pageable pageable) {
         return repository.findAll(pageable);
+    }
+
+    @Override
+    public List<PersonInfo> findAll() {
+        return repository.findAll();
+    }
+
+    @Override
+    public List<PersonInfo> findByLogin(String login) {
+        return repository.findByLoginContainsIgnoreCase(login);
+    }
+
+    @Override
+    public PersonInfo save(PersonInfo personInfo) {
+        return repository.save(personInfo);
+    }
+
+    @Override
+    public List<PersonInfo> findByStatus(PersonStatus status) {
+        return repository.findByStatus(status);
+    }
+
+    @Override
+    public boolean existByPassport(String passportSeries, String passportNumber) {
+        return repository.existsByPassportSeriesAndPassportNumber(passportSeries, passportNumber);
     }
 }

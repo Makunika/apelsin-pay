@@ -85,6 +85,19 @@ public class BusinessAccountServiceImpl implements BusinessAccountService {
     }
 
     @Override
+    public boolean checkOwnerOrModeratorBusinessAccount(long userId, String number) {
+        BusinessAccount businessAccount = repository.findByAccount_Number(number).orElse(null);
+        if (businessAccount == null) {
+            return false;
+        }
+        List<CompanyUser> companyUsers = infoBusinessClient.findByUser(userId);
+        return companyUsers
+                .stream()
+                .filter(cu -> cu.getCompany().getStatus() == ConfirmedStatus.CONFIRMED)
+                .anyMatch(cu -> cu.getCompany().getId().equals(businessAccount.getCompanyId()));
+    }
+
+    @Override
     @Transactional
     public void changeTypeOfAccount(BusinessAccountType type, String number, long userId) {
         if (!checkOwnerBusinessAccount(userId, number)) {

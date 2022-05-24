@@ -15,9 +15,9 @@ public class AuthUtils {
     private static final String CLIENT_CLAIM = "client_id";
     private static final String NAME_CLAIM = "name";
     private static final String STATUS_CLAIM = "status";
-    private static final String COMPANIES_CLAIM = "companies";
     private static final String ID_CLAIM = "id";
     private static final String EMAIL_CLAIM = "email";
+    private static final String LOCK_CLAIM = "lock";
 
     public static final long SERVER_ID = -1111L;
     public static final long UNAUTH_ID = -1000L;
@@ -39,8 +39,8 @@ public class AuthUtils {
                         "none",
                         true,
                         null,
-                        new ArrayList<>(),
-                        jwtAuthenticationToken.getAuthorities()
+                        jwtAuthenticationToken.getAuthorities(),
+                        false
                 );
             } else {
                 return new AuthUser(
@@ -50,8 +50,8 @@ public class AuthUtils {
                         ((String) tokenAttributes.get(EMAIL_CLAIM)),
                         false,
                         ConfirmedStatus.valueOf(((String) tokenAttributes.getOrDefault(STATUS_CLAIM, ConfirmedStatus.NOT_CONFIRMED.name()))),
-                        new ArrayList<>(((Collection<String>) tokenAttributes.getOrDefault(COMPANIES_CLAIM, new ArrayList<>()))),
-                        jwtAuthenticationToken.getAuthorities()
+                        jwtAuthenticationToken.getAuthorities(),
+                        ((Boolean) tokenAttributes.get(LOCK_CLAIM))
                 );
             }
         }
@@ -63,7 +63,7 @@ public class AuthUtils {
                 false,
                 null,
                 new ArrayList<>(),
-                new ArrayList<>()
+                false
         );
     }
 

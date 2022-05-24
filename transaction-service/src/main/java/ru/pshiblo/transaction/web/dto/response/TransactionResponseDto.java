@@ -25,6 +25,8 @@ public class TransactionResponseDto implements Serializable {
     private String toNumber;
     private String fromNumber;
     @NotNull
+    private String ownerUsername;
+    @NotNull
     private boolean isInnerFrom = false;
     @NotNull
     private boolean isInnerTo = false;

@@ -99,7 +99,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public List<CompanyUser> findUsersInCompany(long companyId, AuthUser user) {
         Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
-        if (!isOwnerCompany(company, user)) {
+        if (!isOwnerOrModeratorCompany(company, user)) {
             throw new NotAllowedOperationException();
         }
         return companyUserRepository.findByCompany_Id(companyId);
@@ -113,7 +113,7 @@ public class CompanyServiceImpl implements CompanyService {
         Assert.notNull(company.getId(), "id");
 
         Company companyInDb = findById(company.getId()).orElseThrow(() -> new NotFoundException(company.getId(), Company.class));
-        if (!isOwnerCompany(companyInDb, user) && companyInDb.getStatus() == ConfirmedStatus.CONFIRMED) {
+        if (!isOwnerCompany(companyInDb, user) || companyInDb.getStatus() == ConfirmedStatus.CONFIRMED) {
             throw new NotAllowedOperationException();
         }
 
@@ -135,6 +135,18 @@ public class CompanyServiceImpl implements CompanyService {
         return companyUsers
                 .stream()
                 .anyMatch(cu -> cu.getUserId() == user.getId() && cu.getRoleCompany() == RoleCompany.OWNER)
+                ||
+                AuthUtils.hasRole(AuthUtils.ROLE_ADMINISTRATOR)
+                ||
+                AuthUtils.getAuthUser().isServer()
+                ;
+    }
+
+    private boolean isOwnerOrModeratorCompany(Company company, AuthUser user) {
+        Set<CompanyUser> companyUsers = company.getCompanyUsers();
+        return companyUsers
+                .stream()
+                .anyMatch(cu -> cu.getUserId() == user.getId())
                 ||
                 AuthUtils.hasRole(AuthUtils.ROLE_ADMINISTRATOR)
                 ||
@@ -216,7 +228,7 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = findById(companyId)
                 .orElseThrow(() -> new NotFoundException(companyId, Company.class));
 
-        if (!isOwnerCompany(companyId, user)) {
+        if (!isOwnerOrModeratorCompany(company, user)) {
             throw new NotAllowedOperationException();
         }
 
