@@ -21,10 +21,8 @@ public class BusinessAccountTypeServiceImpl implements BusinessAccountTypeServic
     public BusinessAccountType createType(BusinessAccountType type) {
         Assert.isNull(type.getId(), "id");
         Assert.notNull(type.getCurrency(), "currency");
-        Assert.notNull(type.getCommissionRateWithdraw(), "commissionRate");
         Assert.notNull(type.getDescription(), "descr");
         Assert.notNull(type.getName(), "name");
-        Assert.notNull(type.getMaxSumForTransfer(), "commission");
         return repository.save(type);
     }
 
@@ -35,7 +33,7 @@ public class BusinessAccountTypeServiceImpl implements BusinessAccountTypeServic
 
     @Override
     public List<BusinessAccountType> getAll() {
-        return repository.findByIsValidIsTrue();
+        return repository.findAll();
     }
 
     @Override
@@ -43,5 +41,10 @@ public class BusinessAccountTypeServiceImpl implements BusinessAccountTypeServic
         BusinessAccountType businessAccountType = getById(typeId).orElseThrow(() -> new NotFoundException(typeId, BusinessAccountType.class));
         businessAccountType.setValid(false);
         repository.save(businessAccountType);
+    }
+
+    @Override
+    public List<BusinessAccountType> getAllValid() {
+        return repository.findByIsValidIsTrue();
     }
 }

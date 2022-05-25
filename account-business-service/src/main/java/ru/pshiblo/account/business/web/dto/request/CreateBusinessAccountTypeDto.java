@@ -12,17 +12,16 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
-public class CreateBusinessAccountTypeDto implements Serializable {
+public class CreateBusinessAccountTypeDto {
     @NotBlank
-    private final String name;
+    private String name;
     @NotBlank
-    private final String description;
+    private String description;
     @NotNull
-    private final Currency currency;
-    @NotNull
+    private Currency currency;
     @DecimalMin("100.0")
-    private final BigDecimal maxSumForTransfer;
+    private BigDecimal maxSumForTransfer;
     @DecimalMin("0.0")
     @DecimalMax("0.9")
-    private final BigDecimal commissionRateWithdraw;
+    private BigDecimal commissionRateWithdraw;
 }

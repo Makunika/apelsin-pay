@@ -9,6 +9,7 @@ import ru.pshiblo.account.business.services.BusinessAccountTypeService;
 import ru.pshiblo.account.business.web.dto.request.CreateBusinessAccountTypeDto;
 import ru.pshiblo.account.business.web.dto.response.BusinessAccountTypeResponseDto;
 import ru.pshiblo.common.exception.NotFoundException;
+import ru.pshiblo.security.annotation.IsModer;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -23,7 +24,7 @@ public class BusinessAccountTypeController {
     private final BusinessAccountTypeService service;
     private final BusinessAccountTypeMapper mapper;
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')")
+    @IsModer
     @PostMapping
     public BusinessAccountTypeResponseDto create(@Valid @RequestBody CreateBusinessAccountTypeDto request) {
         return mapper.toDTO(
@@ -41,12 +42,27 @@ public class BusinessAccountTypeController {
         );
     }
 
+    @GetMapping("/valid")
+    public List<BusinessAccountTypeResponseDto> findAllValid() {
+        return service.getAllValid()
+                .stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @IsModer
     @GetMapping
     public List<BusinessAccountTypeResponseDto> findAll() {
         return service.getAll()
                 .stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @IsModer
+    @DeleteMapping("{typeId}")
+    public void blockType(@PathVariable int typeId) {
+        service.blockType(typeId);
     }
 
 

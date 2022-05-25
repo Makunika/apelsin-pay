@@ -1,5 +1,6 @@
 package ru.pshiblo.account.business.services;
 
+import org.springframework.beans.PropertyValues;
 import ru.pshiblo.account.business.domain.BusinessAccountType;
 
 import java.util.List;
@@ -10,4 +11,5 @@ public interface BusinessAccountTypeService {
     Optional<BusinessAccountType> getById(int id);
     List<BusinessAccountType> getAll();
     void blockType(int typeId);
+    List<BusinessAccountType> getAllValid();
 }

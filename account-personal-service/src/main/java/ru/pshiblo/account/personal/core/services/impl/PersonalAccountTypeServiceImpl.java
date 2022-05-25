@@ -19,6 +19,7 @@ public class PersonalAccountTypeServiceImpl implements PersonalAccountTypeServic
     @Override
     public PersonalAccountType createType(PersonalAccountType type) {
         type.setValid(true);
+        type.setRequiredToFirstPay(type.getMinSumToStartWork() != null);
         return repository.save(type);
     }
 

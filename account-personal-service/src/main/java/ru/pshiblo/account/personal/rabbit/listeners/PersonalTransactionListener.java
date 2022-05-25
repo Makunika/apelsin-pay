@@ -45,7 +45,7 @@ public class PersonalTransactionListener {
             if (!account.getIsEnabled() && account.getStartWork() == null) {
                 BigDecimal minSumToStartWork = account.getType().getMinSumToStartWork();
                 BigDecimal balance = account.getAccount().getBalance();
-                if (balance.compareTo(minSumToStartWork) <= 0) {
+                if (balance.compareTo(minSumToStartWork) >= 0) {
                     account.setIsEnabled(true);
                     account.setStartWork(LocalDateTime.now());
                     service.update(account);
