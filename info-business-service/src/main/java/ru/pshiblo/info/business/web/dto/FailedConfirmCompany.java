@@ -10,5 +10,4 @@ public class FailedConfirmCompany {
     @NotBlank
     @NotNull
     private String reason;
-    private long id;
 }

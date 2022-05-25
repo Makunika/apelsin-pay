@@ -14,6 +14,8 @@ import ru.pshiblo.info.business.repository.CompanyRepository;
 import ru.pshiblo.info.business.repository.CompanyUserRepository;
 import ru.pshiblo.info.business.services.CompanyHistoryService;
 import ru.pshiblo.info.business.services.CompanyService;
+import ru.pshiblo.info.business.services.CompanyUserService;
+import ru.pshiblo.info.business.web.dto.CompanyResponseDto;
 import ru.pshiblo.security.AuthUtils;
 import ru.pshiblo.security.enums.ConfirmedStatus;
 import ru.pshiblo.security.model.AuthUser;
@@ -28,8 +30,8 @@ import java.util.Set;
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final CompanyUserRepository companyUserRepository;
     private final CompanyHistoryService historyService;
+    private final CompanyUserService companyUserService;
 
     @Override
     public Company create(Company company, AuthUser user) {
@@ -38,71 +40,23 @@ public class CompanyServiceImpl implements CompanyService {
         Assert.notNull(company.getName(), "name");
         Assert.isNull(company.getId(), "id");
 
-        company.setStatus(ConfirmedStatus.NOT_CONFIRMED);
+        company.setStatus(ConfirmedStatus.ON_CONFIRMED);
         company.setApiKey(RandomStringUtils.randomAlphanumeric(20));
         company = companyRepository.save(company);
-        CompanyUser companyUser = new CompanyUser();
-        companyUser.setCompany(company);
-        companyUser.setUserId(user.getId());
-        companyUser.setRoleCompany(RoleCompany.OWNER);
-        companyUserRepository.save(companyUser);
+        companyUserService.addUserToCompany(company, user.getId(), RoleCompany.OWNER);
         log.info("Success saved company with name {} and owner {}", company.getName(), user.getName());
         historyService.create(company, "Created");
         return company;
     }
 
     @Override
-    public void confirm(long companyId) {
-        Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
-
-        if (ConfirmedStatus.NOT_CONFIRMED != company.getStatus()) {
-            throw new IllegalArgumentException("Status not in NOT CONFIRMED");
-        }
-
-        company.setStatus(ConfirmedStatus.CONFIRMED);
-        company = companyRepository.save(company);
-        historyService.create(company, "confirmed");
-    }
-
-    @Override
-    public void failedConfirm(long companyId, String reason) {
-        Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
-
-        if (ConfirmedStatus.NOT_CONFIRMED != company.getStatus()) {
-            throw new IllegalArgumentException("Status not in NOT CONFIRMED");
-        }
-
-        company.setStatus(ConfirmedStatus.FAILED_CONFIRMED);
-        company = companyRepository.save(company);
-        historyService.create(company, reason);
-    }
-
-    @Override
     public void delete(long companyId, AuthUser user) {
         Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
-        if (!isOwnerCompany(company, user)) {
+        if (!companyUserService.isOwnerCompany(company, user)) {
             throw new NotAllowedOperationException();
         }
         company.setIsDeleted(true);
         companyRepository.save(company);
-    }
-
-    @Override
-    public List<CompanyUser> findByUser(long userId) {
-        return companyUserRepository.findByUserId(userId);
-    }
-
-    @Override
-    public List<CompanyUser> findOwnerCompanies(long userId) {
-        return companyUserRepository.findByUserIdAndRoleCompany(userId, RoleCompany.OWNER);
-    }
-    @Override
-    public List<CompanyUser> findUsersInCompany(long companyId, AuthUser user) {
-        Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
-        if (!isOwnerOrModeratorCompany(company, user)) {
-            throw new NotAllowedOperationException();
-        }
-        return companyUserRepository.findByCompany_Id(companyId);
     }
 
     @Override
@@ -113,7 +67,7 @@ public class CompanyServiceImpl implements CompanyService {
         Assert.notNull(company.getId(), "id");
 
         Company companyInDb = findById(company.getId()).orElseThrow(() -> new NotFoundException(company.getId(), Company.class));
-        if (!isOwnerCompany(companyInDb, user) || companyInDb.getStatus() == ConfirmedStatus.CONFIRMED) {
+        if (!companyUserService.isOwnerCompany(companyInDb, user) || companyInDb.getStatus() == ConfirmedStatus.CONFIRMED) {
             throw new NotAllowedOperationException();
         }
 
@@ -130,112 +84,17 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public boolean isOwnerCompany(Company company, AuthUser user) {
-        Set<CompanyUser> companyUsers = company.getCompanyUsers();
-        return companyUsers
-                .stream()
-                .anyMatch(cu -> cu.getUserId() == user.getId() && cu.getRoleCompany() == RoleCompany.OWNER)
-                ||
-                AuthUtils.hasRole(AuthUtils.ROLE_ADMINISTRATOR)
-                ||
-                AuthUtils.getAuthUser().isServer()
-                ;
-    }
-
-    private boolean isOwnerOrModeratorCompany(Company company, AuthUser user) {
-        Set<CompanyUser> companyUsers = company.getCompanyUsers();
-        return companyUsers
-                .stream()
-                .anyMatch(cu -> cu.getUserId() == user.getId())
-                ||
-                AuthUtils.hasRole(AuthUtils.ROLE_ADMINISTRATOR)
-                ||
-                AuthUtils.getAuthUser().isServer()
-                ;
-    }
-
-    @Override
-    public boolean isOwnerCompany(long companyId, AuthUser user) {
-        return isOwnerCompany(
-                findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class)),
-                user
-        );
-    }
-
-    @Override
     public Optional<Company> findById(long companyId) {
         return companyRepository.findById(companyId);
     }
 
     @Override
-    public void addUserToCompany(long companyId, AuthUser user, long userId, RoleCompany roleCompany) {
-        Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
-        if (!isOwnerCompany(company, user)) {
-            throw new NotAllowedOperationException();
-        }
-        CompanyUser companyUser = company.getCompanyUsers()
-                .stream()
-                .filter(cu -> cu.getUserId() == userId)
-                .findFirst()
-                .orElseGet(() -> {
-                    CompanyUser cu = new CompanyUser();
-                    cu.setUserId(userId);
-                    cu.setCompany(company);
-                    return cu;
-        });
-        companyUser.setRoleCompany(roleCompany);
-        companyUserRepository.save(companyUser);
+    public Company findByIdOrThrow(long companyId) {
+        return findById(companyId).orElseThrow(() -> new NotFoundException(companyId, "Компания"));
     }
 
     @Override
-    public void deleteUserFromCompany(long companyId, AuthUser user, long userId) {
-        Company company = findById(companyId).orElseThrow(() -> new NotFoundException(companyId, Company.class));
-        if (!isOwnerCompany(company, user)) {
-            throw new NotAllowedOperationException();
-        }
-        company.getCompanyUsers()
-                .stream()
-                .filter(cu -> cu.getUserId() == userId)
-                .findFirst()
-                .ifPresent(companyUserRepository::delete);
-    }
-
-    @Override
-    public boolean checkApiKey(long companyId, String apiKey) {
-        Company company = findById(companyId)
-                .orElseThrow(() -> new NotFoundException(companyId, Company.class));
-        if (!company.getApiKey().equals(apiKey)) {
-            throw new NotAllowedOperationException();
-        }
-        return true;
-    }
-
-    @Override
-    public void regenerateApiKry(long companyId, AuthUser user) {
-        Company company = findById(companyId)
-                .orElseThrow(() -> new NotFoundException(companyId, Company.class));
-
-        if (!isOwnerCompany(company, user)) {
-            throw new NotAllowedOperationException();
-        }
-
-        company.setApiKey(RandomStringUtils.randomAlphanumeric(20));
-        companyRepository.save(company);
-    }
-
-    @Override
-    public String getApiKey(long companyId, AuthUser user) {
-        Company company = findById(companyId)
-                .orElseThrow(() -> new NotFoundException(companyId, Company.class));
-
-        if (!isOwnerOrModeratorCompany(company, user)) {
-            throw new NotAllowedOperationException();
-        }
-
-        if (company.getStatus() != ConfirmedStatus.CONFIRMED) {
-            throw new NotAllowedOperationException("Company not confirmed");
-        }
-
-        return company.getApiKey();
+    public List<Company> findByStatus(ConfirmedStatus status) {
+        return companyRepository.findByStatus(status);
     }
 }

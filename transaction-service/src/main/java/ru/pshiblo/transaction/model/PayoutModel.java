@@ -9,8 +9,6 @@ import javax.validation.constraints.NotNull;
 public class PayoutModel {
     @NotNull
     private Boolean isPerson;
-    @NotNull
-    @NotBlank
     private String name;
     @NotNull
     @NotBlank

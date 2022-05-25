@@ -86,7 +86,7 @@ public class PersonalAccountServiceImpl implements PersonalAccountService {
 
     @Override
     public void block(String number, AuthUser user) {
-        if (!user.isAdmin() || !checkOwnerPersonalAccount(user.getId(), number)) {
+        if (!user.isAdmin() && !checkOwnerPersonalAccount(user.getId(), number)) {
             throw new NotAllowedOperationException();
         }
         PersonalAccount personalAccount = getByNumber(number)
@@ -96,7 +96,7 @@ public class PersonalAccountServiceImpl implements PersonalAccountService {
 
     @Override
     public void unblock(String number, AuthUser user) {
-        if (!user.isAdmin() || !checkOwnerPersonalAccount(user.getId(), number)) {
+        if (!user.isAdmin() && !checkOwnerPersonalAccount(user.getId(), number)) {
             throw new NotAllowedOperationException();
         }
         PersonalAccount personalAccount = getByNumber(number)
@@ -106,7 +106,7 @@ public class PersonalAccountServiceImpl implements PersonalAccountService {
 
     @Override
     public void delete(String number, AuthUser user) {
-        if (!user.isAdmin() || !checkOwnerPersonalAccount(user.getId(), number)) {
+        if (!user.isAdmin() && !checkOwnerPersonalAccount(user.getId(), number)) {
             throw new NotAllowedOperationException();
         }
         PersonalAccount personalAccount = getByNumber(number)

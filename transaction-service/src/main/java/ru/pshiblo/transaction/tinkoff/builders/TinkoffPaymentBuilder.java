@@ -66,7 +66,7 @@ public class TinkoffPaymentBuilder {
             TinkoffPayment payment = new TinkoffPayment();
             payment.setAmount(amount);
             payment.setTo(to);
-            payment.setPurpose("Вывод средств с Apelsin");
+            payment.setPurpose("Вывод средств. НДС не облагается");
             payment.setId(id.toString());
 
             TinkoffFrom from = new TinkoffFrom();

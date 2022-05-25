@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class AccountPersonalServiceApplication {
 
     public static void main(String[] args) {

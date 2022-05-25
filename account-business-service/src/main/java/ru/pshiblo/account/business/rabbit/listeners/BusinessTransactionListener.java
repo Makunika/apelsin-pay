@@ -20,6 +20,7 @@ import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.common.exception.NotFoundException;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -55,18 +56,19 @@ public class BusinessTransactionListener {
     )
     public void businessCommissionListener(@Payload Transaction transaction) {
         if (!transaction.isInnerTo()) {
-            transaction.setCommissionRate(
+            Optional.ofNullable(
                     service.getByNumber(transaction.getFromNumber())
                             .orElseThrow(NotFoundException::new)
                             .getType()
                             .getCommissionRateWithdraw()
-            );
+            ).ifPresent(commissionRate -> {
+                transaction.setCommissionRate(commissionRate);
+                BigDecimal commissionValue = transaction.getMoney().multiply(transaction.getCommissionRate());
+                transaction.setCommissionValue(commissionValue);
 
-            BigDecimal commissionValue = transaction.getMoney().multiply(transaction.getCommissionRate());
-            transaction.setCommissionValue(commissionValue);
-
-            BigDecimal moneyWithCommission = transaction.getMoney().add(commissionValue);
-            transaction.setMoneyWithCommission(moneyWithCommission);
+                BigDecimal moneyWithCommission = transaction.getMoney().add(commissionValue);
+                transaction.setMoneyWithCommission(moneyWithCommission);
+            });
         }
 
         transaction.setStatus("START_FROM_CHECK");
@@ -86,8 +88,9 @@ public class BusinessTransactionListener {
         if (account.getLock()) {
             throw new TransactionNotAllowedException("Счет отправителя заблокирован!");
         }
-        //TODO: придумать что то с типом!
-
+        if (transaction.isInnerTo()) {
+            throw new TransactionNotAllowedException("С бизнес счета можно только выводить средства");
+        }
         transaction.setApproveSend(true);
         transaction.setStatus("START_SEND");
         rabbitTemplate.convertAndSend("transaction.withdraw", transaction);

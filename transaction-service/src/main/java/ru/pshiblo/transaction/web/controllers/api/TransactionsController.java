@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.security.AuthUtils;
@@ -12,6 +13,7 @@ import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.domain.Transaction;
 import ru.pshiblo.transaction.enums.TransactionType;
 import ru.pshiblo.transaction.mappers.TransactionMapper;
+import ru.pshiblo.transaction.model.PayoutModel;
 import ru.pshiblo.transaction.service.impl.TransactionBuilder;
 import ru.pshiblo.transaction.service.TransactionService;
 import ru.pshiblo.transaction.web.dto.request.*;
@@ -81,6 +83,25 @@ public class TransactionsController {
                 .currency(dto.getCurrency())
                 .fromAccount(dto.getFromNumber())
                 .toAccount(dto.getToNumber())
+                .build();
+        return transactionService.create(transaction);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PostMapping("/from/account/to/external")
+    public Transaction openFromAccountToExternalTransaction(@RequestBody OpenTransactionExternalToDto dto) {
+        PayoutModel payoutModel = dto.getPayoutModel();
+        if (!payoutModel.getIsPerson()) {
+            Assert.notNull(payoutModel.getInn(), "Inn is null");
+        } else {
+            payoutModel.setInn("0");
+        }
+        Transaction transaction = transactionBuilder.builderOutTo()
+                .authUser(AuthUtils.getAuthUser())
+                .money(dto.getMoney())
+                .currency(Currency.RUB)
+                .fromAccount(dto.getFromNumber())
+                .to(payoutModel)
                 .build();
         return transactionService.create(transaction);
     }

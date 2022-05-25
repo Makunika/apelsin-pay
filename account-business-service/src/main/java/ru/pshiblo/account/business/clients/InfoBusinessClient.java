@@ -9,6 +9,6 @@ import java.util.List;
 
 @FeignClient(name = "info-business-service")
 public interface InfoBusinessClient {
-    @GetMapping("/company/user/{id}")
+    @GetMapping("/company/search/user/{id}")
     List<CompanyUser> findByUser(@PathVariable("id") long id);
 }

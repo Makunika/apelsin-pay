@@ -162,6 +162,7 @@ public class TransactionBuilder {
 
         public BuilderOutTo to(@Valid PayoutModel payoutModel) {
             try {
+                payoutModel.setName("Апельсин pay");
                 transaction.setAdditionInfoTo(objectMapper.writeValueAsString(payoutModel));
                 transaction.setInnerTo(false);
                 return this;

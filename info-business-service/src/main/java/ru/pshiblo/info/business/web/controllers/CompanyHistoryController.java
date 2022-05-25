@@ -28,7 +28,7 @@ public class CompanyHistoryController {
     public List<CompanyHistoryDto> getByCompanyId(@PathVariable long id) {
         return service.getByCompanyId(id)
                 .stream()
-                .map(mapper::companyHistoryToCompanyHistoryDto)
+                .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }
 

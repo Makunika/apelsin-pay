@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "info-business-service")
 public interface InfoBusinessClient {
 
-    @PostMapping("/company/{companyId}/check/key")
+    @PostMapping("/company/{companyId}/api/check/key")
     ResponseEntity<Boolean> checkApiKey(@PathVariable("companyId") long companyId, @RequestBody String apiKey);
 }

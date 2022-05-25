@@ -5,11 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.pshiblo.info.business.domain.CompanyUser;
 import ru.pshiblo.info.business.mappers.CompanyMapper;
 import ru.pshiblo.info.business.services.CompanyService;
 import ru.pshiblo.info.business.web.dto.*;
 import ru.pshiblo.security.AuthUtils;
+import ru.pshiblo.security.annotation.IsModer;
+import ru.pshiblo.security.enums.ConfirmedStatus;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -26,9 +27,9 @@ public class CompanyController {
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PostMapping
     public CompanyResponseDto create(@Valid @RequestBody CreateCompanyDto request) {
-        return mapper.companyToCompanyResponseDto(
+        return mapper.toDTO(
                 service.create(
-                        mapper.createCompanyDtoToCompany(request),
+                        mapper.toEntity(request),
                         AuthUtils.getAuthUser()
                 )
         );
@@ -37,44 +38,21 @@ public class CompanyController {
     @PreAuthorize("hasAuthority('SCOPE_user')")
     @PutMapping
     public CompanyResponseDto update(@Valid @RequestBody UpdateCompanyDto request) {
-        return mapper.companyToCompanyResponseDto(
+        return mapper.toDTO(
                 service.update(
-                        mapper.updateCompanyDtoToCompany(request),
+                        mapper.toEntity(request),
                         AuthUtils.getAuthUser()
                 )
         );
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_user') && hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_MODERATOR')")
-    @PostMapping("/confirm/{id}")
-    public void confirm(@PathVariable long id) {
-        service.confirm(id);
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user') && hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_MODERATOR')")
-    @PostMapping("/confirm/failed")
-    public void failedConfirm(@Valid @RequestBody FailedConfirmCompany request) {
-        service.failedConfirm(request.getId(), request.getReason());
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_info_b_s')")
-    @PostMapping("/{companyId}/check/key")
-    public ResponseEntity<Boolean> checkApiKey(@PathVariable long companyId, @RequestBody String apiKey) {
-        boolean result = service.checkApiKey(companyId, apiKey);
-        return ResponseEntity.ok(result);
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @PostMapping("/{companyId}/regenerate/key")
-    public void regenerateApiKey(@PathVariable long companyId) {
-        service.regenerateApiKry(companyId, AuthUtils.getAuthUser());
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @GetMapping("/{companyId}/key")
-    public ResponseEntity<String> getApiKey(@PathVariable long companyId) {
-        String apiKey = service.getApiKey(companyId, AuthUtils.getAuthUser());
-        return ResponseEntity.ok(apiKey);
+    @IsModer
+    @GetMapping("/on-conf")
+    public List<CompanyResponseDto> getOnConfirmed() {
+        return service.findByStatus(ConfirmedStatus.ON_CONFIRMED)
+                .stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
@@ -84,67 +62,10 @@ public class CompanyController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")
-    @GetMapping("/current")
-    public List<CompanyUserResponseDto> findByUser() {
-        return service.findByUser(AuthUtils.getUserId())
-                .stream()
-                .map(mapper::companyUserToCompanyUserResponseDto)
-                .collect(Collectors.toList());
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_info_b_s')")
-    @GetMapping("/user/{id}")
-    public List<CompanyUserResponseDto> findByUser(@PathVariable long id) {
-        return service.findByUser(id)
-                .stream()
-                .map(mapper::companyUserToCompanyUserResponseDto)
-                .collect(Collectors.toList());
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @GetMapping("/current/owner")
-    public List<CompanyUserResponseDto> findOwnerCompanies() {
-        return service.findOwnerCompanies(AuthUtils.getUserId())
-                .stream()
-                .map(mapper::companyUserToCompanyUserResponseDto)
-                .collect(Collectors.toList());
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
     @GetMapping("{id}")
     public CompanyResponseDto findById(@PathVariable long id) {
-        return mapper.companyToCompanyResponseDto(
+        return mapper.toDTO(
                 service.findById(id).orElseThrow()
-        );
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @GetMapping("{id}/users")
-    public List<CompanyUserResponseDto> getUsersCompany(@PathVariable long id) {
-       return service.findUsersInCompany(id, AuthUtils.getAuthUser())
-               .stream()
-               .map(mapper::companyUserToCompanyUserResponseDto)
-               .collect(Collectors.toList());
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @PostMapping("/user")
-    public void addUserToCompany(@Valid @RequestBody AddUserToCompanyDto request) {
-        service.addUserToCompany(
-                request.getCompanyId(),
-                AuthUtils.getAuthUser(),
-                request.getUserId(),
-                request.getRoleCompany()
-        );
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_user')")
-    @DeleteMapping("/user")
-    public void deleteUserFromCompany(@Valid @RequestBody DeleteUserFromCompanyDto request) {
-        service.deleteUserFromCompany(
-                request.getCompanyId(),
-                AuthUtils.getAuthUser(),
-                request.getUserId()
         );
     }
 

@@ -77,7 +77,7 @@ public class Transaction implements Serializable {
     @Column(name = "owner_username", nullable = false)
     private String ownerUsername;
 
-    @Column(name = "reason_cancel")
+    @Column(name = "reason_cancel", length = 2500)
     private String reasonCancel;
 
     @NotNull

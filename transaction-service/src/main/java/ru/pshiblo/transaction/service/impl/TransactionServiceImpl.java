@@ -134,16 +134,18 @@ public class TransactionServiceImpl implements TransactionService {
         InfoPrepare infoPrepare = new InfoPrepare();
         Account accountFrom = accountService.findByNumber(fromNumber).orElseThrow(() -> new NotFoundException(toNumber, "Счет"));
         checkOwnerAccount(accountFrom, userId);
-        Account accountTo = accountService.findByNumber(toNumber).orElseThrow(() -> new NotFoundException(toNumber, "Счет"));
-        infoPrepare.setNameTo(accountTo.getOwnerName());
+
         if (accountFrom.getCurrency() != currency) {
             infoPrepare.setMoneyFrom(currencyService.convertMoney(currency, accountFrom.getCurrency(), money));
             infoPrepare.setCurrencyFrom(accountFrom.getCurrency());
         }
-        if (accountTo.getCurrency() != currency) {
-            infoPrepare.setMoneyTo(currencyService.convertMoney(currency, accountTo.getCurrency(), money));
-            infoPrepare.setCurrencyTo(accountTo.getCurrency());
-        }
+        accountService.findByNumber(toNumber).ifPresent(account -> {
+            infoPrepare.setNameTo(account.getOwnerName());
+            if (account.getCurrency() != currency) {
+                infoPrepare.setMoneyTo(currencyService.convertMoney(currency, account.getCurrency(), money));
+                infoPrepare.setCurrencyTo(account.getCurrency());
+            }
+        });
         infoPrepare.setCurrency(currency);
         infoPrepare.setMoney(money);
         return infoPrepare;
