@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.pshiblo.users.domain.User;
-import ru.pshiblo.users.service.interfaces.UserService;
+import ru.pshiblo.users.service.UserService;
 
 @RestController
 @RequiredArgsConstructor

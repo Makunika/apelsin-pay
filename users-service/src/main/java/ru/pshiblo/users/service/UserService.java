@@ -1,4 +1,4 @@
-package ru.pshiblo.users.service.interfaces;
+package ru.pshiblo.users.service;
 
 import ru.pshiblo.users.domain.User;
 
@@ -7,5 +7,6 @@ import ru.pshiblo.users.domain.User;
  */
 public interface UserService {
     User getUserById(int userId);
+    User getUserByEmail(String email);
     User getByUsername(String username);
 }

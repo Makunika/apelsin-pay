@@ -42,4 +42,5 @@ public class TransactionResponseDto implements Serializable {
     @NotNull
     private BigDecimal money;
     private BigDecimal moneyWithCommission;
+    private String tinkoffPayUrl;
 }

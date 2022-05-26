@@ -10,4 +10,5 @@ import lombok.*;
 public class RegisterAuthDto {
     private String login;
     private String password;
+    private String email;
 }

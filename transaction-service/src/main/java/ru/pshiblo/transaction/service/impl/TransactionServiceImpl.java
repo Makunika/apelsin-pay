@@ -68,9 +68,12 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction createFromTinkoff(Transaction transaction, String redirectUrl) {
+    public Transaction createFromTinkoff(Transaction transaction, String redirectHost) {
         transaction.setStatus(TransactionStatus.START_OPEN);
         Transaction savedTransaction = repository.save(transaction);
+        String redirectUrl = redirectHost + "?" +
+                "number=" + savedTransaction.getToNumber() +
+                "&id=" + savedTransaction.getId();
         try {
             TinkoffInvoicingResponse response = tinkoffApi.createInvoicing(
                     TinkoffInvoicingCreate.builder()
@@ -85,7 +88,9 @@ public class TransactionServiceImpl implements TransactionService {
                             .build());
             savedTransaction.setAdditionInfoFrom(objectMapper.writeValueAsString(response));
             savedTransaction.setTinkoffPaymentId(response.getId());
-            savedTransaction.setTinkoffPayUrl(response.getPaymentUrl());
+            String testPaymentUrl = "http://localhost:3000/tinkoff/test?" + redirectUrl;
+            log.info(response.getPaymentUrl() + " replace to " + testPaymentUrl);
+            savedTransaction.setTinkoffPayUrl(testPaymentUrl);
             savedTransaction.setIsWithdrawByTinkoff(false);
             repository.save(savedTransaction);
             rabbitTemplate.convertAndSend("transaction.open", transaction);

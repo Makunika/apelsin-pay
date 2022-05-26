@@ -12,4 +12,6 @@ public class RegisterRequestDto {
     private String login;
     @JsonProperty(required = true)
     private String password;
+    @JsonProperty(required = true)
+    private String email;
 }

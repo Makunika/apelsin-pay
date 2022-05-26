@@ -13,12 +13,12 @@ public class User {
     @GeneratedValue
     @Column(name = "id", nullable = false)
     private Integer id;
-
     @Column(name = "password_hash", nullable = false, length = 200)
     private String passwordHash;
-
     @Column(name = "login", nullable = false, length = 100)
     private String login;
+    @Column(name = "email", nullable = false, length = 100)
+    private String email;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",

@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface TransactionService {
     Transaction create(Transaction transaction);
     Transaction createSystem(Transaction transaction);
-    Transaction createFromTinkoff(Transaction transaction, String redirectUrl);
+    Transaction createFromTinkoff(Transaction transaction, String redirectHost);
     void successPayment(int transactionId, long userId);
     Optional<Transaction> getById(int id);
     Page<Transaction> getByUserIdAndNumber(int userId, String number, Pageable pageable);

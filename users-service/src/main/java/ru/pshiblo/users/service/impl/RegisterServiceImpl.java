@@ -1,4 +1,4 @@
-package ru.pshiblo.users.service;
+package ru.pshiblo.users.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -8,7 +8,7 @@ import ru.pshiblo.users.domain.Role;
 import ru.pshiblo.users.domain.User;
 import ru.pshiblo.users.repository.RoleRepository;
 import ru.pshiblo.users.repository.UserRepository;
-import ru.pshiblo.users.service.interfaces.RegisterService;
+import ru.pshiblo.users.service.RegisterService;
 import ru.pshiblo.common.exception.AlreadyExistException;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.common.exception.SecurityException;
@@ -27,7 +27,7 @@ public class RegisterServiceImpl implements RegisterService {
     private final RoleRepository roleRepository;
 
     @Override
-    public User registerUser(String login, String password) {
+    public User registerUser(String login, String password, String email) {
         if (userRepository.existsByLogin(login)) {
             throw new AlreadyExistException("User already exist");
         }
@@ -36,6 +36,7 @@ public class RegisterServiceImpl implements RegisterService {
         user.setRoles(List.of(getUserRole()));
         user.setPasswordHash(passwordHash);
         user.setLogin(login);
+        user.setEmail(email);
         user = userRepository.save(user);
         return user;
     }
@@ -46,8 +47,8 @@ public class RegisterServiceImpl implements RegisterService {
     }
 
     @Override
-    public void changePassword(String login, String password, String newPassword) {
-        User user = userRepository.findByLogin(login).orElseThrow(() -> new NotFoundException(login, User.class));
+    public void changePassword(long userId, String password, String newPassword) {
+        User user = userRepository.findById((int) userId).orElseThrow(() -> new NotFoundException(userId, User.class));
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new SecurityException();
         }
@@ -55,4 +56,6 @@ public class RegisterServiceImpl implements RegisterService {
         user.setPasswordHash(newPasswordHash);
         userRepository.save(user);
     }
+
+
 }

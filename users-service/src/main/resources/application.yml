@@ -9,6 +9,18 @@ spring:
       password: ${CONFIG_SERVICE_PASSWORD}
       username: user
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: apelsin.pay@gmail.com
+    password: APELSINPAY
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 ---
 spring:
   config:

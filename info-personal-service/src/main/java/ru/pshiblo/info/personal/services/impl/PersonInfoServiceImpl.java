@@ -52,6 +52,7 @@ public class PersonInfoServiceImpl implements PersonInfoService {
                 RegisterAuthDto.builder()
                         .login(login)
                         .password(password)
+                        .email(personInfo.getEmail())
                         .build());
 
         personInfo.setUserId(register.getId());
