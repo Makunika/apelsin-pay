@@ -28,14 +28,14 @@ public class CustomErrorDecoder implements ErrorDecoder {
             {
                 reader.transferTo(stringWriter);
                 String reason = stringWriter.toString();
-                log.warn("Error request: {} with reason {}. Response body {}, code {}", response.request().url(), response.reason(), reason, response.status());
+                log.warn("Error request: {} with reason {}.\n Response body {},\n code {}", response.request().url(), response.reason(), reason, response.status());
                 return new IntegrationException(response.status(), reason);
             } catch (IOException e) {
                 log.error("Error read body", e);
                 return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
         } else {
-            log.warn("Error request: {} with reason {}. Response body {}, code {}", response.request().url(), response.reason(), "null", response.status());
+            log.warn("Error request: {} with reason {}.\n Response body {},\n code {}", response.request().url(), response.reason(), "null", response.status());
             return new IntegrationException(response.status(), "{ \"status\":500, \"error\":\"Internal error\" }");
         }
     }

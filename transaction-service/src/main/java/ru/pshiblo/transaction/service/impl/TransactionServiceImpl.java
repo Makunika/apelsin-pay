@@ -71,9 +71,18 @@ public class TransactionServiceImpl implements TransactionService {
     public Transaction createFromTinkoff(Transaction transaction, String redirectHost) {
         transaction.setStatus(TransactionStatus.START_OPEN);
         Transaction savedTransaction = repository.save(transaction);
-        String redirectUrl = redirectHost + "?" +
-                "number=" + savedTransaction.getToNumber() +
-                "&id=" + savedTransaction.getId();
+        String redirectUrl;
+
+        if (redirectHost.lastIndexOf('?') == -1) {
+            redirectUrl = redirectHost + "?" +
+                    "number=" + savedTransaction.getToNumber() +
+                    "&id=" + savedTransaction.getId();
+        } else {
+            redirectUrl = redirectHost + "&" +
+                    "number=" + savedTransaction.getToNumber() +
+                    "&id=" + savedTransaction.getId();
+        }
+
         try {
             TinkoffInvoicingResponse response = tinkoffApi.createInvoicing(
                     TinkoffInvoicingCreate.builder()

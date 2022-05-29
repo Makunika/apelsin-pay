@@ -54,14 +54,24 @@ public class ExceptionControllerAdvice extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(value = {IntegrationException.class})
-    public ResponseEntity<?> handleIntegrationExceptions(IntegrationException e, WebRequest request) throws JsonProcessingException {
-        return handleExceptionInternal(
-                e,
-                objectMapper.readTree(e.getMessage()),
-                new HttpHeaders(),
-                HttpStatus.valueOf(e.getStatus()),
-                request
-        );
+    public ResponseEntity<?> handleIntegrationExceptions(IntegrationException e, WebRequest request) {
+        try {
+            return handleExceptionInternal(
+                    e,
+                    objectMapper.readTree(e.getMessage()),
+                    new HttpHeaders(),
+                    HttpStatus.valueOf(e.getStatus()),
+                    request
+            );
+        } catch (JsonProcessingException ex) {
+            return handleExceptionInternal(
+                    e,
+                    e.getMessage(),
+                    new HttpHeaders(),
+                    HttpStatus.valueOf(e.getStatus()),
+                    request
+            );
+        }
     }
 
     @ExceptionHandler(value = {NoSuchElementException.class})

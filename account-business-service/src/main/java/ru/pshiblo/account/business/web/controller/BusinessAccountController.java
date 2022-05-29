@@ -49,7 +49,7 @@ public class BusinessAccountController {
                 );
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_user', 'SCOPE_account_b_s')")
     @GetMapping("/company/{companyId}")
     public BusinessAccountResponseDto getByCompanyId(@PathVariable Long companyId) {
         //TODO:CHECK COMPANY ID

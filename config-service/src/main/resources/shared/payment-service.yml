@@ -25,7 +25,7 @@ pay:
   main:
     url: https://redirect.ru/main
   internal:
-    url: https://redirect.ru/tinkoff/success
+    url: http://localhost:3006/tinkoff/success
 
 server:
   port: 6006

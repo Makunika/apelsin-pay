@@ -11,25 +11,22 @@ import java.time.LocalDateTime;
 
 @Data
 public class CreateOrderDto implements Serializable {
-    private final String shortName;
+    private String shortName;
     @NotNull
     @NotBlank
-    private final String fullName;
+    private String fullName;
     @NotNull
     @DecimalMin("0.5")
     @DecimalMax("99999")
-    private final BigDecimal amount;
+    private BigDecimal amount;
     @NotNull
-    private final Currency currency;
+    private Currency currency;
     @NotNull
-    private final Long companyId;
+    private Long companyId;
     @NotNull
     @NotBlank
-    private final String redirectUrl;
+    private String redirectUrl;
     @NotNull
     @Future
-    private final LocalDateTime endDate;
-    @NotNull
-    @NotBlank
-    private final String accountNumberTo;
+    private LocalDateTime endDate;
 }

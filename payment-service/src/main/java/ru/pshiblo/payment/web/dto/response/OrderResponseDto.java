@@ -23,6 +23,7 @@ public class OrderResponseDto implements Serializable {
     private final String reasonCancel;
     private final String redirectUrl;
     private final String payUrl;
+    private final String payTinkoffUrl;
     private final LocalDateTime endDate;
     private final String accountNumberTo;
 }

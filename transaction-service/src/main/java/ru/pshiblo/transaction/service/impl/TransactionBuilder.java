@@ -11,6 +11,7 @@ import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.common.exception.InternalException;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
+import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.security.model.AuthUser;
 import ru.pshiblo.transaction.clients.BusinessAccountClient;
 import ru.pshiblo.transaction.clients.PersonalAccountClient;
@@ -211,7 +212,7 @@ public class TransactionBuilder {
 
         public BuilderOutFrom toAccount(String accountNumber) {
             transaction.setToNumber(accountNumber);
-            accountService.findByNumber(accountNumber).orElseThrow();
+            accountService.findByNumber(accountNumber).orElseThrow(() -> new NotFoundException(accountNumber, "Счет"));
             transaction.setInnerTo(true);
             return this;
         }

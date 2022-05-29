@@ -10,8 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import ru.pshiblo.common.exception.ApelsinException;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
+import ru.pshiblo.payment.clients.AccountBusinessClient;
 import ru.pshiblo.payment.clients.InfoBusinessClient;
+import ru.pshiblo.payment.clients.model.BusinessAccount;
 import ru.pshiblo.payment.domain.Order;
 import ru.pshiblo.payment.enums.OrderStatus;
 import ru.pshiblo.payment.repository.OrderRepository;
@@ -27,6 +30,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository repository;
     private final InfoBusinessClient infoBusinessClient;
+    private final AccountBusinessClient accountBusinessClient;
     private final RabbitTemplate rabbitTemplate;
     @Value("${pay.main.url}")
     private String payUrl;
@@ -37,13 +41,17 @@ public class OrderServiceImpl implements OrderService {
         Assert.notNull(order.getCurrency(), "Currency");
         Assert.notNull(order.getCompanyId(), "CompanyId");
         Assert.notNull(order.getFullName(), "FullName");
-        Assert.notNull(order.getShortName(), "ShortName");
         Assert.notNull(order.getRedirectUrl(), "RedirectUrl");
         Assert.notNull(order.getEndDate(), "EndDate");
-        Assert.notNull(order.getAccountNumberTo(), "AccountNumberTo");
 
         checkAuthCompany(order.getCompanyId(), apiKey);
+        BusinessAccount account = accountBusinessClient.getByCompanyId(order.getCompanyId());
 
+        if (account.isLock()) {
+            throw new ApelsinException("Счет компании заблокирован");
+        }
+
+        order.setAccountNumberTo(account.getNumber());
         order.setOrderStatus(OrderStatus.CREATED);
         Order savedOrder = repository.save(order);
         savedOrder.setPayUrl(payUrl + "?orderId=" + savedOrder.getId());
