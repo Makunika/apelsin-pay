@@ -68,8 +68,9 @@ public class PayServiceImpl implements PayService {
         order.setOrderType(OrderType.TINKOFF);
 
         OpenPaymentTinkoffDto request = new OpenPaymentTinkoffDto();
-        request.setRedirectUrl(payInternalUrl + "/?orderId=" + orderId);
+        request.setRedirectUrl(payInternalUrl + "/?orderId=" + orderId + "&redirect=" + order.getRedirectUrl());
         request.setMoney(order.getAmount());
+        request.setCurrency(order.getCurrency());
         request.setAccountNumberTo(order.getAccountNumberTo());
 
         Transaction transaction = transactionClient.openPaymentTinkoff(request);

@@ -1,6 +1,6 @@
 
 import { styled } from '@mui/material/styles';
-import { Card, Stack, Link, Container, Typography } from '@mui/material';
+import {Card, Stack, Link, Container, Typography, Divider} from '@mui/material';
 import AuthLayout from '../layouts/AuthLayout';
 import Page from '../components/Page';
 import { LoginForm } from '../sections/authentication/login';
@@ -39,7 +39,7 @@ export default function Login() {
     <RootStyle title="Вход">
       <AuthLayout>
         Нет аккаунта? &nbsp;
-        <Link variant="subtitle2" href="http://localhost:3000/register" underline="none">
+        <Link variant="subtitle2" href="http://pshiblo.xyz/register" underline="none">
           Создать
         </Link>
       </AuthLayout>
@@ -57,7 +57,11 @@ export default function Login() {
             <Typography variant="h4" gutterBottom>
               Войти в Апельсин
             </Typography>
-            <Typography sx={{ color: 'text.secondary' }}>Введите данные для авторизации снизу.</Typography>
+            <Typography gutterBottom sx={{ color: 'text.secondary' }}>Введите данные для авторизации снизу.</Typography>
+            <Divider />
+            <Typography color="text.secondary" variant="body1" >
+              Тестовый пользователь с логином "mpshiblo3" и паролем "1234"
+            </Typography>
           </Stack>
 
           <LoginForm />
@@ -71,7 +75,7 @@ export default function Login() {
             }}
           >
             Нет аккаунта?&nbsp;
-            <Link variant="subtitle2" href="http://localhost:3000/register" underline="hover">
+            <Link variant="subtitle2" href="http://pshiblo.xyz/register" underline="hover">
               Создать
             </Link>
           </Typography>

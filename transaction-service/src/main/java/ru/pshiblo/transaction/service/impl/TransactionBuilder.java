@@ -9,6 +9,7 @@ import ru.pshiblo.account.domain.Account;
 import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.service.AccountService;
+import ru.pshiblo.account.service.CurrencyService;
 import ru.pshiblo.common.exception.InternalException;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
 import ru.pshiblo.common.exception.NotFoundException;
@@ -28,6 +29,7 @@ import java.math.BigDecimal;
 public class TransactionBuilder {
 
     private final AccountService accountService;
+    private final CurrencyService currencyService;
     private final BusinessAccountClient businessAccountClient;
     private final PersonalAccountClient personalAccountClient;
     private final ObjectMapper objectMapper;
@@ -62,7 +64,7 @@ public class TransactionBuilder {
 
         public BuilderInner userId(long userId) {
             this.userId = userId;
-            this.username = "NOT";
+            this.username = "Apelsin pay";
             return this;
         }
 
@@ -196,7 +198,7 @@ public class TransactionBuilder {
 
         public BuilderOutFrom userId(long userId) {
             this.userId = userId;
-            this.username = "NOT";
+            this.username = "Apelsin pay";
             return this;
         }
 
@@ -226,6 +228,14 @@ public class TransactionBuilder {
             transaction.setInnerFrom(false);
             transaction.setOwnerUsername(username);
             transaction.setOwnerUserId(Math.toIntExact(userId));
+            if (transaction.getCurrency() != Currency.RUB) {
+                BigDecimal convertMoney = currencyService.convertMoney(
+                        transaction.getCurrency(),
+                        Currency.RUB,
+                        transaction.getMoney());
+                transaction.setCurrency(Currency.RUB);
+                transaction.setMoney(convertMoney);
+            }
             return transaction;
         }
     }

@@ -55,7 +55,17 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(OrderStatus.CREATED);
         Order savedOrder = repository.save(order);
         savedOrder.setPayUrl(payUrl + "?orderId=" + savedOrder.getId());
+        savedOrder.setRedirectUrl(fixRedirectUrl(savedOrder.getRedirectUrl(), savedOrder.getId()));
         return repository.save(savedOrder);
+    }
+
+    private String fixRedirectUrl(String redirectUrl, Long id) {
+        if (redirectUrl.lastIndexOf('?') == -1) {
+            return redirectUrl + "?" +
+                    "apelsinOrderId=" + id;
+        }
+        return redirectUrl + "&" +
+                "apelsinOrderId=" + id;
     }
 
     @Override

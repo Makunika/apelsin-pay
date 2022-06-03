@@ -1,0 +1,76 @@
+@startuml
+!include <cloudinsight/tomcat>
+!include <cloudinsight/kafka>
+!include <cloudinsight/java>
+!include <cloudinsight/postgresql>
+!include <cloudinsight/rabbitmq>
+!include <cloudinsight/docker>
+!include <cloudinsight/nodejs>
+!include <cloudinsight/linux>
+
+title __Архитектура приложения__
+ left to right direction
+
+component "<$nodejs>\nВеб-приложение" as js_main
+
+rectangle "<$docker><$linux>\nDocker\nUbuntu server" {
+queue "<$rabbitmq>\nRabbit mq" as rabbitmq
+node "<$java>\nauth-service" as auth_service {
+    component "spring oauth 2.0"
+}
+node "<$java>\nregistry-service" as registry_service {
+    component "Eureka server"
+}
+node "<$java>\ngateway-service" as gateway_service
+node "<$java>\nconfig-service" as config_service {
+component "Конфигурации\nсервисов"
+}
+node "<$java>\ninfo-personal-service" as info_personal_service
+node "<$java>\nusers-service" as users_service
+node "<$java>\ninfo-business-service" as info_business_service
+node "<$java>\naccounts-personal-service" as accounts_personal_service
+node "<$java>\naccounts-business-service" as accounts_business_service
+node "<$java>\npayment-service" as payment_service
+node "<$java>\ntransaction-service" as transaction_service
+
+}
+
+rectangle "<$postgresql>\nPostgreSQL Server" {
+database "users db" as users_db
+database "accounts db" as accounts_db
+database "info business db" as info_business_db
+database "info personal db" as info_personal_db
+database "payment db" as payment_db
+}
+
+
+
+auth_service --> users_db
+users_service --> users_db
+payment_service --> payment_db
+info_business_service --> info_business_db
+info_personal_service --> info_personal_db
+transaction_service ----> accounts_db
+accounts_business_service ---> accounts_db
+accounts_personal_service ---> accounts_db
+
+gateway_service --> auth_service
+gateway_service --> info_personal_service
+gateway_service --> info_business_service
+gateway_service --> transaction_service
+gateway_service --> accounts_personal_service
+gateway_service --> accounts_business_service
+gateway_service --> payment_service
+gateway_service --> users_service
+
+js_main --> gateway_service
+js_main --> auth_service
+transaction_service <..> accounts_personal_service
+transaction_service <..> accounts_business_service
+transaction_service <.. payment_service
+transaction_service <--> rabbitmq
+accounts_business_service <--> rabbitmq
+accounts_personal_service <--> rabbitmq
+payment_service <--> rabbitmq
+
+@enduml

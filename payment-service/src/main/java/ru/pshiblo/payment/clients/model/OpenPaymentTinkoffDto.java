@@ -1,6 +1,7 @@
 package ru.pshiblo.payment.clients.model;
 
 import lombok.Data;
+import ru.pshiblo.payment.enums.Currency;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
@@ -17,4 +18,6 @@ public class OpenPaymentTinkoffDto {
     private String accountNumberTo;
     @DecimalMin("0")
     private BigDecimal money;
+    @NotNull
+    private Currency currency;
 }

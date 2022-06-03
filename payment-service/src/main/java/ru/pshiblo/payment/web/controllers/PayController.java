@@ -20,7 +20,7 @@ import javax.validation.Valid;
 public class PayController {
     private final PayService service;
 
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_user', 'SCOPE_user_payment')")
     @PostMapping("/pay")
     public PayResponseDto payInner(@Valid @RequestBody PayInnerDto request) {
         PayResponseDto payResponseDto = new PayResponseDto();

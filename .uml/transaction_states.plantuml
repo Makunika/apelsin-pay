@@ -1,0 +1,48 @@
+@startuml
+title Состояние транзакций\n
+state Работа {
+    state CREATED: Создана
+    state CHECK_FROM: Проверка\nсписания денег
+    state COMMISSION: Начисление комиссии
+    state WITHDRAW: Списание денег
+    state APPLY_PAYMENT: Готова к начислению
+    state WAIT: Ожидаем оплату\nот пользователя
+    state CHECK_TO: Проверка\nначисления денег
+    state DEPOSIT: Начисление денег
+    state HOLD {
+        state MESSAGE: Ожидаем сообщение UNHOLD
+        [*] --> MESSAGE
+        MESSAGE --> MESSAGE
+        MESSAGE --> [*]: Сообщение получено
+    }
+    state COMPLETED
+
+    [*] -right-> CREATED
+    CHECK_FROM --> COMMISSION
+    COMMISSION --> WITHDRAW
+    APPLY_PAYMENT --> CHECK_TO
+    CHECK_TO --> DEPOSIT
+    state c1 <<choice>>
+    CREATED -right-> c1
+    c1 -right-> CHECK_FROM: [Внутренний отправитель]
+    c1 -down-> WAIT: [Внешний отправитель]
+    WAIT -down-> APPLY_PAYMENT
+    state c2 <<choice>>
+    WITHDRAW --> c2
+    c2 --> COMPLETED: [Внешний получатель]
+    c2 --> APPLY_PAYMENT: [Внутренний получатель]
+    state c3 <<choice>>
+    DEPOSIT --> c3
+    c3 --> HOLD: [Необходимо заморозить деньги на счете]
+    c3 -right-> COMPLETED: [Замораживать деньги не нужно]
+    HOLD -right-> COMPLETED
+    COMPLETED --> [*]
+}
+[*] -right-> Работа
+
+state CANCELED: Отменена, откатана
+Работа -right-> CANCELED: Ошибка
+
+CANCELED -right-> [*]
+Работа -right-> [*]
+@enduml

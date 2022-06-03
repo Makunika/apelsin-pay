@@ -39,7 +39,7 @@ public class PersonalAccountController {
         );
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_user', 'SCOPE_user_payment')")
     @GetMapping
     public List<PersonalResponseDto> getAllByUserId() {
         return service.getByUserId((int) AuthUtils.getUserId())

@@ -40,7 +40,7 @@ services:
     image: makuni/apelsin-gateway
     restart: always
     ports:
-      - "80:8080"
+      - "8080:8080"
     depends_on:
       - config
       - registry
@@ -71,6 +71,11 @@ services:
       PAYMENT_SERVICE_PASSWORD: $PAYMENT_SERVICE_PASSWORD
     image: makuni/apelsin-auth-service
     restart: always
+    healthcheck:
+      test: "curl --fail --silent localhost:5000/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 50
     depends_on:
       - config
       - registry
@@ -89,9 +94,12 @@ services:
     image: makuni/apelsin-users-service
     restart: always
     depends_on:
-      - config
-      - registry
-      - auth-service
+      auth-service:
+        condition: service_healthy
+      config:
+        condition: service_started
+      registry:
+        condition: service_started
     logging:
       options:
         max-size: "10m"
@@ -104,10 +112,14 @@ services:
     image: makuni/apelsin-account-business-service
     restart: always
     depends_on:
-      - config
-      - registry
-      - auth-service
-      - rabbitmq
+      auth-service:
+        condition: service_healthy
+      config:
+        condition: service_started
+      registry:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     logging:
       options:
         max-size: "10m"
@@ -120,10 +132,14 @@ services:
     image: makuni/apelsin-account-personal-service
     restart: always
     depends_on:
-      - config
-      - registry
-      - auth-service
-      - rabbitmq
+      auth-service:
+        condition: service_healthy
+      config:
+        condition: service_started
+      registry:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     logging:
       options:
         max-size: "10m"
@@ -136,10 +152,14 @@ services:
     image: makuni/apelsin-transaction-service
     restart: always
     depends_on:
-      - config
-      - registry
-      - auth-service
-      - rabbitmq
+      auth-service:
+        condition: service_healthy
+      config:
+        condition: service_started
+      registry:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     logging:
       options:
         max-size: "10m"
@@ -152,9 +172,12 @@ services:
     image: makuni/apelsin-info-business-service
     restart: always
     depends_on:
-      - config
-      - registry
-      - auth-service
+      auth-service:
+        condition: service_healthy
+      config:
+        condition: service_started
+      registry:
+        condition: service_started
     logging:
       options:
         max-size: "10m"
@@ -167,9 +190,12 @@ services:
     image: makuni/apelsin-info-personal-service
     restart: always
     depends_on:
-      - config
-      - registry
-      - auth-service
+      auth-service:
+        condition: service_healthy
+      config:
+        condition: service_started
+      registry:
+        condition: service_started
     logging:
       options:
         max-size: "10m"
@@ -182,10 +208,14 @@ services:
     image: makuni/apelsin-payment-service
     restart: always
     depends_on:
-      - config
-      - registry
-      - auth-service
-      - rabbitmq
+      auth-service:
+        condition: service_healthy
+      config:
+        condition: service_started
+      registry:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     logging:
       options:
         max-size: "10m"

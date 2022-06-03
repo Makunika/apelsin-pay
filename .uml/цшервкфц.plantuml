@@ -1,0 +1,20 @@
+@startuml
+
+skinparam linetype ortho
+
+rectangle "Руководитель проекта" as ruk
+rectangle "Бизнес-аналитик" as bus
+rectangle "Системный аналитик" as sys
+rectangle "Специалист по тестированию ПО" as test
+rectangle "Ведущий full-stack разработчик" as rraz
+rectangle "Full-stack разработчик" as raz
+
+ruk --> bus
+ruk --> sys
+ruk --> test
+ruk --> rraz
+rraz --> raz
+
+
+
+@enduml

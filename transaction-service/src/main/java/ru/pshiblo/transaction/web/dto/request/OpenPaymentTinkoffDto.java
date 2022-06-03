@@ -18,4 +18,5 @@ public class OpenPaymentTinkoffDto {
     private String accountNumberTo;
     @DecimalMin("0")
     private BigDecimal money;
+    private Currency currency;
 }

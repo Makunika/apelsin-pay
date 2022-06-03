@@ -72,13 +72,6 @@ class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public HoldMoney holdMoney(Account account, BigDecimal amount, LocalDateTime holdUntil) {
-        BigDecimal balance = account.getBalance();
-        BigDecimal holdSum = getCurrentHoldMoney(account);
-
-        // FIXME: 04.05.2022 
-        if (holdSum.add(amount).compareTo(balance) > 0) {
-            throw new IllegalArgumentException("hold money > balance");
-        }
 
         HoldMoney newHoldMoney = new HoldMoney();
         newHoldMoney.setHoldUntil(holdUntil);
@@ -89,7 +82,7 @@ class AccountServiceImpl implements AccountService {
 
     @Override
     public BigDecimal getCurrentHoldMoney(Account account) {
-        Set<HoldMoney> holdMoneys = holdMoneyRepository.findByAccountAndHoldUntilIsBefore(account, LocalDateTime.now());
+        Set<HoldMoney> holdMoneys = holdMoneyRepository.findByAccountAndHoldUntilIsAfter(account, LocalDateTime.now());
         return holdMoneys.stream().map(HoldMoney::getAmount).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
     }
 

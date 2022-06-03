@@ -8,6 +8,6 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 public interface HoldMoneyRepository extends JpaRepository<HoldMoney, Long> {
-    Set<HoldMoney> findByAccountAndHoldUntilIsBefore(Account account, LocalDateTime holdUntil);
+    Set<HoldMoney> findByAccountAndHoldUntilIsAfter(Account account, LocalDateTime holdUntil);
 
 }

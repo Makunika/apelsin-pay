@@ -51,10 +51,11 @@ public class TransactionsController {
     @PreAuthorize("hasAuthority('SCOPE_transaction_s')")
     @PostMapping("/payment/tinkoff")
     public Transaction openPaymentTinkoff(@Valid @RequestBody OpenPaymentTinkoffDto request) {
+        Currency currency = request.getCurrency() == null ? Currency.RUB : request.getCurrency();
         Transaction transaction = transactionBuilder.builderOutFrom()
                 .userId(AuthUtils.getUserId())
                 .money(request.getMoney())
-                .currency(Currency.RUB)
+                .currency(currency)
                 .type(TransactionType.PAYMENT)
                 .toAccount(request.getAccountNumberTo())
                 .build();

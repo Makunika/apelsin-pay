@@ -86,14 +86,16 @@ public class PersonalTransactionListener {
 
         BigDecimal maxSumForPay = account.getType().getMaxSumForPay();
 
-        BigDecimal money = currencyService.convertMoney(
-                transaction.getCurrency(),
-                account.getAccount().getCurrency(),
-                transaction.getMoney()
-        );
+        if (!transaction.getType().equals("PAYMENT")) {
+            BigDecimal money = currencyService.convertMoney(
+                    transaction.getCurrency(),
+                    account.getAccount().getCurrency(),
+                    transaction.getMoney()
+            );
 
-        if (maxSumForPay.compareTo(money) < 0) {
-            throw new TransactionNotAllowedException("Больше максимальной суммы для перевода по тарифу!");
+            if (maxSumForPay.compareTo(money) < 0) {
+                throw new TransactionNotAllowedException("Больше максимальной суммы для перевода по тарифу!");
+            }
         }
 
         transaction.setApproveSend(true);

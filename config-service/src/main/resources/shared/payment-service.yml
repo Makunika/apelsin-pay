@@ -21,11 +21,29 @@ spring:
     hibernate:
       ddl-auto: update
 
-pay:
-  main:
-    url: https://redirect.ru/main
-  internal:
-    url: http://localhost:3006/tinkoff/success
-
 server:
   port: 6006
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+pay:
+  main:
+    url: http://payment.pshiblo.xyz/
+  internal:
+    url: http://payment.pshiblo.xyz/tinkoff/success
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+pay:
+  main:
+    url: http://localhost:3006/
+  internal:
+    url: http://localhost:3006/tinkoff/success
