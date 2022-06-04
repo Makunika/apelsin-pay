@@ -1,0 +1,25 @@
+@startuml
+!include <cloudinsight/tomcat>
+!include <cloudinsight/kafka>
+!include <cloudinsight/java>
+!include <cloudinsight/postgresql>
+!include <cloudinsight/rabbitmq>
+!include <cloudinsight/docker>
+!include <cloudinsight/nodejs>
+!include <cloudinsight/nginx>
+!include <cloudinsight/linux>
+
+title __Front-end__
+ left to right direction
+
+node "<$nginx>\nNginx" as nginx_main
+rectangle "Контейнеры front-end сервисов" {
+  node "<$nginx><$nodejs>\napelsin-front" as js_main
+  node "<$nginx><$nodejs>\napelsin-front-payment" as js_payment
+}
+
+
+nginx_main --> js_main
+nginx_main --> js_payment
+
+@enduml

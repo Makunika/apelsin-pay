@@ -1,7 +1,8 @@
 @startuml
 title Транзакция\n
 autonumber 1
-"Пользователь" as p -> "Система" as sys : Открыть транзакцию
+actor "Клиент" as p
+p -> "Система" as sys : Открыть транзакцию
 activate sys
 sys --> p : Id транзакции
 alt Внутренний отправитель

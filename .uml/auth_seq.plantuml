@@ -1,32 +1,33 @@
 @startuml
 title Авторизация\n
 autonumber 1
-"Пользователь" as p -> "Веб-приложение" as js : Запросить форму входа
-activate p
+"Пользователь" as p -> "Клиент-приложение" as js : Войти
 activate js
-js --> p : Показать форму входа
+js -> p : Переадерсация пользователя на\nавторизационный сервис\nна специальный URL
 deactivate js
-loop "Пока нет успеха авторизации"
-    p -> p: Заполнение логина и пароля
-    p -> js: Передача логина и пароля
+activate p
+p -> "Авторизационный\nсервер" as auth : Переадресация
+deactivate p
+activate auth
+loop "Пока неверные логин и пароль"
+    auth --> p: Показ формы входа по логину и паролю
+    deactivate auth
+    activate p
+    p -> auth : Логин и пароль
     deactivate p
-    activate js
-    js -> "Сервер" as s: Передача логина и
-    deactivate js
-    activate s
-    s -> s: Проверка логина и пароля
-    alt Логин и пароль верные
-        s -> s: Генерация ключей
-        s --> js: Ключи для входа
-        activate js
-        js --> p: Сообщение об успехе авторизации
-        js -> js: Сохранение ключей авторизации
-        js -> js: Переход на главную страницу
-    else Логин и пароль неверные
-        s --> js: Ошибка авторизации
-        deactivate s
-        js --> p: Сообщение об ошибке авторизации
-        deactivate js
-    end
+    activate auth
+    auth -> auth : Проверка логина и пароля
 end
+auth -> auth: Генерация кода
+auth -> js : Код авторизации
+deactivate auth
+activate js
+js -> auth : Код авторизации
+deactivate js
+activate auth
+auth -> auth : Генерация ключей\nдоступа пользователя
+auth --> js : Ключи доступа пользователя
+deactivate auth
+activate js
+js -> : Доступ к защищенным ресурсам для пользователя
 @enduml

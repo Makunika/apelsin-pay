@@ -1,5 +1,6 @@
 @startuml
 title Состояние транзакций\n
+
 state Работа {
     state CREATED: Создана
     state CHECK_FROM: Проверка\nсписания денег

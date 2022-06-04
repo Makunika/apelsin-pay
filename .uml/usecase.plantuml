@@ -1,0 +1,32 @@
+@startuml
+title __Варианты использования__
+skinparam linetype ortho
+:Real Person: as rp
+:Employee: as emp
+:Legal person: as lp
+lp --|> rp
+emp --|> lp
+
+rp --> (Auth)
+rp --> (Open account)
+rp --> (Close account)
+rp --> (Get info of accounts)
+rp --> (Open transaction)
+rp --> (Show accounts type)
+lp --> (Register for payments)
+emp --> (Edit accounts types)
+(Registration) ..> "<extend>" (Auth)
+(Reset password) ..> "<extend>" (Auth)
+
+(Open account) ..> "<include>" (Auth)
+(Close account) ..> "<include>" (Auth)
+(Get info of accounts) ..> "<include>" (Auth)
+(Open transaction) ..> "<include>" (Auth)
+(Show accounts type) ..> "<include>" (Auth)
+(Register for payments) ..> "<include>" (Auth)
+(Edit accounts types) ..> "<include>" (Auth)
+note right of Admin : Это пример заметки.
+
+
+
+@enduml
