@@ -72,9 +72,9 @@ services:
     image: makuni/apelsin-auth-service
     restart: always
     healthcheck:
-      test: "curl --fail --silent localhost:5000/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
+      test: "curl -f http://localhost:5000/actuator/health || exit 1"
+      interval: 30s
+      timeout: 60s
       retries: 50
     depends_on:
       - config

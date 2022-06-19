@@ -72,7 +72,7 @@ public class TransactionsController {
                 .type(TransactionType.TRANSFER)
                 .toAccount(request.getAccountNumberTo())
                 .build();
-        return transactionService.createFromTinkoff(transaction, "http://localhost:3000/tinkoff/success");
+        return transactionService.createFromTinkoff(transaction, "http://pshiblo.xyz/tinkoff/success");
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")

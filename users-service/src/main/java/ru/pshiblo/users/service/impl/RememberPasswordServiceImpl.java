@@ -68,7 +68,7 @@ public class RememberPasswordServiceImpl implements RememberPasswordService {
     private void sendEmailRememberPassword(String token, String email, String login) {
         String url = "http://pshiblo.xyz/reset-password/check?" + token;
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("apelsin.pay@gmail.com");
+        message.setFrom("apelsin.pay@yandex.ru");
         message.setTo(email);
         message.setSubject("Восстановление пароля | Apelsin");
         message.setText("Добрый день," + login + "!\nДля восстановления пароля перейдите по ссылке: " + url);

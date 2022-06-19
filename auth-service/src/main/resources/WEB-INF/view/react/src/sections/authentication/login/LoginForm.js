@@ -67,7 +67,7 @@ export default function LoginForm(props) {
         </Stack>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-          <Link variant="subtitle2" href="http://localhost:3000/reset-password" underline="hover">
+          <Link variant="subtitle2" href="http://pshiblo.xyz/reset-password" underline="hover">
             Забыли пароль?
           </Link>
         </Stack>
