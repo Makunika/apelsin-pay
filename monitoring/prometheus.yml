@@ -1,0 +1,11 @@
+scrape_configs:
+  - job_name: 'apelsin-auth-service'
+    scrape_interval: 5s
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['auth-service:5000']
+  - job_name: 'apelsin-transaction-service'
+    scrape_interval: 5s
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ 'transaction-service:6001' ]

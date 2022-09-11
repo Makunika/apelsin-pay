@@ -1,8 +1,7 @@
 spring:
   datasource:
-    url: jdbc:postgresql://192.168.3.121:5432/maxbank-users
+    url: jdbc:postgresql://${IP_DB}:5432/maxbank-users
     username: maxbank-users
-    password: maxbank-users
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true

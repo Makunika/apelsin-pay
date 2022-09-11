@@ -35,6 +35,10 @@
             <artifactId>lombok</artifactId>
             <version>1.18.22</version>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

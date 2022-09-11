@@ -1,5 +1,7 @@
-version: '2.1'
+version: '3.7'
 services:
+
+
   rabbitmq:
     image: rabbitmq:3-management
     restart: always
@@ -13,7 +15,9 @@ services:
   config:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
-    image: makuni/apelsin-config
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-config:latest
     restart: always
     logging:
       options:
@@ -23,7 +27,9 @@ services:
   registry:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
-    image: makuni/apelsin-registry
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-registry:latest
     restart: always
     ports:
       - "8761:8761"
@@ -37,7 +43,9 @@ services:
   gateway:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
-    image: makuni/apelsin-gateway
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-gateway:latest
     restart: always
     ports:
       - "8080:8080"
@@ -69,7 +77,9 @@ services:
       INFO_BUSINESS_SERVICE_PASSWORD: $INFO_BUSINESS_SERVICE_PASSWORD
       AUTH_SHA_SALT: $AUTH_SHA_SALT
       PAYMENT_SERVICE_PASSWORD: $PAYMENT_SERVICE_PASSWORD
-    image: makuni/apelsin-auth-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-auth-service:latest
     restart: always
     healthcheck:
       test: "curl -f http://localhost:5000/actuator/health || exit 1"
@@ -91,7 +101,9 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       USERS_SERVICE_PASSWORD: $USERS_SERVICE_PASSWORD
       AUTH_SHA_SALT: $AUTH_SHA_SALT
-    image: makuni/apelsin-users-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-users-service:latest
     restart: always
     depends_on:
       auth-service:
@@ -109,7 +121,9 @@ services:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       ACCOUNT_BUSINESS_SERVICE_PASSWORD: $ACCOUNT_BUSINESS_SERVICE_PASSWORD
-    image: makuni/apelsin-account-business-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-account-business-service:latest
     restart: always
     depends_on:
       auth-service:
@@ -129,7 +143,9 @@ services:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       ACCOUNT_PERSONAL_SERVICE_PASSWORD: $ACCOUNT_PERSONAL_SERVICE_PASSWORD
-    image: makuni/apelsin-account-personal-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-account-personal-service:latest
     restart: always
     depends_on:
       auth-service:
@@ -149,7 +165,9 @@ services:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       TRANSACTION_SERVICE_PASSWORD: $TRANSACTION_SERVICE_PASSWORD
-    image: makuni/apelsin-transaction-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-transaction-service:latest
     restart: always
     depends_on:
       auth-service:
@@ -169,7 +187,9 @@ services:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       INFO_BUSINESS_SERVICE_PASSWORD: $INFO_BUSINESS_SERVICE_PASSWORD
-    image: makuni/apelsin-info-business-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-info-business-service:latest
     restart: always
     depends_on:
       auth-service:
@@ -187,7 +207,9 @@ services:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       INFO_PERSONAL_SERVICE_PASSWORD: $INFO_PERSONAL_SERVICE_PASSWORD
-    image: makuni/apelsin-info-personal-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-info-personal-service:latest
     restart: always
     depends_on:
       auth-service:
@@ -205,7 +227,9 @@ services:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       PAYMENT_SERVICE_PASSWORD: $PAYMENT_SERVICE_PASSWORD
-    image: makuni/apelsin-payment-service
+      IP_DB: $IP_DB
+      DB_PASSWORD: $DB_PASSWORD
+    image: makuni/apelsin-payment-service:latest
     restart: always
     depends_on:
       auth-service:

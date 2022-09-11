@@ -11,9 +11,8 @@ spring:
     name: info-personal-service
 
   datasource:
-    url: jdbc:postgresql://192.168.3.121:5432/info-personal
+    url: jdbc:postgresql://${IP_DB}:5432/info-personal
     username: info-personal
-    password: info-personal
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: false

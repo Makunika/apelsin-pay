@@ -32,6 +32,8 @@ public class BusinessTransactionListener {
     private final CurrencyService currencyService;
     private final RabbitTemplate rabbitTemplate;
 
+    
+    
     @RabbitListener(
             bindings = @QueueBinding(
                     key = "transaction.close.after.business",

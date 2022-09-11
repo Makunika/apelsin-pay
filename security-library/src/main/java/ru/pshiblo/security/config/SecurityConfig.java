@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf().disable()
                 .authorizeRequests(authz -> authz
-                        .antMatchers("/actuator/**", "/public/**", "/error/**").permitAll()
+                        .antMatchers("/actuator", "/actuator/**", "/public/**", "/error/**").permitAll()
                         .anyRequest().access("hasAuthority('ROLE_UNBAN')")
                 )
                 .oauth2ResourceServer(
@@ -49,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
-        webSecurity.ignoring().antMatchers("/actuator/**", "/public/**", "/error/**");
+        webSecurity.ignoring().antMatchers("/actuator", "/actuator/**", "/public/**", "/error/**");
     }
 
     @Bean

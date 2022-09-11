@@ -15,7 +15,19 @@ management:
     enabled-by-default: true
     web:
       exposure:
-        include: '*'
+        include: health,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+
+spring:
+  datasource:
+    password: ${DB_PASSWORD}
+
 ---
 spring:
   config:
