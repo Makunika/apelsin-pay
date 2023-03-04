@@ -2,6 +2,7 @@ package ru.pshiblo.transaction.web.controllers.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +34,9 @@ public class TransactionsController {
     private final TransactionService transactionService;
     private final TransactionBuilder transactionBuilder;
     private final TransactionMapper mapper;
+
+    @Value("${pay.tinkoff.url}")
+    private String payUrl;
 
     @PreAuthorize("hasAuthority('SCOPE_transaction_s')")
     @PostMapping("/payment/inner")
@@ -72,7 +76,7 @@ public class TransactionsController {
                 .type(TransactionType.TRANSFER)
                 .toAccount(request.getAccountNumberTo())
                 .build();
-        return transactionService.createFromTinkoff(transaction, "http://pshiblo.xyz/tinkoff/success");
+        return transactionService.createFromTinkoff(transaction, payUrl);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_user')")

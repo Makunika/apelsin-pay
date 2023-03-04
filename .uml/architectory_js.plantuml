@@ -9,7 +9,7 @@
 !include <cloudinsight/nginx>
 !include <cloudinsight/linux>
 
-title __Front-end__
+'title __Front-end__
  left to right direction
 
 node "<$nginx>\nNginx" as nginx_main

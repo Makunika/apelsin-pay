@@ -11,7 +11,7 @@ spring:
     name: info-business-service
 
   datasource:
-    url: jdbc:postgresql://${IP_DB}:5432/info-business
+    url: jdbc:postgresql://${IP_DB}:${PORT_DB}/info-business
     username: info-business
     driver-class-name: org.postgresql.Driver
   jpa:

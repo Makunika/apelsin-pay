@@ -11,7 +11,7 @@ spring:
     name: payment-service
 
   datasource:
-    url: jdbc:postgresql://${IP_DB}:5432/apelsin-payment
+    url: jdbc:postgresql://${IP_DB}:${PORT_DB}/apelsin-payment
     username: apelsin-payment
     driver-class-name: org.postgresql.Driver
   jpa:
@@ -31,9 +31,9 @@ spring:
 
 pay:
   main:
-    url: http://payment.pshiblo.xyz/
+    url: ${PAY_MAIN}
   internal:
-    url: http://payment.pshiblo.xyz/tinkoff/success
+    url: ${PAY_INTERNAL}
 
 ---
 spring:

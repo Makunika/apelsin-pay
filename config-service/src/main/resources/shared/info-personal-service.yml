@@ -11,7 +11,7 @@ spring:
     name: info-personal-service
 
   datasource:
-    url: jdbc:postgresql://${IP_DB}:5432/info-personal
+    url: jdbc:postgresql://${IP_DB}:${PORT_DB}/info-personal
     username: info-personal
     driver-class-name: org.postgresql.Driver
   jpa:

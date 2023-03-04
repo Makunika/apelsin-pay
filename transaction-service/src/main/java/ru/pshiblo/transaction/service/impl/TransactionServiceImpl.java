@@ -97,7 +97,7 @@ public class TransactionServiceImpl implements TransactionService {
                             .build());
             savedTransaction.setAdditionInfoFrom(objectMapper.writeValueAsString(response));
             savedTransaction.setTinkoffPaymentId(response.getId());
-            String testPaymentUrl = "http://pshiblo.xyz/tinkoff/test?" + redirectUrl;
+            String testPaymentUrl = "http://graduate.pshiblo.xyz/tinkoff/test?" + redirectUrl;
             log.info(response.getPaymentUrl() + " replace to " + testPaymentUrl);
             savedTransaction.setTinkoffPayUrl(testPaymentUrl);
             savedTransaction.setIsWithdrawByTinkoff(false);

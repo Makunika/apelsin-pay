@@ -28,7 +28,7 @@ public class PersonalAccountServiceImpl implements PersonalAccountService {
 
     @Override
     public PersonalAccount create(AuthUser user, PersonalAccountType type) {
-        if (getByUserId(user.getId()).size() >= 2) {
+        if (getByUserId(user.getId()).size() >= 4) {
             throw new ApelsinException("Limit of accounts of user " + user);
         }
 

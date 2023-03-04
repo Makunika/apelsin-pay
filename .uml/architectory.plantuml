@@ -9,7 +9,7 @@
 !include <cloudinsight/nginx>
 !include <cloudinsight/linux>
 
-title __Архитектура приложения__
+'title __Архитектура приложения__
  left to right direction
 
 person "Клиент" as client

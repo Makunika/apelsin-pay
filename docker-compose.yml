@@ -1,7 +1,5 @@
 version: '3.7'
 services:
-
-
   rabbitmq:
     image: rabbitmq:3-management
     restart: always
@@ -17,6 +15,7 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       IP_DB: $IP_DB
       DB_PASSWORD: $DB_PASSWORD
+      PORT_DB: $PORT_DB
     image: makuni/apelsin-config:latest
     restart: always
     logging:
@@ -27,8 +26,6 @@ services:
   registry:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
-      IP_DB: $IP_DB
-      DB_PASSWORD: $DB_PASSWORD
     image: makuni/apelsin-registry:latest
     restart: always
     ports:
@@ -43,8 +40,6 @@ services:
   gateway:
     environment:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
-      IP_DB: $IP_DB
-      DB_PASSWORD: $DB_PASSWORD
     image: makuni/apelsin-gateway:latest
     restart: always
     ports:
@@ -78,7 +73,10 @@ services:
       AUTH_SHA_SALT: $AUTH_SHA_SALT
       PAYMENT_SERVICE_PASSWORD: $PAYMENT_SERVICE_PASSWORD
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
+      URL_LOGIN_MAIN: $URL_LOGIN_MAIN
+      URL_LOGIN_PAYMENT: $URL_LOGIN_PAYMENT
     image: makuni/apelsin-auth-service:latest
     restart: always
     healthcheck:
@@ -102,6 +100,7 @@ services:
       USERS_SERVICE_PASSWORD: $USERS_SERVICE_PASSWORD
       AUTH_SHA_SALT: $AUTH_SHA_SALT
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
     image: makuni/apelsin-users-service:latest
     restart: always
@@ -122,6 +121,7 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       ACCOUNT_BUSINESS_SERVICE_PASSWORD: $ACCOUNT_BUSINESS_SERVICE_PASSWORD
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
     image: makuni/apelsin-account-business-service:latest
     restart: always
@@ -144,6 +144,7 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       ACCOUNT_PERSONAL_SERVICE_PASSWORD: $ACCOUNT_PERSONAL_SERVICE_PASSWORD
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
     image: makuni/apelsin-account-personal-service:latest
     restart: always
@@ -166,7 +167,9 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       TRANSACTION_SERVICE_PASSWORD: $TRANSACTION_SERVICE_PASSWORD
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
+      PAY_INTERNAL: $PAY_INTERNAL
     image: makuni/apelsin-transaction-service:latest
     restart: always
     depends_on:
@@ -188,6 +191,7 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       INFO_BUSINESS_SERVICE_PASSWORD: $INFO_BUSINESS_SERVICE_PASSWORD
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
     image: makuni/apelsin-info-business-service:latest
     restart: always
@@ -208,6 +212,7 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       INFO_PERSONAL_SERVICE_PASSWORD: $INFO_PERSONAL_SERVICE_PASSWORD
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
     image: makuni/apelsin-info-personal-service:latest
     restart: always
@@ -228,7 +233,10 @@ services:
       CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
       PAYMENT_SERVICE_PASSWORD: $PAYMENT_SERVICE_PASSWORD
       IP_DB: $IP_DB
+      PORT_DB: $PORT_DB
       DB_PASSWORD: $DB_PASSWORD
+      PAY_MAIN: $PAY_MAIN
+      PAY_INTERNAL: $PAY_INTERNAL
     image: makuni/apelsin-payment-service:latest
     restart: always
     depends_on:

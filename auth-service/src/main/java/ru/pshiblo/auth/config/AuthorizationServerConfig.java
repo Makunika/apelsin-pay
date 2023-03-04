@@ -1,13 +1,10 @@
 package ru.pshiblo.auth.config;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -15,15 +12,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import ru.pshiblo.auth.model.AuthUser;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.util.Map;
 
 @Configuration
 @EnableAuthorizationServer
@@ -51,14 +41,14 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         clients.inMemory()
                 .withClient("browser_main")
                 .authorizedGrantTypes("refresh_token", "authorization_code")
-                .redirectUris("https://oidcdebugger.com/debug", "https://oauth.pstmn.io/v1/browser-callback", "http://localhost:3000/login", "http://pshiblo.xyz/login")
+                .redirectUris("https://oidcdebugger.com/debug", "https://oauth.pstmn.io/v1/browser-callback", "http://localhost:3000/login", "http://graduate.pshiblo.xyz/login", env.getProperty("URL_LOGIN_MAIN"))
                 .autoApprove(true)
                 .scopes("user")
                 .and()
 
                 .withClient("browser_payment")
                 .authorizedGrantTypes("implicit")
-                .redirectUris("https://oidcdebugger.com/debug", "https://oauth.pstmn.io/v1/browser-callback", "http://localhost:3006/login", "http://payment.pshiblo.xyz/login")
+                .redirectUris("https://oidcdebugger.com/debug", "https://oauth.pstmn.io/v1/browser-callback", "http://localhost:3006/login", "http://payment.graduate.pshiblo.xyz/login", env.getProperty("URL_LOGIN_PAYMENT"))
                 .autoApprove(true)
                 .scopes("user_payment")
                 .and()

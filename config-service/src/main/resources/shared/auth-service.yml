@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${IP_DB}:5432/maxbank-users
+    url: jdbc:postgresql://${IP_DB}:${PORT_DB}/maxbank-users
     username: maxbank-users
     driver-class-name: org.postgresql.Driver
   jpa:

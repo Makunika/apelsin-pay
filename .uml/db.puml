@@ -1,0 +1,112 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+namespace ru.pshiblo.info.business {
+    namespace domain {
+        class Company {
+              + name: String
+              + updated: LocalDateTime
+              + companyUsers: Set<CompanyUser>
+              + updatedBy: String
+              + inn: String
+              + id: Long
+              + created: LocalDateTime
+              + status: ConfirmedStatus
+              + address: String
+              + apiKey: String
+              + createdBy: String
+            }
+            class CompanyUser {
+              + company: Company
+              + roleCompany: RoleCompany
+              + id: Long
+              + userId: long
+            }
+    }
+
+    namespace web.controllers {
+        class ru.pshiblo.info.business.web.controllers.CompanyController {
+              + findByUser(long): List<CompanyUserResponseDto>
+              + deleteUserFromCompany(DeleteUserFromCompanyDto): void
+              + findOwnerCompanies(): List<CompanyUserResponseDto>
+              + findById(long): CompanyResponseDto
+              + getApiKey(long): ResponseEntity<String>
+              + failedConfirm(FailedConfirmCompany): void
+              + regenerateApiKey(long): void
+              + delete(long): void
+              + findByUser(): List<CompanyUserResponseDto>
+              + checkApiKey(long, String): ResponseEntity<Boolean>
+              + confirm(long): void
+              + addUserToCompany(AddUserToCompanyDto): void
+              + create(CreateCompanyDto): void
+              + update(UpdateCompanyDto): void
+            }
+    }
+
+    namespace services {
+        interface CompanyService << interface >> {
+              + addUserToCompany(long, AuthUser, long, RoleCompany): void
+              + update(Company, AuthUser): void
+              + findOwnerCompanies(long): List<CompanyUser>
+              + deleteUserFromCompany(long, AuthUser, long): void
+              + findByUser(long): List<CompanyUser>
+              + failedConfirm(long, String): void
+              + delete(long, AuthUser): void
+              + getApiKey(long, AuthUser): String
+              + confirm(long): void
+              + findById(long): Optional<Company>
+              + regenerateApiKry(long, AuthUser): void
+              + checkApiKey(long, String): boolean
+              + create(Company, AuthUser): void
+              + isOwnerCompany(Company, AuthUser): boolean
+              + isOwnerCompany(long, AuthUser): boolean
+            }
+            class CompanyServiceImpl {
+                ...
+            }
+            interface CompanyHistoryService << interface >> {
+                  + getByCompany(Company): List<CompanyHistory>
+                  + getByCompanyId(long): List<CompanyHistory>
+                  + create(Company, String): void
+            }
+            class CompanyHistoryServiceImpl {
+                ...
+            }
+    }
+
+    namespace repository {
+        interface CompanyHistoryRepository << interface >> {
+              + findByCompany_Id(Long): List<CompanyHistory>
+              + findByCompany(Company): List<CompanyHistory>
+        }
+        interface CompanyRepository << interface >>
+
+        interface CompanyUserRepository << interface >> {
+          + findByUserIdAndRoleCompany(long, RoleCompany): List<CompanyUser>
+          + findByUserId(long): List<CompanyUser>
+        }
+    }
+
+
+    namespace enums {
+        enum RoleCompany << enumeration >> {
+          + values(): RoleCompany[]
+          + valueOf(String): RoleCompany
+        }
+    }
+}
+
+ru.pshiblo.info.business.domain.Company                   "1" *-[#595959,plain]-> "companyUsers\n*" ru.pshiblo.info.business.domain.CompanyUser
+ru.pshiblo.info.business.web.controllers.CompanyController         "1" *-[#595959,plain]-> "service\n1" ru.pshiblo.info.business.services.CompanyService
+ru.pshiblo.info.business.services.CompanyHistoryServiceImpl "1" *-[#595959,plain]-> "repository\n1" ru.pshiblo.info.business.repository.CompanyHistoryRepository
+ru.pshiblo.info.business.services.CompanyHistoryServiceImpl  -[#008200,dashed]-^  ru.pshiblo.info.business.services.CompanyHistoryService
+ru.pshiblo.info.business.services.CompanyServiceImpl        "1" *-[#595959,plain]-> "historyService\n1" ru.pshiblo.info.business.services.CompanyHistoryService
+ru.pshiblo.info.business.services.CompanyServiceImpl        "1" *-[#595959,plain]-> "companyRepository\n1" ru.pshiblo.info.business.repository.CompanyRepository
+ru.pshiblo.info.business.services.CompanyServiceImpl         -[#008200,dashed]-^  ru.pshiblo.info.business.services.CompanyService
+ru.pshiblo.info.business.services.CompanyServiceImpl         -[#595959,dashed]->  ru.pshiblo.info.business.domain.CompanyUser               : "«create»"
+ru.pshiblo.info.business.services.CompanyServiceImpl        "1" *-[#595959,plain]-> "companyUserRepository\n1" ru.pshiblo.info.business.repository.CompanyUserRepository
+ru.pshiblo.info.business.domain.CompanyUser               "1" *-[#595959,plain]-> "company\n1" ru.pshiblo.info.business.domain.Company
+ru.pshiblo.info.business.domain.CompanyUser               "1" *-[#595959,plain]-> "roleCompany\n1" ru.pshiblo.info.business.enums.RoleCompany
+@enduml

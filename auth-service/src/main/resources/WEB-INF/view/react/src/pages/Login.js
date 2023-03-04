@@ -39,7 +39,7 @@ export default function Login() {
     <RootStyle title="Вход">
       <AuthLayout>
         Нет аккаунта? &nbsp;
-        <Link variant="subtitle2" href="http://pshiblo.xyz/register" underline="none">
+        <Link variant="subtitle2" href="http://graduate.pshiblo.xyz/register" underline="none">
           Создать
         </Link>
       </AuthLayout>
@@ -75,7 +75,7 @@ export default function Login() {
             }}
           >
             Нет аккаунта?&nbsp;
-            <Link variant="subtitle2" href="http://pshiblo.xyz/register" underline="hover">
+            <Link variant="subtitle2" href="http://graduate.pshiblo.xyz/register" underline="hover">
               Создать
             </Link>
           </Typography>
