@@ -41,7 +41,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          public-key-location: http://auth-service:5000/oauth/token_key_new
+          jwk-set-uri: http://auth-service:5000/oauth2/jwks
+      client:
+        provider:
+          apelsin:
+            token-uri: http://auth-service:5000/oauth2/token
 
 eureka:
   instance:
@@ -50,10 +54,6 @@ eureka:
     serviceUrl:
       defaultZone: http://registry:8761/eureka/
 
-security:
-  oauth2:
-    client:
-      accessTokenUri: http://auth-service:5000/oauth/token
 ---
 spring:
   config:
@@ -71,7 +71,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          public-key-location: http://localhost:5000/oauth/token_key_new
+          jwk-set-uri: http://localhost:5000/oauth2/jwks
+      client:
+        provider:
+          apelsin:
+            token-uri: http://localhost:5000/oauth2/token
 
 eureka:
   instance:
@@ -79,8 +83,3 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-
-security:
-  oauth2:
-    client:
-      accessTokenUri: http://localhost:5000/oauth/token

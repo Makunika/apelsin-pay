@@ -1,12 +1,14 @@
-security:
-  oauth2:
-    client:
-      clientId: info-personal-service
-      clientSecret: ${INFO_PERSONAL_SERVICE_PASSWORD}
-      grant-type: client_credentials
-      scope: server,users_s
-
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          internal:
+            client-id: info-personal-service
+            client-secret: ${INFO_PERSONAL_SERVICE_PASSWORD}
+            authorization-grant-type: client_credentials
+            scope: server,users_s
+            provider: apelsin
   application:
     name: info-personal-service
 

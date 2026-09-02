@@ -1,71 +1,44 @@
 package ru.pshiblo.auth.config;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 /**
+ * Цепочка фильтров для всего, что не является OAuth2-эндпоинтом: встроенная React-страница логина
+ * ({@code /index.html} + {@code POST /perform_login}), её статика, actuator.
+ * Аутентификация пользователей — {@link ru.pshiblo.auth.service.impl.UserServiceImpl} +
+ * {@link org.springframework.security.crypto.password.PasswordEncoder} из common-library
+ * (bcrypt с прозрачным перехешированием legacy Hmac-хешей).
+ *
  * @author Maxim Pshiblo
  */
+@Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
-@Order(1)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    public static final String LOGIN_PROCESSING_URL = "/perform_login";
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .authorizeRequests()
-                .antMatchers("/actuator/**").permitAll()
-                .antMatchers("/oauth/token_key_new").permitAll()
-                .antMatchers("/error").permitAll()
-                .antMatchers("/perform_login").permitAll()
-                .antMatchers(
-                        HttpMethod.GET,
-                        "/index*", "/static/**", "/*.js", "/*.json", "/*.ico", "/favicon/**")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .csrf().disable()
-                .formLogin()
-                .loginPage("/index.html")
-                .loginProcessingUrl("/perform_login")
-                .and()
-                .cors()
-                .and()
-                .httpBasic()
-                .disable();
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder);
-    }
-
-    @Override
     @Bean
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    @Order(2)
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/actuator/**", "/error", LOGIN_PROCESSING_URL).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/index*", "/static/**", "/*.js", "/*.json", "/*.ico", "/favicon/**").permitAll()
+                        .anyRequest().authenticated())
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .formLogin(form -> form
+                        .loginPage(AuthorizationServerConfig.LOGIN_PAGE)
+                        .loginProcessingUrl(LOGIN_PROCESSING_URL))
+                .httpBasic(basic -> basic.disable());
+        return http.build();
     }
 }

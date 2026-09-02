@@ -71,7 +71,7 @@ public class AuthUser implements UserDetails {
     @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
-        return !isLock;
+        return !Boolean.TRUE.equals(isLock);
     }
 
     @JsonIgnore

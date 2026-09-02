@@ -1,12 +1,14 @@
-security:
-  oauth2:
-    client:
-      clientId: payment-service
-      clientSecret: ${PAYMENT_SERVICE_PASSWORD}
-      grant-type: client_credentials
-      scope: server,account_b_s,info_b_s,transaction_s
-
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          internal:
+            client-id: payment-service
+            client-secret: ${PAYMENT_SERVICE_PASSWORD}
+            authorization-grant-type: client_credentials
+            scope: server,account_b_s,info_b_s,transaction_s
+            provider: apelsin
   application:
     name: payment-service
 

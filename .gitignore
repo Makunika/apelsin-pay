@@ -36,3 +36,6 @@ build/
 
 *.plantuml
 /auth-service/src/main/resources/WEB-INF/view/react/node/
+
+# RSA-пара для подписи JWT (AUTH_KEYS_PATH, по умолчанию ./.keys) — генерируется auth-service, в git не попадает
+.keys/

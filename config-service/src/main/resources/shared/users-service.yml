@@ -8,6 +8,16 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQL10Dialect
     hibernate:
       ddl-auto: update
+  security:
+    oauth2:
+      client:
+        registration:
+          internal:
+            client-id: users-service
+            client-secret: ${USERS_SERVICE_PASSWORD}
+            authorization-grant-type: client_credentials
+            scope: server
+            provider: apelsin
 
 server:
   port: 5001
@@ -15,11 +25,3 @@ server:
 encoder:
   sha512:
     salt: ${AUTH_SHA_SALT}
-
-security:
-  oauth2:
-    client:
-      clientId: users-service
-      clientSecret: ${USERS_SERVICE_PASSWORD}
-      grant-type: client_credentials
-      scope: server

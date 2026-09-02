@@ -5,7 +5,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.pshiblo.auth.clients.PersonalInfoClient;
 import ru.pshiblo.auth.clients.UsersClient;
 import ru.pshiblo.auth.clients.dto.PersonInfo;
@@ -19,7 +18,6 @@ import ru.pshiblo.common.exception.NotFoundException;
  */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserServiceImpl implements UserDetailsService {
 
     private final UsersClient usersClient;

@@ -1,112 +1,95 @@
 package ru.pshiblo.auth.config;
 
-import lombok.RequiredArgsConstructor;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.util.StringUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import ru.pshiblo.auth.jwk.RsaKeyPairStore;
+import ru.pshiblo.auth.jwt.ApelsinTokenCustomizer;
 
+import java.util.List;
+
+/**
+ * Spring Authorization Server: цепочка фильтров для эндпоинтов протокола
+ * ({@code /oauth2/authorize}, {@code /oauth2/token}, {@code /oauth2/jwks}, ...),
+ * ключи подписи, issuer и кастомные claims access-токена.
+ * Неавторизованный запрос на {@code /oauth2/authorize} уводится на встроенную страницу логина.
+ */
 @Configuration
-@EnableAuthorizationServer
-@RequiredArgsConstructor
-@Order(1)
-public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+@EnableConfigurationProperties(AuthProperties.class)
+public class AuthorizationServerConfig {
 
-    private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
-    private final JwtAccessTokenConverter jwtAccessTokenConverter;
-    private final Environment env;
+    public static final String LOGIN_PAGE = "/index.html";
 
-    @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security
-                .tokenKeyAccess("permitAll()")
-                .checkTokenAccess("permitAll()")
-                .passwordEncoder(NoOpPasswordEncoder.getInstance());
-
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        http
+                .cors(Customizer.withDefaults())
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(LOGIN_PAGE)));
+        return http.build();
     }
 
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        //clients.jdbc(dataSource)
-        clients.inMemory()
-                .withClient("browser_main")
-                .authorizedGrantTypes("refresh_token", "authorization_code")
-                .redirectUris("https://oidcdebugger.com/debug", "https://oauth.pstmn.io/v1/browser-callback", "http://localhost:3000/login", "http://graduate.pshiblo.xyz/login", env.getProperty("URL_LOGIN_MAIN"))
-                .autoApprove(true)
-                .scopes("user")
-                .and()
-
-                .withClient("browser_payment")
-                .authorizedGrantTypes("implicit")
-                .redirectUris("https://oidcdebugger.com/debug", "https://oauth.pstmn.io/v1/browser-callback", "http://localhost:3006/login", "http://payment.graduate.pshiblo.xyz/login", env.getProperty("URL_LOGIN_PAYMENT"))
-                .autoApprove(true)
-                .scopes("user_payment")
-                .and()
-
-                .withClient("info-personal-service")
-                .secret(env.getProperty("INFO_PERSONAL_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "users_s")
-                .and()
-
-                .withClient("info-business-service")
-                .secret(env.getProperty("INFO_BUSINESS_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server")
-                .and()
-
-                .withClient("users-service")
-                .secret(env.getProperty("USERS_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server")
-                .and()
-
-                .withClient("auth-service")
-                .secret(env.getProperty("AUTH_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "info_b_s", "info_p_s")
-                .and()
-
-                .withClient("transaction-service")
-                .secret(env.getProperty("TRANSACTION_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "account_b_s", "account_p_s")
-                .and()
-
-                .withClient("account-business-service")
-                .secret(env.getProperty("ACCOUNT_BUSINESS_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "info_b_s")
-                .and()
-
-                .withClient("payment-service")
-                .secret(env.getProperty("PAYMENT_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "account_b_s", "info_b_s", "transaction_s")
-                .and()
-
-                .withClient("account-personal-service")
-                .secret(env.getProperty("ACCOUNT_PERSONAL_SERVICE_PASSWORD"))
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("server", "transaction_s");
+    @Bean
+    public JWKSource<SecurityContext> jwkSource(RsaKeyPairStore keyPairStore) {
+        RSAKey rsaKey = keyPairStore.loadOrGenerate();
+        JWKSet jwkSet = new JWKSet(rsaKey);
+        return new ImmutableJWKSet<>(jwkSet);
     }
 
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints
-                .authenticationManager(authenticationManager)
-                .userDetailsService(userDetailsService)
-                .tokenStore(new InMemoryTokenStore())
-                .accessTokenConverter(jwtAccessTokenConverter);
+    @Bean
+    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
+    }
+
+    @Bean
+    public AuthorizationServerSettings authorizationServerSettings(AuthProperties properties) {
+        AuthorizationServerSettings.Builder builder = AuthorizationServerSettings.builder();
+        if (StringUtils.hasText(properties.getIssuer())) {
+            builder.issuer(properties.getIssuer());
+        }
+        return builder.build();
+    }
+
+    @Bean
+    public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
+        return new ApelsinTokenCustomizer();
+    }
+
+    /**
+     * Имя бина фиксировано: {@code http.cors()} ищет именно {@code corsConfigurationSource}.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(AuthProperties properties) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(properties.getCors().getAllowedOrigins());
+        configuration.setAllowedMethods(List.of(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.OPTIONS.name()));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

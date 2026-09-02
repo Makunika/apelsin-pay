@@ -1,11 +1,6 @@
 package ru.pshiblo.auth.clients.dto;
 
-import lombok.*;
-import org.hibernate.Hibernate;
-import org.hibernate.annotations.Immutable;
-
-import javax.persistence.*;
-import java.util.Objects;
+import lombok.Data;
 
 @Data
 public class Role {
