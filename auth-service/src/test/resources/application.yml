@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: auth-service
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+    discovery:
+      enabled: false
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,/classpath:/public/,classpath:/WEB-INF/
+
+eureka:
+  client:
+    enabled: false
+
+encoder:
+  sha512:
+    salt: test-hmac-salt
+
+# секреты сервисных клиентов — те же имена, что и env-переменные в проде
+INFO_PERSONAL_SERVICE_PASSWORD: info-personal-secret
+INFO_BUSINESS_SERVICE_PASSWORD: info-business-secret
+USERS_SERVICE_PASSWORD: users-secret
+AUTH_SERVICE_PASSWORD: auth-secret
+TRANSACTION_SERVICE_PASSWORD: transaction-secret
+ACCOUNT_BUSINESS_SERVICE_PASSWORD: account-business-secret
+PAYMENT_SERVICE_PASSWORD: payment-secret
+ACCOUNT_PERSONAL_SERVICE_PASSWORD: account-personal-secret
+
+auth:
+  issuer: http://localhost:5000
+  keys:
+    path: target/test-keys
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+  clients:
+    browser-main:
+      redirect-uris: http://localhost:3000/login
+      access-token-ttl: 1h
+    browser-payment:
+      redirect-uris: http://localhost:3006/login
+      access-token-ttl: 30m
