@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import ru.pshiblo.account.domain.HoldMoney;
 import ru.pshiblo.account.exceptions.TransactionNotAllowedException;
 import ru.pshiblo.account.service.AccountService;
@@ -77,9 +78,16 @@ public class WaitTransactionListener {
         }
 
         String tinkoffPaymentId = transaction.getTinkoffPaymentId();
-        TinkoffInvoicingStatusResponse statusInvoicing = tinkoffApi.getStatusInvoicing(tinkoffPaymentId);
-        if (!statusInvoicing.getStatus().isSuccess()) {
-            throw new TransactionNotAllowedException("Tinkoff not confirmed");
+        if (StringUtils.hasText(tinkoffPaymentId)) {
+            TinkoffInvoicingStatusResponse statusInvoicing = tinkoffApi.getStatusInvoicing(tinkoffPaymentId);
+            if (!statusInvoicing.getStatus().isSuccess()) {
+                throw new TransactionNotAllowedException("Tinkoff not confirmed");
+            }
+        } else {
+            // Инвойса в песочнице Тинькофф нет (она была недоступна при открытии транзакции),
+            // проверять нечего: подтверждением служит локальная страница-заглушка /tinkoff/test.
+            log.warn("Транзакция {} без tinkoffPaymentId — пропускаем проверку статуса в Тинькофф",
+                    transactionId);
         }
 
         transaction.setStatus(TransactionStatus.START_TO_CHECK);

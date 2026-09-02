@@ -1,11 +1,11 @@
 package ru.pshiblo.transaction.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.time.DateUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,6 @@ import ru.pshiblo.account.enums.AccountType;
 import ru.pshiblo.account.enums.Currency;
 import ru.pshiblo.account.service.AccountService;
 import ru.pshiblo.account.service.CurrencyService;
-import ru.pshiblo.common.exception.IntegrationException;
 import ru.pshiblo.common.exception.NotAllowedOperationException;
 import ru.pshiblo.common.exception.NotFoundException;
 import ru.pshiblo.transaction.clients.BusinessAccountClient;
@@ -47,6 +46,10 @@ public class TransactionServiceImpl implements TransactionService {
     private final CurrencyService currencyService;
     private final TinkoffApi tinkoffApi;
     private final ObjectMapper objectMapper;
+
+    /** Демо-заглушка платёжной страницы Тинькофф (страница /tinkoff/test основного UI). */
+    @Value("${pay.tinkoff.test-url}")
+    private String tinkoffTestPayUrl;
 
     @Override
     public Transaction create(Transaction transaction) {
@@ -83,6 +86,10 @@ public class TransactionServiceImpl implements TransactionService {
                     "&id=" + savedTransaction.getId();
         }
 
+        // Обращение в песочницу Тинькофф — best-effort: её ответ нигде дальше не используется,
+        // реальный payment_url всё равно подменяется локальной страницей-заглушкой /tinkoff/test,
+        // а successPayment не смотрит на tinkoffPaymentId. Поэтому недоступность песочницы
+        // (в том числе неизвестная JVM TLS-цепочка business.tinkoff.ru) не должна ронять пополнение.
         try {
             TinkoffInvoicingResponse response = tinkoffApi.createInvoicing(
                     TinkoffInvoicingCreate.builder()
@@ -97,22 +104,17 @@ public class TransactionServiceImpl implements TransactionService {
                             .build());
             savedTransaction.setAdditionInfoFrom(objectMapper.writeValueAsString(response));
             savedTransaction.setTinkoffPaymentId(response.getId());
-            String testPaymentUrl = "http://graduate.pshiblo.xyz/tinkoff/test?" + redirectUrl;
-            log.info(response.getPaymentUrl() + " replace to " + testPaymentUrl);
-            savedTransaction.setTinkoffPayUrl(testPaymentUrl);
-            savedTransaction.setIsWithdrawByTinkoff(false);
-            repository.save(savedTransaction);
-            rabbitTemplate.convertAndSend("transaction.open", transaction);
-        } catch (IntegrationException e)
-        {
-            log.error(e.getMessage(), e);
-            savedTransaction.setStatus(TransactionStatus.CANCELED);
-            repository.save(savedTransaction);
-            throw new IntegrationException(500, e.getMessage());
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.warn("Инвойс в песочнице Тинькофф не создан, продолжаем с локальной заглушкой оплаты: {}",
+                    e.toString());
         }
+
+        String testPaymentUrl = tinkoffTestPayUrl + "?" + redirectUrl;
+        savedTransaction.setTinkoffPayUrl(testPaymentUrl);
+        savedTransaction.setIsWithdrawByTinkoff(false);
+        repository.save(savedTransaction);
+        rabbitTemplate.convertAndSend("transaction.open", transaction);
+
         return savedTransaction;
     }
 

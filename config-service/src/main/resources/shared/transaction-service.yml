@@ -30,6 +30,8 @@ apelsin:
 pay:
   tinkoff:
     url: ${PAY_INTERNAL}
+    # Заглушка вместо реальной платёжной страницы Тинькофф (страница /tinkoff/test основного UI)
+    test-url: ${PAY_TINKOFF_TEST_URL:http://localhost:3000/tinkoff/test}
 
 server:
   port: 6001
