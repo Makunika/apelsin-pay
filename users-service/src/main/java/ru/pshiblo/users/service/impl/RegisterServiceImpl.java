@@ -57,5 +57,15 @@ public class RegisterServiceImpl implements RegisterService {
         userRepository.save(user);
     }
 
+    @Override
+    public void updatePasswordHash(int userId, String encodedPasswordHash) {
+        if (encodedPasswordHash == null || !encodedPasswordHash.startsWith("{")) {
+            throw new IllegalArgumentException("Password hash must be prefixed with encoder id, e.g. {bcrypt}");
+        }
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(userId, User.class));
+        user.setPasswordHash(encodedPasswordHash);
+        userRepository.save(user);
+    }
+
 
 }

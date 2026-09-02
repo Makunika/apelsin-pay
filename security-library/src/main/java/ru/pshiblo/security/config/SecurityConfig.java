@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,6 +19,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 import ru.pshiblo.security.auditing.SecurityAuditorAware;
 import ru.pshiblo.security.jwt.CustomJwtGrantedAuthoritiesConverter;
+
+import java.util.Collection;
 
 /**
  * Resource-server всех бизнес-сервисов: JWT проверяется по JWK Set auth-service
@@ -53,12 +58,17 @@ public class SecurityConfig {
         return web -> web.ignoring().antMatchers(PUBLIC_PATHS);
     }
 
-    public static JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new DelegatingJwtGrantedAuthoritiesConverter(
+    /** SCOPE_* из claim scope + роли/ROLE_UNBAN из {@link CustomJwtGrantedAuthoritiesConverter}. */
+    public static Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
+        return new DelegatingJwtGrantedAuthoritiesConverter(
                 new JwtGrantedAuthoritiesConverter(),
                 new CustomJwtGrantedAuthoritiesConverter()
-        ));
+        );
+    }
+
+    public static JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
         return jwtAuthenticationConverter;
     }
 
