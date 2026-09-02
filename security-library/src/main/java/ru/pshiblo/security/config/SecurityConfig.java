@@ -8,48 +8,58 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.oauth2.server.resource.authentication.DelegatingJwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.web.SecurityFilterChain;
 import ru.pshiblo.security.auditing.SecurityAuditorAware;
 import ru.pshiblo.security.jwt.CustomJwtGrantedAuthoritiesConverter;
 
+/**
+ * Resource-server всех бизнес-сервисов: JWT проверяется по JWK Set auth-service
+ * ({@code spring.security.oauth2.resourceserver.jwt.jwk-set-uri} → {@code /oauth2/jwks}),
+ * авторитеты — {@code SCOPE_*} из claim {@code scope} плюс роли и {@code ROLE_UNBAN}
+ * из {@link CustomJwtGrantedAuthoritiesConverter}. Всё, кроме actuator/public/error, требует ROLE_UNBAN.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-@Order(Ordered.HIGHEST_PRECEDENCE)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    private static final String[] PUBLIC_PATHS = {"/actuator", "/actuator/**", "/public/**", "/error/**"};
 
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new DelegatingJwtGrantedAuthoritiesConverter(
-                new JwtGrantedAuthoritiesConverter(),
-                new CustomJwtGrantedAuthoritiesConverter()
-        ));
-
-
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain resourceServerSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors()
                 .and()
                 .csrf().disable()
                 .authorizeRequests(authz -> authz
-                        .antMatchers("/actuator", "/actuator/**", "/public/**", "/error/**").permitAll()
+                        .antMatchers(PUBLIC_PATHS).permitAll()
                         .anyRequest().access("hasAuthority('ROLE_UNBAN')")
                 )
-                .oauth2ResourceServer(
-                        oauth2 -> oauth2.jwt()
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter));
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt()
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()));
+        return http.build();
     }
 
-    @Override
-    public void configure(WebSecurity webSecurity) throws Exception {
-        webSecurity.ignoring().antMatchers("/actuator", "/actuator/**", "/public/**", "/error/**");
+    @Bean
+    public WebSecurityCustomizer resourceServerWebSecurityCustomizer() {
+        return web -> web.ignoring().antMatchers(PUBLIC_PATHS);
+    }
+
+    public static JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new DelegatingJwtGrantedAuthoritiesConverter(
+                new JwtGrantedAuthoritiesConverter(),
+                new CustomJwtGrantedAuthoritiesConverter()
+        ));
+        return jwtAuthenticationConverter;
     }
 
     @Bean
