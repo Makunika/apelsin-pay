@@ -4,6 +4,7 @@ import {Card, Stack, Link, Container, Typography, Divider} from '@mui/material';
 import AuthLayout from '../layouts/AuthLayout';
 import Page from '../components/Page';
 import { LoginForm } from '../sections/authentication/login';
+import { MAIN_UI_URL } from '../config';
 
 // ----------------------------------------------------------------------
 
@@ -39,7 +40,7 @@ export default function Login() {
     <RootStyle title="Вход">
       <AuthLayout>
         Нет аккаунта? &nbsp;
-        <Link variant="subtitle2" href="http://graduate.pshiblo.xyz/register" underline="none">
+        <Link variant="subtitle2" href={`${MAIN_UI_URL}/register`} underline="none">
           Создать
         </Link>
       </AuthLayout>
@@ -75,7 +76,7 @@ export default function Login() {
             }}
           >
             Нет аккаунта?&nbsp;
-            <Link variant="subtitle2" href="http://graduate.pshiblo.xyz/register" underline="hover">
+            <Link variant="subtitle2" href={`${MAIN_UI_URL}/register`} underline="hover">
               Создать
             </Link>
           </Typography>

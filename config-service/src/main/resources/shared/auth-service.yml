@@ -27,13 +27,8 @@ auth:
   keys:
     path: ${AUTH_KEYS_PATH:./.keys}
   cors:
-    allowed-origins:
-      - http://graduate.pshiblo.xyz
-      - https://graduate.pshiblo.xyz
-      - http://payment.graduate.pshiblo.xyz
-      - https://payment.graduate.pshiblo.xyz
-      - http://localhost:3000
-      - http://localhost:3006
+    # Origin'ы SPA через запятую (env AUTH_CORS_ORIGINS): они ходят в /oauth2/token напрямую.
+    allowed-origins: ${AUTH_CORS_ORIGINS:http://localhost:3000,http://localhost:3006}
   clients:
     browser-main:
       access-token-ttl: 12h

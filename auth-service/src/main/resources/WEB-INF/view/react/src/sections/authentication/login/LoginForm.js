@@ -12,6 +12,7 @@ import { LoadingButton } from '@mui/lab';
 // component
 import {useSnackbar} from "notistack";
 import Iconify from '../../../components/Iconify';
+import { MAIN_UI_URL } from '../../../config';
 
 // ----------------------------------------------------------------------
 
@@ -67,7 +68,7 @@ export default function LoginForm(props) {
         </Stack>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-          <Link variant="subtitle2" href="http://graduate.pshiblo.xyz/reset-password" underline="hover">
+          <Link variant="subtitle2" href={`${MAIN_UI_URL}/reset-password`} underline="hover">
             Забыли пароль?
           </Link>
         </Stack>

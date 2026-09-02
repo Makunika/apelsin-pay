@@ -2,6 +2,11 @@ logging:
   level:
     org.springframework.security: INFO
 
+server:
+  # За nginx с TLS-терминацией: схему и хост берём из X-Forwarded-*, иначе
+  # Spring считает запрос http и генерирует http-редиректы в OAuth2-флоу.
+  forward-headers-strategy: framework
+
 hystrix:
   command:
     default:

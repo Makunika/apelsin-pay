@@ -25,3 +25,7 @@ server:
 encoder:
   sha512:
     salt: ${AUTH_SHA_SALT}
+
+app:
+  # Ссылка из письма восстановления пароля (страница /reset-password/check основного UI)
+  reset-password-url: ${URL_RESET_PASSWORD:http://localhost:3000/reset-password/check}

@@ -3,6 +3,7 @@ package ru.pshiblo.users.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +29,10 @@ public class RememberPasswordServiceImpl implements RememberPasswordService {
     private final UserService userService;
     private final RememberPasswordRepository repository;
     private final PasswordEncoder passwordEncoder;
+
+    /** Страница ввода нового пароля в основном UI: к ней дописывается ?<token>. */
+    @Value("${app.reset-password-url}")
+    private String resetPasswordUrl;
 
     @Override
     public void rememberPassword(String email) {
@@ -66,7 +71,7 @@ public class RememberPasswordServiceImpl implements RememberPasswordService {
     }
 
     private void sendEmailRememberPassword(String token, String email, String login) {
-        String url = "https://graduate.pshiblo.xyz/reset-password/check?" + token;
+        String url = resetPasswordUrl + "?" + token;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("apelsin.pay@yandex.ru");
         message.setTo(email);
