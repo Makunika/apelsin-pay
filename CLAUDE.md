@@ -4,21 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-"Апельсин Pay" — backend of a demo bank / payment-gateway (graduation project, deployed at `graduate.pshiblo.xyz`). Spring Boot 2.6.3 + Spring Cloud 2021.0.1, **Java 11**, Maven multi-module (`ru.pshiblo`). The React frontends live in a sibling repo `apelsin-pay-front`; the auth-service also embeds its own React login page. UI strings, commit messages and UML labels are in Russian.
+"Апельсин Pay" — backend of a demo bank / payment-gateway (graduation project, deployed at `graduate.pshiblo.xyz`). Spring Boot 2.7.18 + Spring Cloud 2021.0.9 + Spring Security 5.8 (overridden in the parent pom for Spring Authorization Server 0.4.5), **Java 11** (`maven.compiler.release=11`), Maven multi-module (`ru.pshiblo`). The React frontends live in a sibling repo `apelsin-pay-front`; the auth-service also embeds its own React login page. UI strings, commit messages and UML labels are in Russian.
 
 ## Build & run
 
-There is no working Maven wrapper: `mvnw` is not executable and `.mvn/wrapper/` is gitignored, so use a system `mvn` with a JDK 11 (the machine may have a newer JDK; Lombok/Boot 2.6 are only known to work on 11).
+There is no working Maven wrapper: `mvnw` is not executable and `.mvn/wrapper/` is gitignored, so use a system `mvn`. Target is Java 11; building on JDK 17 works (`maven.compiler.release=11`, Lombok 1.18.22), JDK 21 is untested.
 
 ```bash
 mvn -q package -DskipTests                       # all modules, jars in */target
 mvn -q package -DskipTests -pl transaction-service -am   # one service + the libs it needs
-mvn test -pl transaction-service                 # the only module with a test (a contextLoads smoke test)
+mvn test -pl auth-service,security-library,users-service -am   # the modules that have tests (auth: MockMvc OAuth2 flows)
+mvn dependency:tree | grep spring-security-oauth2         # must show only SAS + spring-security-oauth2-{client,core,jose,resource-server}
 ```
 
 Reactor order matters: `common-library` → `security-library` → `account-starter` / `feign-starter` → services. Always pass `-am` when building a single service.
 
-Building `auth-service` runs `frontend-maven-plugin` (downloads Node 16 into `auth-service/src/main/resources/WEB-INF/view/react/node/`, runs `npm install`, `npm run lint:fix`, `npm run build`). It's slow and needs network; skip it with `-pl` when you're not touching auth.
+Building `auth-service` runs `frontend-maven-plugin` (downloads Node 16 into `auth-service/src/main/resources/WEB-INF/view/react/node/`, runs `npm install`, `npm run lint:fix`, `npm run build`). It's slow and needs network; skip it with `-pl` when you're not touching auth, or pass `-Dskip.installnodenpm -Dskip.npm` (the jar then has no login page, fine for tests).
 
 ### Docker
 
@@ -39,7 +40,7 @@ Compose reads secrets from the committed `.env`. `IP_DB` there points at a real 
 
 ### Where configuration lives
 
-`config-service` is a Spring Cloud Config Server in `native` mode serving `config-service/src/main/resources/shared/*.yml`. **Ports, DB names, OAuth client scopes, actuator, RabbitMQ and Eureka wiring for every service are there, not in the service modules.** `shared/application.yml` holds the docker/local profile split shared by all. When you add a service, add `shared/<app-name>.yml` and a client entry in auth-service's `AuthorizationServerConfig`.
+`config-service` is a Spring Cloud Config Server in `native` mode serving `config-service/src/main/resources/shared/*.yml`. **Ports, DB names, OAuth client registration (`spring.security.oauth2.client.registration.internal`), actuator, RabbitMQ and Eureka wiring for every service are there, not in the service modules.** `shared/application.yml` holds the docker/local profile split shared by all (token-uri, jwk-set-uri). When you add a service, add `shared/<app-name>.yml`, a `<NAME>_SERVICE_PASSWORD` env var and a `ServiceClient` entry in auth-service's `RegisteredClientsConfig`.
 
 Ports: config 8888, registry 8761, gateway 8080, auth 5000, users 5001, transaction 6001, account-business 6002, account-personal 6003, info-personal 6004, info-business 6005, payment 6006.
 
@@ -49,27 +50,29 @@ Frontend → `gateway-service` (Spring Cloud Gateway). There are **no explicit r
 
 ### Auth
 
-`auth-service` is a **legacy Spring Security OAuth2 authorization server** (`spring-security-oauth2` 2.3.x, `@EnableAuthorizationServer`), not the new spring-authorization-server. Clients are in-memory in `AuthorizationServerConfig`:
-- `browser_main` — authorization_code, scope `user` (main UI); `browser_payment` — implicit, scope `user_payment` (payment page).
-- one `client_credentials` client per service, secret = `<NAME>_SERVICE_PASSWORD` env var, scope `server` plus per-target scopes.
+`auth-service` is a **Spring Authorization Server 0.4.5** (`spring-security-oauth2-authorization-server`, Spring Security 5.8). Endpoints: `/oauth2/authorize`, `/oauth2/token`, `/oauth2/jwks`, `/.well-known/oauth-authorization-server`. Clients are in-memory in `RegisteredClientsConfig`:
+- `browser_main` (scope `user`, main UI) and `browser_payment` (scope `user_payment`, payment page) — **public clients**: authorization_code + PKCE S256 (`ClientAuthenticationMethod.NONE`, `requireProofKey`, no consent screen). Redirect URIs come only from `URL_LOGIN_MAIN` / `URL_LOGIN_PAYMENT` (`auth.clients.*.redirect-uris`, plus `localhost:3000/3006` in the `local` profile). Access-token TTL per client: `auth.clients.*.access-token-ttl` in `shared/auth-service.yml`. SAS 0.4 does **not** issue refresh tokens to public clients, so the SPAs re-run the PKCE flow when the token expires.
+- one `client_credentials` client per service, secret = `<NAME>_SERVICE_PASSWORD` env var (stored as a bcrypt hash, `client_secret_basic`/`client_secret_post`), scope `server` plus per-target scopes. The scope list must match `spring.security.oauth2.client.registration.internal.scope` of that service in config-service.
 
-Tokens are RSA JWTs. Keys come from `./.keys/{private,public}.key` (`auth.secret.path`); if missing, `KeyGeneratorServiceImpl` generates a new pair. Other services fetch the public key from `GET /oauth/token_key_new` (custom endpoint, PEM without newlines). Custom claims: `id`, `email`, `name`, `status`, `lock`.
+Tokens are RSA JWTs. Keys come from `$AUTH_KEYS_PATH/{private,public}.key` (default `./.keys`, Base64 DER); if missing, `RsaKeyPairStore` generates a pair. `.keys/` is gitignored — the old committed pair was treated as compromised. Nothing mounts it in compose, so a restarted auth container gets a new key and invalidates all tokens; mount a volume if that matters. Resource servers fetch the JWK Set from `/oauth2/jwks` (`spring.security.oauth2.resourceserver.jwt.jwk-set-uri` in `shared/application.yml`). `ApelsinTokenCustomizer` adds claims `client_id` (all tokens) and `user_name`, `id`, `email`, `name`, `status`, `lock`, `authorities` (user tokens); `scope` is a JSON array. Issuer is `auth.issuer` (`AUTH_ISSUER`, default `http://login.graduate.pshiblo.xyz` in docker).
 
-auth-service has no user table of its own: `UserServiceImpl` builds the principal by Feign-calling `users-service` (credentials) and `info-personal-service` (status/lock). Passwords are HmacSHA512 with `AUTH_SHA_SALT` (`Hmac512PasswordEncoder`, duplicated in users-service and auth-service — change both).
+Login page: the embedded React app at `/index.html` posts to `/perform_login` (formLogin in `SecurityConfig`); unauthenticated `/oauth2/authorize` requests are redirected there and back. `auth-service` has no DB (JPA was removed): `UserServiceImpl` builds the principal by Feign-calling `users-service` (credentials) and `info-personal-service` (status/lock).
 
-`security-library` (auto-configured in every business service via `spring.factories`) is the resource-server side: CORS on, CSRF off, `/actuator/**`, `/public/**`, `/error/**` open, **everything else requires `ROLE_UNBAN`**. `CustomJwtGrantedAuthoritiesConverter` grants `ROLE_UNBAN` when claim `lock=false` or scope `server` — that's the ban mechanism. Use `@IsAdmin` / `@IsModer` / `@IsUser` and `AuthUtils.getAuthUser()`.
+Passwords: one `PasswordEncoder` for auth-service and users-service, auto-configured by `common-library` (`ApelsinPasswordEncoders`) when `encoder.sha512.salt` (`AUTH_SHA_SALT`) is set — a `DelegatingPasswordEncoder` writing `{bcrypt}` and matching un-prefixed legacy HmacSHA512 hashes. On a successful login with a legacy hash `UserPasswordUpgradeService` (`UserDetailsPasswordService`) stores the bcrypt hash via `PUT users-service/internal/users/{id}/password-hash` (scope `server` only). Keep `AUTH_SHA_SALT` until `SELECT count(*) FROM users WHERE password_hash NOT LIKE '{bcrypt}%'` is 0.
+
+`security-library` (auto-configured in every business service via `spring.factories`) is the resource-server side (`SecurityFilterChain` bean): CORS on, CSRF off, `/actuator/**`, `/public/**`, `/error/**` open, **everything else requires `ROLE_UNBAN`**. `CustomJwtGrantedAuthoritiesConverter` grants `ROLE_UNBAN` when claim `lock=false` or scope `server` — that's the ban mechanism. Use `@IsAdmin` / `@IsModer` / `@IsUser` and `AuthUtils.getAuthUser()`.
 
 ### Shared libraries
 
-- `common-library` — `ApelsinException` hierarchy (NotFound 404, AlreadyExist 400, Security/NotAllowedOperation 403, Internal 500) and `ExceptionControllerAdvice` (auto-configured) that maps them plus validation errors to a `{status,message,violations[]}` body. `RequestMapper`/`ResponseMapper`/`CommonMapper` are the interfaces every MapStruct mapper implements.
-- `feign-starter` — `@EnableFeignClients`, an `OAuth2FeignRequestInterceptor` that attaches a client_credentials token to every Feign call, and `CustomErrorDecoder` turning non-2xx into `IntegrationException(status, body)`, which `ExceptionControllerAdvice` re-emits with the original status. This is how errors propagate across services. `transaction-service` and `auth-service` don't use the starter and carry their own copies of this config.
+- `common-library` — password encoders (`ru.pshiblo.common.security`, see Auth), `ApelsinException` hierarchy (NotFound 404, AlreadyExist 400, Security/NotAllowedOperation 403, Internal 500) and `ExceptionControllerAdvice` (auto-configured) that maps them plus validation errors to a `{status,message,violations[]}` body. `RequestMapper`/`ResponseMapper`/`CommonMapper` are the interfaces every MapStruct mapper implements.
+- `feign-starter` — `@EnableFeignClients`, `spring-boot-starter-oauth2-client` + an `OAuth2AuthorizedClientManager` (client_credentials) and Spring Cloud OpenFeign's `OAuth2AccessTokenInterceptor` (wrapped in `InternalOAuth2RequestInterceptor`, which skips requests that already carry `Authorization`, e.g. `TinkoffApi`) attaching a token from registration `internal` (`spring.security.oauth2.client.registration.internal` + `provider.apelsin.token-uri`, set per service in config-service) to every Feign call, and `CustomErrorDecoder` turning non-2xx into `IntegrationException(status, body)`, which `ExceptionControllerAdvice` re-emits with the original status. This is how errors propagate across services. Used by all services including `transaction-service` and `auth-service`.
 - `account-starter` — the shared account domain (`Account`, `HoldMoney` entities, `AccountService`, `Currency`, `CurrencyServiceImpl` pulling CBR rates daily at 08:00). Embedded in transaction-service and both account services, which is why they share the `maxbank-transactions` DB and the `accounts`/`hold_money` tables.
 
 ### Services
 
 | service | DB | role |
 |---|---|---|
-| users-service | maxbank-users | logins, password hashes, roles, password-reset emails (SMTP creds in its `application.yml`) |
+| users-service | maxbank-users | logins, password hashes (`{bcrypt}` or legacy Hmac), roles, password-reset emails (SMTP creds in its `application.yml`), `internal/**` endpoints for services |
 | info-personal-service | info-personal | person profile/KYC, moderation; drives registration via Feign → users-service |
 | info-business-service | info-business | companies, company users, moderation history, merchant `apiKey` check endpoint |
 | account-personal-service | maxbank-transactions | personal accounts + types; nightly `PersonalAccountJob` (cashback via transaction-service) |
@@ -87,11 +90,11 @@ Routing keys, all in transaction-service unless noted: `transaction.open` → `c
 
 ### Database
 
-No Flyway/Liquibase at runtime: schema is `spring.jpa.hibernate.ddl-auto: update` everywhere. The Liquibase files under `auth-service/src/main/resources/changelog/` are orphaned (no dependency, targets a different auth server) — don't extend them. Entity changes in `account-starter` affect three services on one DB; keep them backward compatible.
+No Flyway/Liquibase at runtime: schema is `spring.jpa.hibernate.ddl-auto: update` everywhere. The Liquibase files under `auth-service/src/main/resources/changelog/` are orphaned (no dependency, auth-service has no DB at all) — don't extend them. Entity changes in `account-starter` affect three services on one DB; keep them backward compatible.
 
 ## Gotchas
 
-- Committed secrets: `.env`, `.keys/private.key`, SMTP password in users-service, Tinkoff sandbox token in `TinkoffApiConfig`. Treat them as already leaked; don't add more.
+- Committed secrets: `.env`, SMTP password in users-service, Tinkoff sandbox token in `TinkoffApiConfig`. Treat them as already leaked; don't add more. The JWT signing key is no longer in git (`.keys/` ignored).
 - `TransactionServiceImpl.createFromTinkoff` replaces the real Tinkoff pay URL with a `graduate.pshiblo.xyz/tinkoff/test` stub.
 - `monitoring/prometheus.yml` scrapes only auth and transaction services; `grafana/` and `prometheus/` at the root are committed runtime data dirs mounted by the dev compose.
 - `lombok.config` sets `addConstructorProperties=true` (needed for Jackson + `@AllArgsConstructor` DTOs).
